@@ -1,36 +1,112 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FileShare — Real-time File & Note Sharing
 
-## Getting Started
+FileShare is a high-performance, real-time note and file sharing web application built with Next.js (App Router), Tailwind CSS, and Firebase (Firestore + Cloud Storage).
 
-First, run the development server:
+---
+
+## 🛠️ Step-by-Step Guide: Setting Up `.env.local`
+
+To run FileShare locally or deploy to production, create a file named `.env.local` in the root of the project by copying `.env.local.example`:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.local.example .env.local
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Fill in the required variables from your Firebase Console by following the instructions below:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Step 1: Get Client-Side Credentials (Web SDK)
 
-## Learn More
+1. Go to the [Firebase Console](https://console.firebase.google.com/) and select your project (or click **Add Project** to create a new one).
+2. Click the ⚙️ **Gear Icon** in the top-left sidebar and select **Project Settings**.
+3. Under the **General** tab, scroll down to **Your apps**.
+4. If you haven't created a web app yet, click the **Web** icon (`</>`), name your app (e.g. `FileShare Web`), and click **Register App**.
+5. Locate the `firebaseConfig` object and copy the values into your `.env.local`:
 
-To learn more about Next.js, take a look at the following resources:
+```env
+NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSy...
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=123456789012
+NEXT_PUBLIC_FIREBASE_APP_ID=1:123456789012:web:abcdef123456
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Step 2: Get Server-Side Admin Credentials (Admin SDK)
 
-## Deploy on Vercel
+1. In **Project Settings**, switch to the **Service Accounts** tab.
+2. Ensure **Node.js** is selected, then click **Generate new private key**.
+3. Confirm by clicking **Generate Key** — a `.json` key file will download to your computer.
+4. Open the downloaded `.json` file in any text editor and map the fields to your `.env.local`:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- `project_id` → `FIREBASE_ADMIN_PROJECT_ID`
+- `client_email` → `FIREBASE_ADMIN_CLIENT_EMAIL`
+- `private_key` → `FIREBASE_ADMIN_PRIVATE_KEY`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```env
+FIREBASE_ADMIN_PROJECT_ID=your-project-id
+FIREBASE_ADMIN_CLIENT_EMAIL=firebase-adminsdk-xxxxx@your-project-id.iam.gserviceaccount.com
+FIREBASE_ADMIN_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC7...\n-----END PRIVATE KEY-----\n"
+```
+
+> **Note on Private Key Formatting**: Wrap the `FIREBASE_ADMIN_PRIVATE_KEY` value in double quotes `""` and ensure literal `\n` characters are preserved.
+
+---
+
+### Step 3: Configure Security & App URL
+
+```env
+# Generate a random 32+ character secret for JWT token verification:
+# Command: openssl rand -base64 32
+JWT_SECRET=your-super-secret-jwt-key-here-change-in-production
+
+# App Base URL (used for generating share links)
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+---
+
+### Step 4: Enable Firebase Services
+
+1. **Firestore Database**:
+   - In Firebase Console left sidebar, click **Build > Firestore Database**.
+   - Click **Create Database**, select location, and start in **Test mode** (or Production mode).
+2. **Cloud Storage**:
+   - In left sidebar, click **Build > Storage**.
+   - Click **Get Started**, choose default location, and initialize.
+
+---
+
+## 🚀 Running the Project
+
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+2. Start development server:
+   ```bash
+   npm run dev
+   ```
+
+3. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+4. Build for production:
+   ```bash
+   npm run build
+   npm start
+   ```
+
+---
+
+## 🎨 Features & Tech Stack
+
+- **Framework**: Next.js 16 (App Router + Turbopack)
+- **Styling**: Vanilla CSS + Design Tokens + Tailwind CSS
+- **Real-time Sync**: Firestore `onSnapshot` real-time listeners
+- **File Uploads**: Direct-to-Storage Firebase Signed URLs (up to 50 MB)
+- **Security**: Optional password protection with bcrypt & JWT authentication tokens
+- **Responsiveness**: Fully responsive desktop split-view and mobile tabbed view

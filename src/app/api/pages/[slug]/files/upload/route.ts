@@ -1,13 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { adminDb, adminStorage } from "@/lib/firebase-admin";
-import { uploadRequestSchema } from "@/lib/validators";
+import db from "@/lib/db";
 import { verifyPageToken } from "@/lib/jwt";
 import { rateLimit } from "@/lib/rateLimiter";
-import { FieldValue } from "firebase-admin/firestore";
+import { pageEvents } from "@/lib/events";
 import { randomUUID } from "crypto";
+import path from "path";
+import fs from "fs";
 
 interface RouteContext {
   params: Promise<{ slug: string }>;
+}
+
+interface PageRow {
+  isProtected: number;
 }
 
 async function isAuthorized(req: NextRequest, slug: string, isProtected: boolean) {
@@ -19,64 +24,69 @@ async function isAuthorized(req: NextRequest, slug: string, isProtected: boolean
   return payload?.slug === slug;
 }
 
-// POST /api/pages/[slug]/files/upload — validate + register file metadata + generate signed URL
+// POST /api/pages/[slug]/files/upload — handle file upload & broadcast live event
 export async function POST(req: NextRequest, ctx: RouteContext) {
   const limited = await rateLimit(req, "general");
   if (limited) return limited;
 
   const { slug } = await ctx.params;
 
-  const pageDoc = await adminDb.collection("pages").doc(slug).get();
-  if (!pageDoc.exists) {
+  const page = db.prepare("SELECT isProtected FROM pages WHERE slug = ?").get(slug) as PageRow | undefined;
+  if (!page) {
     return NextResponse.json({ error: "Page not found" }, { status: 404 });
   }
-  const pageData = pageDoc.data()!;
 
-  if (!(await isAuthorized(req, slug, pageData.isProtected))) {
+  if (!(await isAuthorized(req, slug, Boolean(page.isProtected)))) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let body: unknown;
-  try { body = await req.json(); }
-  catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
+  try {
+    const formData = await req.formData();
+    const file = formData.get("file") as File | null;
 
-  const parsed = uploadRequestSchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Validation error" }, { status: 422 });
-  }
+    if (!file) {
+      return NextResponse.json({ error: "No file provided" }, { status: 400 });
+    }
 
-  const { filename, mimetype, size } = parsed.data;
-  const fileId      = randomUUID();
-  const extension   = filename.split(".").pop() ?? "bin";
-  const storagePath = `pages/${slug}/files/${fileId}.${extension}`;
+    const fileId = randomUUID();
+    const originalName = file.name;
+    const safeName = originalName.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const storedName = `${fileId}-${safeName}`;
+    const mimetype = file.type || "application/octet-stream";
+    const size = file.size;
 
-  // Generate a resumable upload signed URL (15 min expiry)
-  const bucket = adminStorage.bucket();
-  const file   = bucket.file(storagePath);
+    const uploadsDir = path.join(process.cwd(), "uploads");
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
 
-  const [signedUrl] = await file.getSignedUrl({
-    version: "v4",
-    action:  "write",
-    expires: Date.now() + 15 * 60 * 1000,
-    contentType: mimetype,
-  });
+    const filePath = path.join(uploadsDir, storedName);
+    const bytes = await file.arrayBuffer();
+    fs.writeFileSync(filePath, Buffer.from(bytes));
 
-  // Get download URL (will be valid after upload completes)
-  const downloadURL = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(storagePath)}?alt=media`;
+    const downloadURL = `/api/uploads/${storedName}`;
 
-  // Write file metadata to Firestore
-  await adminDb
-    .collection("pages").doc(slug)
-    .collection("files").doc(fileId)
-    .set({
+    db.prepare(`
+      INSERT INTO files (fileId, slug, originalName, storedName, mimetype, size, downloadURL)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).run(fileId, slug, originalName, storedName, mimetype, size, downloadURL);
+
+    // Broadcast real-time file addition to all connected clients
+    pageEvents.emit(slug, {
+      type: "files_updated",
+      action: "uploaded",
       fileId,
-      originalName: filename,
-      storagePath,
+    });
+
+    return NextResponse.json({
+      fileId,
+      originalName,
       downloadURL,
       mimetype,
       size,
-      uploadedAt: FieldValue.serverTimestamp(),
-    });
-
-  return NextResponse.json({ fileId, signedUrl, downloadURL }, { status: 201 });
+    }, { status: 201 });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "File upload failed";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }

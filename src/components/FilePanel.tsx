@@ -1,10 +1,9 @@
 "use client";
 import { useCallback, useRef, useState } from "react";
-import { UploadCloud, FolderOpen } from "lucide-react";
+import { UploadCloud, FolderOpen, FileUp } from "lucide-react";
 import { useFileList } from "@/hooks/useFileList";
 import { FileCard } from "@/components/FileCard";
 import { showToast } from "@/components/ui/Toast";
-import { ALLOWED_MIME_TYPES, MAX_FILE_SIZE } from "@/lib/validators";
 
 interface FilePanelProps {
   slug:  string;
@@ -14,56 +13,36 @@ interface FilePanelProps {
 export function FilePanel({ slug, token }: FilePanelProps) {
   const { files, loading } = useFileList(slug);
   const [dragging,  setDragging]  = useState(false);
-  const [uploading, setUploading] = useState<string[]>([]); // filenames uploading
+  const [uploading, setUploading] = useState<string[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const uploadFile = useCallback(async (file: File) => {
-    if (!ALLOWED_MIME_TYPES.has(file.type)) {
-      showToast(`File type not allowed: ${file.type || "unknown"}`, "error");
-      return;
-    }
-    if (file.size > MAX_FILE_SIZE) {
-      showToast(`File too large (max 50 MB): ${file.name}`, "error");
+    if (file.size > 50 * 1024 * 1024) {
+      showToast(`File exceeds 50 MB limit: ${file.name}`, "error");
       return;
     }
 
     setUploading((u) => [...u, file.name]);
 
     try {
-      // Step 1: get signed upload URL
-      const metaRes = await fetch(`/api/pages/${slug}/files/upload`, {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch(`/api/pages/${slug}/files/upload`, {
         method:  "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({ filename: file.name, mimetype: file.type, size: file.size }),
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body:    formData,
       });
 
-      if (!metaRes.ok) {
-        const err = await metaRes.json();
-        showToast(err.error ?? "Upload failed", "error");
+      if (!res.ok) {
+        const err = await res.json();
+        showToast(err.error ?? `Upload failed for ${file.name}`, "error");
         return;
       }
 
-      const { signedUrl } = await metaRes.json();
-
-      // Step 2: upload directly to Firebase Storage via signed URL
-      const uploadRes = await fetch(signedUrl, {
-        method:  "PUT",
-        headers: { "Content-Type": file.type },
-        body:    file,
-      });
-
-      if (!uploadRes.ok) {
-        showToast(`Upload failed for ${file.name}`, "error");
-        return;
-      }
-
-      showToast(`${file.name} uploaded`, "success");
-      // Firestore metadata was already written by API — onSnapshot fires automatically
+      showToast(`${file.name} uploaded successfully`, "success");
     } catch {
-      showToast("Upload error", "error");
+      showToast("Connection error during file upload", "error");
     } finally {
       setUploading((u) => u.filter((n) => n !== file.name));
     }
@@ -79,22 +58,22 @@ export function FilePanel({ slug, token }: FilePanelProps) {
   function onDrop(e: React.DragEvent)     { e.preventDefault(); setDragging(false); handleFiles(e.dataTransfer.files); }
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Panel header */}
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#2a2a3d] shrink-0">
-        <div className="flex items-center gap-2 text-[#6b6b88]">
-          <FolderOpen size={14} />
-          <span className="text-xs font-medium uppercase tracking-wider">Files</span>
-          {files.length > 0 && (
-            <span className="px-1.5 py-0.5 rounded-md bg-[#7c6af7]/20 text-[#7c6af7] text-[10px] font-semibold">
-              {files.length}
-            </span>
-          )}
+    <div className="flex flex-col h-full bg-[var(--bg-surface)] transition-colors duration-200">
+      {/* Panel Header */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-color)] bg-[var(--bg-surface)] shrink-0 transition-colors duration-200">
+        <div className="flex items-center gap-2 text-[var(--text-main)] font-extrabold">
+          <FolderOpen size={16} className="text-[var(--accent-indigo)]" />
+          <span className="text-xs uppercase tracking-wider">Shared Files Vault</span>
         </div>
+        {files.length > 0 && (
+          <span className="px-2.5 py-0.5 rounded-full bg-[var(--badge-bg)] border border-[var(--badge-border)] text-[var(--badge-text)] text-[11px] font-extrabold">
+            {files.length} {files.length === 1 ? "file" : "files"}
+          </span>
+        )}
       </div>
 
-      <div className="flex-1 overflow-auto p-4 space-y-4">
-        {/* Drop zone */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {/* Drop zone container */}
         <div
           onDragOver={onDragOver}
           onDragLeave={onDragLeave}
@@ -102,11 +81,11 @@ export function FilePanel({ slug, token }: FilePanelProps) {
           onClick={() => inputRef.current?.click()}
           className={`
             relative flex flex-col items-center justify-center gap-3
-            rounded-xl border-2 border-dashed p-8 cursor-pointer
-            transition-all duration-200
+            rounded-2xl border-2 border-dashed p-6 sm:p-8 cursor-pointer
+            transition-all duration-200 group
             ${dragging
-              ? "border-[#7c6af7] bg-[#7c6af7]/10 scale-[1.01]"
-              : "border-[#2a2a3d] hover:border-[#3a3a50] hover:bg-[#ffffff04]"
+              ? "border-[var(--accent-primary)] bg-[var(--badge-bg)] scale-[1.01] shadow-lg"
+              : "border-[var(--border-color)] hover:border-[var(--accent-primary)] bg-[var(--bg-card)] hover:bg-[var(--bg-card-hover)] shadow-sm"
             }
           `}
         >
@@ -118,48 +97,55 @@ export function FilePanel({ slug, token }: FilePanelProps) {
             onChange={(e) => handleFiles(e.target.files)}
           />
           <div className={`
-            w-12 h-12 rounded-xl flex items-center justify-center
-            transition-all duration-200
-            ${dragging ? "bg-[#7c6af7]/20" : "bg-[#1a1a24]"}
+            w-12 h-12 rounded-2xl flex items-center justify-center
+            transition-all duration-200 border
+            ${dragging
+              ? "bg-[var(--badge-bg)] border-[var(--accent-primary)]"
+              : "bg-[var(--badge-bg)] border-[var(--badge-border)] group-hover:scale-105"
+            }
           `}>
-            <UploadCloud size={22} className={dragging ? "text-[#7c6af7]" : "text-[#6b6b88]"} />
+            <UploadCloud size={24} className="text-[var(--accent-indigo)]" />
           </div>
           <div className="text-center">
-            <p className={`text-sm font-medium transition-colors ${dragging ? "text-[#7c6af7]" : "text-[#e8e8f0]"}`}>
-              {dragging ? "Drop to upload" : "Drag & drop files here"}
+            <p className={`text-sm font-bold transition-colors ${dragging ? "text-[var(--accent-primary)]" : "text-[var(--text-main)]"}`}>
+              {dragging ? "Drop files to upload instantly" : "Drag & drop files here"}
             </p>
-            <p className="text-xs text-[#6b6b88] mt-0.5">or click to browse · max 50 MB</p>
+            <p className="text-xs text-[var(--text-muted)] mt-1 font-medium">
+              or <span className="text-[var(--accent-indigo)] underline underline-offset-2 font-bold">browse files</span> · max 50 MB each
+            </p>
           </div>
         </div>
 
-        {/* Uploading indicators */}
+        {/* Uploading Progress Items */}
         {uploading.map((name) => (
-          <div key={name} className="flex items-center gap-3 p-3 rounded-xl bg-[#1a1a24] border border-[#7c6af7]/30">
-            <div className="w-9 h-9 rounded-lg bg-[#7c6af7]/10 flex items-center justify-center shrink-0">
-              <UploadCloud size={16} className="text-[#7c6af7] animate-pulse" />
+          <div key={name} className="flex items-center gap-3 p-3.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-glow)] animate-fade-in shadow-md">
+            <div className="w-9 h-9 rounded-lg bg-[var(--badge-bg)] flex items-center justify-center shrink-0">
+              <FileUp size={18} className="text-[var(--accent-indigo)] animate-bounce" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm text-[#e8e8f0] truncate">{name}</p>
-              <div className="h-1 bg-[#2a2a3d] rounded-full mt-2 overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-[#7c6af7] to-[#4fa3f7] rounded-full animate-pulse w-2/3" />
+              <p className="text-xs sm:text-sm font-medium text-[var(--text-main)] truncate">{name}</p>
+              <div className="h-1.5 bg-black/10 dark:bg-black/30 rounded-full mt-2 overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-indigo-500 to-cyan-500 rounded-full animate-pulse w-3/4" />
               </div>
             </div>
           </div>
         ))}
 
-        {/* File list */}
+        {/* Files List */}
         {loading ? (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {[1, 2, 3].map((i) => (
               <div key={i} className="h-16 skeleton rounded-xl" />
             ))}
           </div>
         ) : files.length === 0 && uploading.length === 0 ? (
-          <div className="text-center py-4">
-            <p className="text-sm text-[#44445a]">No files yet — upload something!</p>
+          <div className="text-center py-10 px-4 border border-dashed border-[var(--border-color)] rounded-2xl bg-[var(--bg-card)]">
+            <FolderOpen size={32} className="mx-auto text-[var(--text-subtle)] mb-2 opacity-60" />
+            <p className="text-sm font-bold text-[var(--text-muted)]">No files in this space yet</p>
+            <p className="text-xs text-[var(--text-subtle)] mt-1 font-medium">Upload documents, images, or audio above.</p>
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             {files.map((f) => (
               <FileCard key={f.fileId} file={f} slug={slug} token={token} />
             ))}

@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { adminDb } from "@/lib/firebase-admin";
+import db from "@/lib/db";
 import { setPasswordSchema } from "@/lib/validators";
 import { verifyPageToken } from "@/lib/jwt";
 import { rateLimit } from "@/lib/rateLimiter";
-import { FieldValue } from "firebase-admin/firestore";
 import bcrypt from "bcryptjs";
 
 interface RouteContext {
   params: Promise<{ slug: string }>;
+}
+
+interface PageRow {
+  isProtected: number;
 }
 
 // PATCH /api/pages/[slug]/password — set or remove password
@@ -17,14 +20,13 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
 
   const { slug } = await ctx.params;
 
-  const pageDoc = await adminDb.collection("pages").doc(slug).get();
-  if (!pageDoc.exists) {
+  const page = db.prepare("SELECT isProtected FROM pages WHERE slug = ?").get(slug) as PageRow | undefined;
+  if (!page) {
     return NextResponse.json({ error: "Page not found" }, { status: 404 });
   }
-  const pageData = pageDoc.data()!;
 
   // If currently protected, require valid token
-  if (pageData.isProtected) {
+  if (page.isProtected) {
     const authHeader = req.headers.get("authorization") ?? "";
     const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
     if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -44,21 +46,20 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
   const { password } = parsed.data;
 
   if (password === null) {
-    // Remove password
-    await adminDb.collection("pages").doc(slug).update({
-      isProtected:  false,
-      passwordHash: null,
-      updatedAt:    FieldValue.serverTimestamp(),
-    });
+    db.prepare(`
+      UPDATE pages
+      SET isProtected = 0, passwordHash = NULL, updatedAt = CURRENT_TIMESTAMP
+      WHERE slug = ?
+    `).run(slug);
     return NextResponse.json({ isProtected: false });
   }
 
   const passwordHash = await bcrypt.hash(password, 12);
-  await adminDb.collection("pages").doc(slug).update({
-    isProtected:  true,
-    passwordHash,
-    updatedAt:    FieldValue.serverTimestamp(),
-  });
+  db.prepare(`
+    UPDATE pages
+    SET isProtected = 1, passwordHash = ?, updatedAt = CURRENT_TIMESTAMP
+    WHERE slug = ?
+  `).run(passwordHash, slug);
 
   return NextResponse.json({ isProtected: true });
 }

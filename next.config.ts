@@ -1,6 +1,21 @@
 import type { NextConfig } from "next";
 
+const envOrigins = process.env.ALLOWED_DEV_ORIGINS
+  ? process.env.ALLOWED_DEV_ORIGINS.split(",").map((item) => item.trim()).filter(Boolean)
+  : [];
+
+const defaultOrigins = [
+  "localhost",
+  "127.0.0.1",
+  "10.53.182.234",
+  "0.0.0.0",
+  "192.168.0.0/16",
+  "10.0.0.0/8",
+];
+
 const nextConfig: NextConfig = {
+  // Allow all dev origins from environment variable & default LAN subnets to prevent HMR cross-origin reloads
+  allowedDevOrigins: Array.from(new Set([...defaultOrigins, ...envOrigins])),
   async headers() {
     return [
       {
@@ -18,7 +33,6 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  // Allow Firebase Storage image domains
   images: {
     remotePatterns: [
       {
