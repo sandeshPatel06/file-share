@@ -3,7 +3,7 @@ import { useCallback, useRef, useState } from "react";
 import {
   CheckCircle2, Loader2, FileEdit, Sparkles, Copy, Check, Trash2,
   Quote, Link, Eye, Edit3, Columns, Paperclip, Mic, Video, Monitor, FileCode,
-  Smile, Bot, RefreshCw, Type
+  Smile, Type, Code2
 } from "lucide-react";
 import { usePageContent } from "@/hooks/usePageContent";
 import { showToast } from "@/components/ui/Toast";
@@ -374,20 +374,21 @@ export function TextEditor({ slug, token }: TextEditorProps) {
 
                     <button
                       onClick={() => applyFormat("```\n", "\n```")}
-                      title="Code Block (```)"
-                      className="px-1.5 py-0.5 rounded-md text-[11px] font-mono font-bold text-[var(--accent-indigo)] bg-[var(--badge-bg)] border border-[var(--badge-border)] hover:opacity-80 transition-opacity cursor-pointer"
+                      title="Insert Code Block (```)"
+                      className="p-1 rounded-md text-[var(--accent-indigo)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
                     >
-                      99
+                      <Code2 size={14} />
                     </button>
 
                     <div className="w-px h-3.5 bg-[var(--border-color)] mx-1" />
 
                     <button
                       onClick={() => setViewMode("preview")}
-                      title="Markdown Preview Toggle"
-                      className="flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-mono font-bold text-[var(--accent-cyan)] bg-[var(--badge-bg)] border border-[var(--badge-border)] hover:opacity-80 transition-opacity cursor-pointer"
+                      title="Toggle Markdown Preview"
+                      className="flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-extrabold text-[var(--accent-indigo)] bg-[var(--badge-bg)] border border-[var(--badge-border)] hover:opacity-80 transition-opacity cursor-pointer"
                     >
-                      <span>M↓</span>
+                      <Eye size={12} />
+                      <span>Preview</span>
                     </button>
                   </div>
                 )}
@@ -429,7 +430,7 @@ export function TextEditor({ slug, token }: TextEditorProps) {
                       <Video size={15} />
                     </button>
                     <button
-                      onClick={() => applyFormat("```javascript\n// Screen Code Snippet\n", "\n```")}
+                      onClick={() => applyFormat("```javascript\n// Code Snippet\n", "\n```")}
                       title="Insert Code Snippet"
                       className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
                     >
@@ -494,18 +495,13 @@ export function TextEditor({ slug, token }: TextEditorProps) {
                       )}
                     </div>
 
-                    {/* Auto-Sync Indicator */}
-                    <div title="Real-time Auto-Sync" className="p-1.5 text-[var(--status-success-text)]">
-                      <RefreshCw size={14} className="animate-spin duration-3000" />
-                    </div>
-
-                    {/* AI Assistant Badge */}
+                    {/* AI Assistant Button */}
                     <button
                       onClick={handleAICopilotFormat}
-                      className="w-6 h-6 rounded-lg bg-[var(--status-success-bg)] border border-[var(--status-success-border)] flex items-center justify-center text-[var(--status-success-text)] shadow-sm hover:opacity-80 transition-opacity cursor-pointer"
+                      className="w-7 h-7 rounded-xl bg-[var(--badge-bg)] border border-[var(--badge-border)] flex items-center justify-center text-[var(--accent-indigo)] shadow-sm hover:border-[var(--accent-indigo)] transition-all cursor-pointer"
                       title="AI Copilot Auto-Format Notes"
                     >
-                      <Bot size={13} />
+                      <Sparkles size={14} />
                     </button>
                   </div>
                 </div>
