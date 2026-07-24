@@ -1,10 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import { adminDb, adminStorage } from "@/lib/firebase-admin";
+import db from "@/lib/db";
 import { verifyPageToken } from "@/lib/jwt";
 import { rateLimit } from "@/lib/rateLimiter";
+import { pageEvents } from "@/lib/events";
+import path from "path";
+import fs from "fs";
 
 interface RouteContext {
   params: Promise<{ slug: string; id: string }>;
+}
+
+interface PageRow {
+  isProtected: number;
+}
+
+interface FileRow {
+  storedName: string;
 }
 
 // DELETE /api/pages/[slug]/files/[id]
@@ -14,14 +25,13 @@ export async function DELETE(req: NextRequest, ctx: RouteContext) {
 
   const { slug, id } = await ctx.params;
 
-  const pageDoc = await adminDb.collection("pages").doc(slug).get();
-  if (!pageDoc.exists) {
+  const page = db.prepare("SELECT isProtected FROM pages WHERE slug = ?").get(slug) as PageRow | undefined;
+  if (!page) {
     return NextResponse.json({ error: "Page not found" }, { status: 404 });
   }
-  const pageData = pageDoc.data()!;
 
   // Auth check for protected pages
-  if (pageData.isProtected) {
+  if (page.isProtected) {
     const authHeader = req.headers.get("authorization") ?? "";
     const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
     if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -29,23 +39,30 @@ export async function DELETE(req: NextRequest, ctx: RouteContext) {
     if (payload?.slug !== slug) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const fileRef = adminDb.collection("pages").doc(slug).collection("files").doc(id);
-  const fileDoc = await fileRef.get();
-  if (!fileDoc.exists) {
+  const fileRecord = db.prepare("SELECT storedName FROM files WHERE fileId = ? AND slug = ?").get(id, slug) as FileRow | undefined;
+  if (!fileRecord) {
     return NextResponse.json({ error: "File not found" }, { status: 404 });
   }
 
-  const { storagePath } = fileDoc.data()!;
-
-  // Delete from Firebase Storage
+  // Remove file from disk
   try {
-    await adminStorage.bucket().file(storagePath).delete();
-  } catch {
-    // File might not have been uploaded yet — continue with metadata delete
+    const filePath = path.join(process.cwd(), "uploads", fileRecord.storedName);
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+  } catch (err) {
+    console.error("Failed to delete local file:", err);
   }
 
-  // Delete Firestore metadata
-  await fileRef.delete();
+  // Delete metadata record from SQLite
+  db.prepare("DELETE FROM files WHERE fileId = ? AND slug = ?").run(id, slug);
+
+  // Broadcast real-time file deletion to all connected clients
+  pageEvents.emit(slug, {
+    type: "files_updated",
+    action: "deleted",
+    fileId: id,
+  });
 
   return NextResponse.json({ ok: true });
 }

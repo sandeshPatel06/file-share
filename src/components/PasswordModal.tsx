@@ -79,44 +79,44 @@ export function PasswordModal({ open, onClose, slug, isProtected, token, onSucce
   return (
     <Modal open={open} onClose={onClose} title={isProtected ? "Change Password" : "Set Password"}>
       {isProtected && (
-        <div className="mb-5 p-3 rounded-xl bg-[#7c6af7]/10 border border-[#7c6af7]/20 flex items-center gap-2.5">
-          <Lock size={14} className="text-[#7c6af7] shrink-0" />
-          <span className="text-xs text-[#b0aedf]">This page is currently password-protected.</span>
+        <div className="mb-5 p-3 rounded-xl bg-[var(--badge-bg)] border border-[var(--badge-border)] flex items-center gap-2.5">
+          <Lock size={14} className="text-[var(--accent-indigo)] shrink-0" />
+          <span className="text-xs font-bold text-[var(--badge-text)]">This page is currently password-protected.</span>
         </div>
       )}
 
-      <form onSubmit={handleSet} className="space-y-3">
+      <form onSubmit={handleSet} className="space-y-4">
         <label className="block">
-          <span className="text-xs font-medium text-[#6b6b88] uppercase tracking-wider">New Password</span>
+          <span className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">New Password</span>
           <div className="relative mt-1.5">
             <input
               type={showPw ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Min. 6 characters"
-              className="w-full bg-[#0a0a0f] border border-[#2a2a3d] focus:border-[#7c6af7] focus:shadow-[0_0_0_3px_#7c6af720] rounded-xl px-3 py-2.5 pr-10 text-sm text-[#e8e8f0] placeholder-[#44445a] outline-none transition-all"
+              className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] focus:border-[var(--accent-primary)] focus:ring-2 focus:ring-[var(--border-glow)] rounded-xl px-3.5 py-2.5 pr-10 text-sm text-[var(--text-main)] placeholder-[var(--text-subtle)] outline-none transition-all font-mono"
             />
             <button type="button" tabIndex={-1} onClick={() => setShowPw(!showPw)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6b6b88] hover:text-[#e8e8f0] transition-colors">
-              {showPw ? <EyeOff size={14} /> : <Eye size={14} />}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors cursor-pointer">
+              {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
             </button>
           </div>
         </label>
 
         <label className="block">
-          <span className="text-xs font-medium text-[#6b6b88] uppercase tracking-wider">Confirm Password</span>
+          <span className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">Confirm Password</span>
           <input
             type="password"
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
             placeholder="Re-enter password"
-            className="mt-1.5 w-full bg-[#0a0a0f] border border-[#2a2a3d] focus:border-[#7c6af7] focus:shadow-[0_0_0_3px_#7c6af720] rounded-xl px-3 py-2.5 text-sm text-[#e8e8f0] placeholder-[#44445a] outline-none transition-all"
+            className="mt-1.5 w-full bg-[var(--input-bg)] border border-[var(--border-color)] focus:border-[var(--accent-primary)] focus:ring-2 focus:ring-[var(--border-glow)] rounded-xl px-3.5 py-2.5 text-sm text-[var(--text-main)] placeholder-[var(--text-subtle)] outline-none transition-all font-mono"
           />
         </label>
 
-        {error && <p className="text-xs text-[#f87171] flex items-center gap-1.5">{error}</p>}
+        {error && <p className="text-xs font-bold text-[var(--status-danger-text)] flex items-center gap-1.5">{error}</p>}
 
-        <div className="flex gap-2 pt-1">
+        <div className="flex gap-2.5 pt-2">
           <Button type="submit" icon={<KeyRound size={14} />} loading={loading} className="flex-1">
             Set Password
           </Button>

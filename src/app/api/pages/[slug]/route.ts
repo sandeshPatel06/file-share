@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-import { adminDb } from "@/lib/firebase-admin";
+import db from "@/lib/db";
 import { rateLimit } from "@/lib/rateLimiter";
 
 interface RouteContext {
   params: Promise<{ slug: string }>;
+}
+
+interface PageRow {
+  slug: string;
+  content: string | null;
+  isProtected: number;
 }
 
 // GET /api/pages/[slug] — fetch page metadata (strips passwordHash)
@@ -12,16 +18,15 @@ export async function GET(req: NextRequest, ctx: RouteContext) {
   if (limited) return limited;
 
   const { slug } = await ctx.params;
-  const doc = await adminDb.collection("pages").doc(slug).get();
+  const page = db.prepare("SELECT slug, content, isProtected FROM pages WHERE slug = ?").get(slug) as PageRow | undefined;
 
-  if (!doc.exists) {
+  if (!page) {
     return NextResponse.json({ error: "Page not found" }, { status: 404 });
   }
 
-  const data = doc.data()!;
-
-  // NEVER expose passwordHash to the client
-  const { passwordHash: _omit, ...safeData } = data;
-
-  return NextResponse.json(safeData);
+  return NextResponse.json({
+    slug: page.slug,
+    content: page.content ?? "",
+    isProtected: Boolean(page.isProtected),
+  });
 }

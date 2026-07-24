@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { adminDb } from "@/lib/firebase-admin";
+import db from "@/lib/db";
 import { createPageSchema, slugSchema } from "@/lib/validators";
 import { rateLimit } from "@/lib/rateLimiter";
-import { FieldValue } from "firebase-admin/firestore";
 
 // POST /api/pages/create
 export async function POST(req: NextRequest) {
@@ -21,29 +20,27 @@ export async function POST(req: NextRequest) {
 
   const { slug, password } = parsed.data;
 
-  // Check slug uniqueness
-  const existing = await adminDb.collection("pages").doc(slug).get();
-  if (existing.exists) {
-    return NextResponse.json({ error: "This slug is already taken" }, { status: 409 });
+  try {
+    const existing = db.prepare("SELECT slug FROM pages WHERE slug = ?").get(slug);
+    if (existing) {
+      return NextResponse.json({ error: "This slug is already taken" }, { status: 409 });
+    }
+
+    const passwordHash = password ? await bcrypt.hash(password, 12) : null;
+
+    db.prepare(`
+      INSERT INTO pages (slug, content, isProtected, passwordHash)
+      VALUES (?, ?, ?, ?)
+    `).run(slug, "", password ? 1 : 0, passwordHash);
+
+    return NextResponse.json({ slug }, { status: 201 });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Failed to create space";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
-
-  const passwordHash = password
-    ? await bcrypt.hash(password, 12)
-    : null;
-
-  await adminDb.collection("pages").doc(slug).set({
-    slug,
-    content:     "",
-    isProtected: !!password,
-    passwordHash,
-    createdAt:   FieldValue.serverTimestamp(),
-    updatedAt:   FieldValue.serverTimestamp(),
-  });
-
-  return NextResponse.json({ slug }, { status: 201 });
 }
 
-// GET /api/pages/create?slug=xyz  — check availability
+// GET /api/pages/create?slug=xyz — check availability
 export async function GET(req: NextRequest) {
   const limited = await rateLimit(req, "general");
   if (limited) return limited;
@@ -54,6 +51,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ available: false, error: parsed.error.issues[0]?.message ?? "Validation error" });
   }
 
-  const doc = await adminDb.collection("pages").doc(slug).get();
-  return NextResponse.json({ available: !doc.exists });
+  try {
+    const existing = db.prepare("SELECT slug FROM pages WHERE slug = ?").get(slug);
+    return NextResponse.json({ available: !existing });
+  } catch {
+    return NextResponse.json({ available: true });
+  }
 }

@@ -1,25 +1,22 @@
 "use client";
-import { useState, useRef } from "react";
-import { Lock, Eye, EyeOff, Unlock, AlertCircle } from "lucide-react";
+import { useState } from "react";
+import { ShieldAlert, KeyRound, ArrowRight, Eye, EyeOff, Lock } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 interface PasswordGateProps {
-  slug: string;
-  onUnlock: (token: string) => void;
+  slug:       string;
+  onUnlocked: (token: string) => void;
 }
 
-export function PasswordGate({ slug, onUnlock }: PasswordGateProps) {
+export function PasswordGate({ slug, onUnlocked }: PasswordGateProps) {
   const [password, setPassword] = useState("");
-  const [showPw,   setShowPw]   = useState(false);
-  const [error,    setError]    = useState("");
-  const [loading,  setLoading]  = useState(false);
-  const [shake,    setShake]    = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [showPw, setShowPw]     = useState(false);
+  const [error, setError]       = useState("");
+  const [loading, setLoading]   = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!password.trim()) return;
-
+    if (!password) return;
     setLoading(true);
     setError("");
 
@@ -29,107 +26,81 @@ export function PasswordGate({ slug, onUnlock }: PasswordGateProps) {
         headers: { "Content-Type": "application/json" },
         body:    JSON.stringify({ password }),
       });
-
       const data = await res.json();
 
       if (!res.ok) {
         setError(data.error ?? "Invalid password");
-        setShake(true);
-        setPassword("");
-        setTimeout(() => setShake(false), 500);
-        inputRef.current?.focus();
         return;
       }
 
-      onUnlock(data.token);
+      onUnlocked(data.token);
     } catch {
-      setError("Connection error. Please try again.");
+      setError("Connection failed. Try again.");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0a0a0f]">
-      {/* Background gradient orbs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-[#7c6af7]/5 blur-[120px]" />
-        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full bg-[#4fa3f7]/5 blur-[100px]" />
-      </div>
+    <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col items-center justify-center p-4 relative overflow-hidden transition-colors duration-200">
+      {/* Glow Orbs */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[var(--border-glow)] rounded-full blur-[150px] pointer-events-none" />
 
-      <div
-        className={`
-          relative w-full max-w-sm glass rounded-2xl p-8
-          border border-[#2a2a3d] shadow-[0_32px_80px_#00000090]
-          animate-slide-up ${shake ? "animate-shake" : ""}
-        `}
-      >
-        {/* Lock Icon */}
-        <div className="flex justify-center mb-6">
-          <div className="w-14 h-14 rounded-2xl bg-[#7c6af7]/10 border border-[#7c6af7]/20 flex items-center justify-center">
-            <Lock size={24} className="text-[#7c6af7]" />
-          </div>
-        </div>
-
-        <h1 className="text-xl font-semibold text-center text-[#e8e8f0] mb-1">
-          Protected Space
-        </h1>
-        <p className="text-sm text-center text-[#6b6b88] mb-6">
-          Enter the password to access this page
-        </p>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Password Input */}
-          <div className="relative">
-            <input
-              ref={inputRef}
-              type={showPw ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter password..."
-              autoFocus
-              className={`
-                w-full bg-[#0a0a0f] border rounded-xl px-4 py-3 pr-11
-                text-[#e8e8f0] placeholder-[#44445a] text-sm
-                outline-none transition-all duration-200
-                ${error
-                  ? "border-[#f87171] focus:border-[#f87171] focus:shadow-[0_0_0_3px_#f8717120]"
-                  : "border-[#2a2a3d] focus:border-[#7c6af7] focus:shadow-[0_0_0_3px_#7c6af720]"
-                }
-              `}
-            />
-            <button
-              type="button"
-              tabIndex={-1}
-              onClick={() => setShowPw(!showPw)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6b6b88] hover:text-[#e8e8f0] transition-colors"
-            >
-              {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
-            </button>
+      <div className="w-full max-w-md animate-fade-in relative z-10">
+        <div className="bg-[var(--bg-surface)] rounded-3xl p-8 border border-[var(--border-color)] shadow-2xl text-center">
+          {/* Cyber Lock Icon */}
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-500 to-cyan-500 border border-cyan-400/30 flex items-center justify-center mx-auto mb-6 shadow-lg">
+            <Lock size={28} className="text-white" />
           </div>
 
-          {/* Error */}
-          {error && (
-            <div className="flex items-center gap-2 text-[#f87171] text-xs animate-fade-in">
-              <AlertCircle size={13} />
-              <span>{error}</span>
+          <h2 className="text-2xl font-extrabold tracking-tight text-[var(--text-main)]">Protected Space</h2>
+          <p className="text-xs font-mono text-[var(--accent-indigo)] font-bold mt-1.5 mb-6">/s/{slug}</p>
+
+          <p className="text-sm text-[var(--text-muted)] mb-6 leading-relaxed font-medium">
+            This space is encrypted with a security passphrase. Enter password to view notes and files.
+          </p>
+
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <div className="relative">
+              <input
+                autoFocus
+                type={showPw ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter password..."
+                className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] focus:border-[var(--accent-primary)] focus:ring-2 focus:ring-[var(--border-glow)] rounded-2xl px-4 py-3.5 pr-12 text-sm text-[var(--text-main)] placeholder-[var(--text-subtle)] outline-none font-mono"
+              />
+              <button
+                type="button"
+                tabIndex={-1}
+                onClick={() => setShowPw(!showPw)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer"
+              >
+                {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
-          )}
 
-          <Button
-            type="submit"
-            loading={loading}
-            icon={<Unlock size={15} />}
-            className="w-full"
-            size="lg"
-          >
-            Unlock
-          </Button>
-        </form>
+            {error && (
+              <div className="p-3 rounded-xl bg-[var(--status-danger-bg)] border border-[var(--status-danger-border)] text-xs text-[var(--status-danger-text)] font-bold flex items-center gap-2">
+                <ShieldAlert size={15} className="shrink-0 text-[var(--status-danger-text)]" />
+                <span>{error}</span>
+              </div>
+            )}
 
-        <p className="text-xs text-center text-[#44445a] mt-4">
-          /{slug}
-        </p>
+            <Button
+              type="submit"
+              size="lg"
+              variant="glow"
+              loading={loading}
+              icon={<KeyRound size={18} />}
+              iconRight={<ArrowRight size={18} />}
+              disabled={!password}
+              className="w-full py-3.5 text-sm font-bold tracking-wide"
+            >
+              Unlock Workspace
+            </Button>
+          </form>
+        </div>
       </div>
     </div>
   );

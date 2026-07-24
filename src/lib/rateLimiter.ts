@@ -7,9 +7,9 @@ const verifyLimiter = new RateLimiterMemory({
   duration: 60,
 });
 
-// General API limiter — 60 req per 60s per IP
+// General API limiter — 300 req per 60s per IP (accommodates polling & active tabs)
 const generalLimiter = new RateLimiterMemory({
-  points:   60,
+  points:   300,
   duration: 60,
 });
 

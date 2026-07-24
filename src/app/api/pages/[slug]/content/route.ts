@@ -1,22 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
-import { adminDb } from "@/lib/firebase-admin";
+import db from "@/lib/db";
 import { updateContentSchema } from "@/lib/validators";
 import { verifyPageToken } from "@/lib/jwt";
 import { rateLimit } from "@/lib/rateLimiter";
-import { FieldValue } from "firebase-admin/firestore";
+import { pageEvents } from "@/lib/events";
 
 interface RouteContext {
   params: Promise<{ slug: string }>;
 }
 
+interface PageRow {
+  isProtected: number;
+}
+
 async function isAuthorized(req: NextRequest, slug: string): Promise<boolean> {
-  const doc = await adminDb.collection("pages").doc(slug).get();
-  if (!doc.exists) return false;
+  const page = db.prepare("SELECT isProtected FROM pages WHERE slug = ?").get(slug) as PageRow | undefined;
+  if (!page) return false;
+  if (!page.isProtected) return true;
 
-  const data = doc.data()!;
-  if (!data.isProtected) return true;
-
-  // Check Authorization header
   const authHeader = req.headers.get("authorization") ?? "";
   const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
   if (!token) return false;
@@ -25,7 +26,7 @@ async function isAuthorized(req: NextRequest, slug: string): Promise<boolean> {
   return payload?.slug === slug;
 }
 
-// PATCH /api/pages/[slug]/content — update editor text
+// PATCH /api/pages/[slug]/content — update editor text & broadcast live event
 export async function PATCH(req: NextRequest, ctx: RouteContext) {
   const limited = await rateLimit(req, "general");
   if (limited) return limited;
@@ -45,9 +46,16 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Validation error" }, { status: 422 });
   }
 
-  await adminDb.collection("pages").doc(slug).update({
-    content:   parsed.data.content,
-    updatedAt: FieldValue.serverTimestamp(),
+  db.prepare(`
+    UPDATE pages
+    SET content = ?, updatedAt = CURRENT_TIMESTAMP
+    WHERE slug = ?
+  `).run(parsed.data.content, slug);
+
+  // Broadcast real-time content update to all connected clients
+  pageEvents.emit(slug, {
+    type: "content_updated",
+    content: parsed.data.content,
   });
 
   return NextResponse.json({ ok: true });
