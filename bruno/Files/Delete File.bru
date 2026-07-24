@@ -1,0 +1,11 @@
+meta {
+  name: Delete File from Vault
+  type: http
+  seq: 3
+}
+
+delete {
+  url: {{baseUrl}}/api/pages/{{slug}}/files/FILE_ID_HERE
+  body: none
+  auth: none
+}

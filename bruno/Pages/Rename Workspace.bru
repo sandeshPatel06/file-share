@@ -1,0 +1,21 @@
+meta {
+  name: Rename Workspace Slug
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/api/pages/{{slug}}/rename
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "newSlug": "welcome-renamed"
+  }
+}
