@@ -1,0 +1,11 @@
+meta {
+  name: Check or Create Slug Availability
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/api/pages/create?slug={{slug}}
+  body: none
+  auth: none
+}

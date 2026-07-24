@@ -1,0 +1,15 @@
+meta {
+  name: SSE Realtime Event Stream
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/api/pages/{{slug}}/events
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: text/event-stream
+}

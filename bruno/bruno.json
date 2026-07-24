@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "FileShare API",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".next"
+  ]
+}
