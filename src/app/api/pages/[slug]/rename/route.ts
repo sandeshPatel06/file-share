@@ -50,7 +50,8 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
     return NextResponse.json({ error: "Slug already taken" }, { status: 409 });
   }
 
-  const transaction = db.transaction(() => {
+  try {
+    db.pragma("foreign_keys = OFF;");
     db.prepare(`
       UPDATE pages
       SET slug = ?, updatedAt = CURRENT_TIMESTAMP
@@ -62,9 +63,12 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
       SET slug = ?
       WHERE slug = ?
     `).run(newSlug, slug);
-  });
-
-  transaction();
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Failed to rename slug";
+    return NextResponse.json({ error: message }, { status: 500 });
+  } finally {
+    db.pragma("foreign_keys = ON;");
+  }
 
   return NextResponse.json({ newSlug });
 }
