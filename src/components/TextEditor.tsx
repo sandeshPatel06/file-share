@@ -188,21 +188,69 @@ export function TextEditor({ slug, token }: TextEditorProps) {
     }
   };
 
-  // AI Copilot Auto Format Assistant
+  // AI Copilot Auto Format Assistant — Full Markdown Beautifier Engine
   const handleAICopilotFormat = () => {
     if (!displayContent.trim()) {
       showToast("Type notes first for AI Copilot to format", "info");
       return;
     }
-    // Clean trailing whitespace, standardize line breaks and list bullets
-    const cleaned = displayContent
-      .split("\n")
-      .map(line => line.trimEnd())
-      .join("\n");
-    
-    setTextVal(cleaned);
-    scheduleSave(cleaned);
-    showToast("AI Copilot auto-formatted notes", "success");
+
+    const lines = displayContent.split(/\r?\n/);
+    let inCodeBlock = false;
+    const formattedLines: string[] = [];
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+
+      // Detect code fences (```)
+      if (line.trim().startsWith("```")) {
+        inCodeBlock = !inCodeBlock;
+        formattedLines.push(line.trimEnd());
+        continue;
+      }
+
+      // Inside code blocks, preserve whitespace formatting & indentation
+      if (inCodeBlock) {
+        formattedLines.push(line.trimEnd());
+        continue;
+      }
+
+      // Outside code blocks: apply full Markdown formatting
+      let trimmed = line.trimEnd();
+
+      // 1. Headings: ensure space after # (e.g. #Heading -> # Heading)
+      trimmed = trimmed.replace(/^(#{1,6})([^#\s])/g, "$1 $2");
+
+      // 2. Unordered lists: convert * or + to - and ensure space after hyphen
+      trimmed = trimmed.replace(/^(\s*)[*+]\s+/g, "$1- ");
+      trimmed = trimmed.replace(/^(\s*)-\s*([^\s\-[\]])/g, "$1- $2");
+
+      // 3. Task lists: ensure space in - [ ] or - [x]
+      trimmed = trimmed.replace(/^(\s*)-\s*\[([ xX])\]\s*([^\s])/g, "$1- [$2] $3");
+
+      // 4. Ordered lists: ensure space after period (e.g. 1.item -> 1. item)
+      trimmed = trimmed.replace(/^(\s*\d+\.)([^\s])/g, "$1 $2");
+
+      // 5. Blockquotes: ensure space after > (e.g. >quote -> > quote)
+      trimmed = trimmed.replace(/^(\s*>)([^\s>])/g, "$1 $2");
+
+      // 6. Fix punctuation space after commas (excluding numbers/URLs)
+      trimmed = trimmed.replace(/([a-zA-Z0-9_)]),(?=[a-zA-Z0-9_(])/g, "$1, ");
+
+      formattedLines.push(trimmed);
+    }
+
+    // Combine lines and collapse 3+ consecutive blank lines down to 2
+    const formattedText = formattedLines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+
+    if (formattedText === displayContent) {
+      showToast("Notes are already formatted cleanly!", "info");
+      return;
+    }
+
+    setTextVal(formattedText);
+    scheduleSave(formattedText);
+    showToast("AI Copilot formatted your notes cleanly!", "success");
   };
 
   const wordCount = displayContent.trim() ? displayContent.trim().split(/\s+/).length : 0;
