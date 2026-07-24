@@ -14,11 +14,39 @@ interface PageRow {
   content: string | null;
 }
 
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
+  const canonicalUrl = `${appUrl}/s/${slug}`;
+
   return {
-    title:       `${slug} — FileShare`,
-    description: `Shared space at /s/${slug}. Real-time collaborative text and file sharing.`,
+    title: `${slug} — Live Workspace`,
+    description: `Collaborate live in real-time at /s/${slug}. Instant markdown editing and file sharing vault.`,
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    openGraph: {
+      title: `${slug} — FileShare Live Space`,
+      description: `Real-time collaborative text and file sharing workspace at /s/${slug}.`,
+      url: canonicalUrl,
+      siteName: "FileShare",
+      type: "website",
+      images: [
+        {
+          url: `${appUrl}/logo.png`,
+          width: 512,
+          height: 512,
+          alt: `FileShare Workspace - ${slug}`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${slug} — FileShare Live Space`,
+      description: `Collaborate live in real-time at /s/${slug}.`,
+      images: [`${appUrl}/logo.png`],
+    },
   };
 }
 

@@ -1,0 +1,21 @@
+{
+  "name": "FileShare — Real-Time Notes & File Sharing Vault",
+  "short_name": "FileShare",
+  "description": "Share notes & files instantly in real-time. No sign-up required.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#090d16",
+  "theme_color": "#090d16",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
