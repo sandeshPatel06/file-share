@@ -14,8 +14,11 @@ interface PageRow {
 }
 
 async function isAuthorized(req: NextRequest, slug: string): Promise<boolean> {
-  const page = db.prepare("SELECT isProtected FROM pages WHERE slug = ?").get(slug) as PageRow | undefined;
-  if (!page) return false;
+  let page = db.prepare("SELECT isProtected FROM pages WHERE slug = ?").get(slug) as PageRow | undefined;
+  if (!page) {
+    db.prepare("INSERT OR IGNORE INTO pages (slug, content, isProtected) VALUES (?, '', 0)").run(slug);
+    page = { isProtected: 0 };
+  }
   if (!page.isProtected) return true;
 
   const authHeader = req.headers.get("authorization") ?? "";

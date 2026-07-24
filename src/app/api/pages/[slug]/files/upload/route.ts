@@ -31,9 +31,10 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
 
   const { slug } = await ctx.params;
 
-  const page = db.prepare("SELECT isProtected FROM pages WHERE slug = ?").get(slug) as PageRow | undefined;
+  let page = db.prepare("SELECT isProtected FROM pages WHERE slug = ?").get(slug) as PageRow | undefined;
   if (!page) {
-    return NextResponse.json({ error: "Page not found" }, { status: 404 });
+    db.prepare("INSERT OR IGNORE INTO pages (slug, content, isProtected) VALUES (?, '', 0)").run(slug);
+    page = { isProtected: 0 };
   }
 
   if (!(await isAuthorized(req, slug, Boolean(page.isProtected)))) {

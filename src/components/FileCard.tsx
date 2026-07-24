@@ -1,6 +1,6 @@
 "use client";
 import { FileItem } from "@/hooks/useFileList";
-import { Download, Trash2, File, FileText, Image, FileArchive, FileAudio, FileVideo, Code2, Eye, Copy, Check } from "lucide-react";
+import { Download, Trash2, File, FileText, Image as ImageIcon, FileArchive, FileAudio, FileVideo, Code2, Eye, Copy, Check } from "lucide-react";
 import { showToast } from "@/components/ui/Toast";
 import { useState } from "react";
 import { FilePreviewModal } from "@/components/FilePreviewModal";
@@ -14,7 +14,7 @@ interface FileCardProps {
 
 function FileIcon({ mimetype }: { mimetype: string }) {
   const cls = "shrink-0";
-  if (mimetype.startsWith("image/"))  return <Image     size={18} className={`${cls} text-[var(--accent-sky)]`} />;
+  if (mimetype.startsWith("image/"))  return <ImageIcon size={18} className={`${cls} text-[var(--accent-sky)]`} />;
   if (mimetype.startsWith("audio/"))  return <FileAudio size={18} className={`${cls} text-purple-500 dark:text-purple-400`} />;
   if (mimetype.startsWith("video/"))  return <FileVideo size={18} className={`${cls} text-[var(--status-danger-text)]`} />;
   if (mimetype === "application/pdf") return <FileText  size={18} className={`${cls} text-amber-600 dark:text-amber-400`} />;
