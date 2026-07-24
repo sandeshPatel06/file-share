@@ -1,112 +1,74 @@
-# FileShare — Real-time File & Note Sharing
+# 🚀 FileShare — Real-Time Notes & File Sharing Vault
 
-FileShare is a high-performance, real-time note and file sharing web application built with Next.js (App Router), Tailwind CSS, and Firebase (Firestore + Cloud Storage).
-
----
-
-## 🛠️ Step-by-Step Guide: Setting Up `.env.local`
-
-To run FileShare locally or deploy to production, create a file named `.env.local` in the root of the project by copying `.env.local.example`:
-
-```bash
-cp .env.local.example .env.local
-```
-
-Fill in the required variables from your Firebase Console by following the instructions below:
+FileShare is a lightweight, high-performance, real-time note & file sharing application built with **Next.js 16 (App Router)**, **TypeScript**, **Tailwind CSS**, and **SQLite (`better-sqlite3`)**.
 
 ---
 
-### Step 1: Get Client-Side Credentials (Web SDK)
+## ✨ Features
 
-1. Go to the [Firebase Console](https://console.firebase.google.com/) and select your project (or click **Add Project** to create a new one).
-2. Click the ⚙️ **Gear Icon** in the top-left sidebar and select **Project Settings**.
-3. Under the **General** tab, scroll down to **Your apps**.
-4. If you haven't created a web app yet, click the **Web** icon (`</>`), name your app (e.g. `FileShare Web`), and click **Register App**.
-5. Locate the `firebaseConfig` object and copy the values into your `.env.local`:
+- **⚡ Real-Time Live Sync**: Synchronizes Markdown notes across multiple browsers instantly via Server-Sent Events (SSE).
+- **📂 File Sharing Vault**: Drag-and-drop file uploads (up to 50 MB) stored securely with MIME-type detection.
+- **✨ AI Copilot Auto-Formatter**: Automatic Markdown beautification engine that fixes headings, lists, task checkboxes, punctuation, and blockquotes.
+- **🔒 Password Protection**: Optional space locking with `bcrypt` password hashing and JWT authorization tokens.
+- **🌐 Complete SEO & PWA**: Dynamic OpenGraph images, Twitter Cards, JSON-LD Schema, `robots.txt`, `sitemap.xml`, and web manifest.
+- **🗄️ Zero External DB Setup**: Auto-initializes local SQLite database (`data/fileshare.db`) with zero external database dependencies.
+
+---
+
+## 🛠️ Getting Started
+
+### 1. Environment Setup
+
+Create `.env.local` in the root directory:
 
 ```env
-NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSy...
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=123456789012
-NEXT_PUBLIC_FIREBASE_APP_ID=1:123456789012:web:abcdef123456
-```
-
----
-
-### Step 2: Get Server-Side Admin Credentials (Admin SDK)
-
-1. In **Project Settings**, switch to the **Service Accounts** tab.
-2. Ensure **Node.js** is selected, then click **Generate new private key**.
-3. Confirm by clicking **Generate Key** — a `.json` key file will download to your computer.
-4. Open the downloaded `.json` file in any text editor and map the fields to your `.env.local`:
-
-- `project_id` → `FIREBASE_ADMIN_PROJECT_ID`
-- `client_email` → `FIREBASE_ADMIN_CLIENT_EMAIL`
-- `private_key` → `FIREBASE_ADMIN_PRIVATE_KEY`
-
-```env
-FIREBASE_ADMIN_PROJECT_ID=your-project-id
-FIREBASE_ADMIN_CLIENT_EMAIL=firebase-adminsdk-xxxxx@your-project-id.iam.gserviceaccount.com
-FIREBASE_ADMIN_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC7...\n-----END PRIVATE KEY-----\n"
-```
-
-> **Note on Private Key Formatting**: Wrap the `FIREBASE_ADMIN_PRIVATE_KEY` value in double quotes `""` and ensure literal `\n` characters are preserved.
-
----
-
-### Step 3: Configure Security & App URL
-
-```env
-# Generate a random 32+ character secret for JWT token verification:
-# Command: openssl rand -base64 32
+# JWT Secret Key for password-protected workspace tokens
+# Command to generate: openssl rand -base64 32
 JWT_SECRET=your-super-secret-jwt-key-here-change-in-production
 
-# App Base URL (used for generating share links)
+# App Base URL (used for sharing links and OpenGraph metadata)
 NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+# Theme Preference (dark or light)
+NEXT_PUBLIC_DEFAULT_THEME=dark
 ```
 
----
+### 2. Development Setup
 
-### Step 4: Enable Firebase Services
+```bash
+# Install dependencies
+npm install
 
-1. **Firestore Database**:
-   - In Firebase Console left sidebar, click **Build > Firestore Database**.
-   - Click **Create Database**, select location, and start in **Test mode** (or Production mode).
-2. **Cloud Storage**:
-   - In left sidebar, click **Build > Storage**.
-   - Click **Get Started**, choose default location, and initialize.
+# Run development server
+npm run dev
 
----
+# Run TypeScript static check
+npx tsc --noEmit
 
-## 🚀 Running the Project
+# Run ESLint code quality check
+npx eslint .
+```
 
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-2. Start development server:
-   ```bash
-   npm run dev
-   ```
-
-3. Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-4. Build for production:
-   ```bash
-   npm run build
-   npm start
-   ```
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
-## 🎨 Features & Tech Stack
+## 🚀 Deployment Guide (100% Free Options)
 
-- **Framework**: Next.js 16 (App Router + Turbopack)
-- **Styling**: Vanilla CSS + Design Tokens + Tailwind CSS
-- **Real-time Sync**: Firestore `onSnapshot` real-time listeners
-- **File Uploads**: Direct-to-Storage Firebase Signed URLs (up to 50 MB)
-- **Security**: Optional password protection with bcrypt & JWT authentication tokens
-- **Responsiveness**: Fully responsive desktop split-view and mobile tabbed view
+### Render.com (Free PaaS Web Service)
+1. Push your repository to GitHub (`sandeshPatel06/file-share`).
+2. Create a **New Web Service** on Render connected to your repository.
+3. **Build Command**: `npm install && npm run build`
+4. **Start Command**: `npm start`
+5. **Environment Variable**: `JWT_SECRET`
+6. Attach a **Persistent Disk Volume** mounted at `/app/data` and `/app/uploads`.
+
+---
+
+## 🎨 Tech Stack & Architecture
+
+- **Frontend**: Next.js 16 (Turbopack), React 19, Lucide Icons, Tailwind CSS
+- **Backend**: Next.js App Router API Routes
+- **Database**: SQLite (`better-sqlite3`) with automatic `ON UPDATE CASCADE` referential integrity
+- **Streaming Engine**: Node.js `EventEmitter` + Server-Sent Events (SSE)
+- **CI/CD**: GitHub Actions workflow (`.github/workflows/ci.yml`)
