@@ -1,0 +1,20 @@
+{
+  "/_global-error/page": "/_global-error",
+  "/_not-found/page": "/_not-found",
+  "/api/pages/[slug]/content/route": "/api/pages/[slug]/content",
+  "/api/pages/[slug]/events/route": "/api/pages/[slug]/events",
+  "/api/pages/[slug]/files/[id]/route": "/api/pages/[slug]/files/[id]",
+  "/api/pages/[slug]/files/route": "/api/pages/[slug]/files",
+  "/api/pages/[slug]/files/upload/route": "/api/pages/[slug]/files/upload",
+  "/api/pages/[slug]/password/route": "/api/pages/[slug]/password",
+  "/api/pages/[slug]/rename/route": "/api/pages/[slug]/rename",
+  "/api/pages/[slug]/route": "/api/pages/[slug]",
+  "/api/pages/[slug]/verify/route": "/api/pages/[slug]/verify",
+  "/api/pages/create/route": "/api/pages/create",
+  "/api/uploads/[filename]/route": "/api/uploads/[filename]",
+  "/favicon.ico/route": "/favicon.ico",
+  "/page": "/",
+  "/robots.txt/route": "/robots.txt",
+  "/s/[slug]/page": "/s/[slug]",
+  "/sitemap.xml/route": "/sitemap.xml"
+}
