@@ -1,0 +1,20 @@
+{
+  "/_global-error/page": "app/_global-error/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/pages/[slug]/content/route": "app/api/pages/[slug]/content/route.js",
+  "/api/pages/[slug]/events/route": "app/api/pages/[slug]/events/route.js",
+  "/api/pages/[slug]/files/[id]/route": "app/api/pages/[slug]/files/[id]/route.js",
+  "/api/pages/[slug]/files/route": "app/api/pages/[slug]/files/route.js",
+  "/api/pages/[slug]/files/upload/route": "app/api/pages/[slug]/files/upload/route.js",
+  "/api/pages/[slug]/password/route": "app/api/pages/[slug]/password/route.js",
+  "/api/pages/[slug]/rename/route": "app/api/pages/[slug]/rename/route.js",
+  "/api/pages/[slug]/route": "app/api/pages/[slug]/route.js",
+  "/api/pages/[slug]/verify/route": "app/api/pages/[slug]/verify/route.js",
+  "/api/pages/create/route": "app/api/pages/create/route.js",
+  "/api/uploads/[filename]/route": "app/api/uploads/[filename]/route.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/page": "app/page.js",
+  "/robots.txt/route": "app/robots.txt/route.js",
+  "/s/[slug]/page": "app/s/[slug]/page.js",
+  "/sitemap.xml/route": "app/sitemap.xml/route.js"
+}
