@@ -2,19 +2,42 @@ import Database from "better-sqlite3";
 import path from "path";
 import fs from "fs";
 
-const dbDir = path.join(process.cwd(), "data");
+// In serverless environments (e.g. Netlify, Vercel, AWS Lambda), the workspace directory is read-only.
+const isServerless = Boolean(process.env.NETLIFY || process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+const baseDir = isServerless ? "/tmp" : process.cwd();
+
+const dbDir = path.join(baseDir, "data");
 if (!fs.existsSync(dbDir)) {
-  fs.mkdirSync(dbDir, { recursive: true });
+  try {
+    fs.mkdirSync(dbDir, { recursive: true });
+  } catch (err) {
+    console.error("Failed to create dbDir at", dbDir, err);
+  }
 }
 
-const uploadsDir = path.join(process.cwd(), "uploads");
+const uploadsDir = path.join(baseDir, "uploads");
 if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
+  try {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  } catch (err) {
+    console.error("Failed to create uploadsDir at", uploadsDir, err);
+  }
 }
 
 const dbPath = path.join(dbDir, "fileshare.db");
-const db = new Database(dbPath);
-db.pragma("journal_mode = WAL");
+let db: InstanceType<typeof Database>;
+
+try {
+  db = new Database(dbPath);
+  try {
+    db.pragma("journal_mode = WAL");
+  } catch {
+    // WAL pragma may fail on ephemeral filesystems
+  }
+} catch (err) {
+  console.warn("Falling back to in-memory SQLite database:", err);
+  db = new Database(":memory:");
+}
 
 // Initialize tables
 db.exec(`
@@ -41,3 +64,4 @@ db.exec(`
 `);
 
 export default db;
+
