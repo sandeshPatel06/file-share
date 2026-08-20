@@ -33,9 +33,9 @@ export function Button({
 
   const variants = {
     primary:
-      "bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white shadow-md border border-indigo-400/30",
+      "bg-emerald-600 hover:bg-emerald-700 text-white shadow-md border border-emerald-500/30",
     glow:
-      "bg-gradient-to-r from-indigo-500 to-cyan-500 text-white shadow-lg border border-cyan-400/40 hover:opacity-90",
+      "bg-emerald-600 hover:bg-emerald-700 text-white shadow-md border border-emerald-500/30",
     secondary:
       "bg-[var(--badge-bg)] text-[var(--text-main)] hover:bg-[var(--border-color)] border border-[var(--border-color)] shadow-sm",
     ghost:

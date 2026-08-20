@@ -125,7 +125,7 @@ export function FilePanel({ slug, token }: FilePanelProps) {
             <div className="flex-1 min-w-0">
               <p className="text-xs sm:text-sm font-medium text-[var(--text-main)] truncate">{name}</p>
               <div className="h-1.5 bg-black/10 dark:bg-black/30 rounded-full mt-2 overflow-hidden">
-                <div className="h-full bg-gradient-to-r from-indigo-500 to-cyan-500 rounded-full animate-pulse w-3/4" />
+                <div className="h-full bg-[var(--accent-primary)] rounded-full animate-pulse w-3/4" />
               </div>
             </div>
           </div>

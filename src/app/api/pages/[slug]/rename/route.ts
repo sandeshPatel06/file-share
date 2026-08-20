@@ -44,10 +44,10 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
     if (payload?.slug !== slug) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Check new slug is available
+  // If target slug already exists, return redirect response (do not update database)
   const newPage = await db.prepare("SELECT slug FROM pages WHERE slug = ?").get(newSlug);
   if (newPage) {
-    return NextResponse.json({ error: "Slug already taken" }, { status: 409 });
+    return NextResponse.json({ newSlug, redirected: true });
   }
 
   try {

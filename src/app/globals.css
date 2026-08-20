@@ -6,39 +6,39 @@
   --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  --bg-main: #060713;
-  --bg-surface: #0e1126;
-  --bg-card: rgba(18, 22, 48, 0.75);
-  --bg-card-hover: rgba(28, 34, 72, 0.85);
+  /* GitHub / Linear Dark Workspace Palette */
+  --bg-main: #0d1117;        /* Canvas Base (GitHub Dark) */
+  --header-bg: #161b22;      /* Top Nav & Header Overlay */
+  --bg-surface: #161b22;     /* Surface Panel */
+  --bg-card: #161b22;        /* Elevated Card */
+  --bg-card-hover: #21262d;  /* Interactive Hover */
+  --input-bg: #0d1117;       /* Sunken Code / Editor Canvas */
 
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --text-subtle: #64748b;
+  --text-main: #e6edf3;      /* GitHub Dark primary text */
+  --text-muted: #8d96a0;     /* GitHub Dark secondary text */
+  --text-subtle: #6e7681;    /* GitHub Dark metadata */
 
-  --accent-primary: #6366f1;
-  --accent-primary-hover: #4f46e5;
-  --accent-indigo: #818cf8;
-  --accent-cyan: #06b6d4;
-  --accent-sky: #38bdf8;
+  --accent-primary: #238636; /* GitHub Pro Green */
+  --accent-primary-hover: #2ea043;
+  --accent-indigo: #3fb950;  /* Soft Emerald */
+  --accent-cyan: #26a641;
+  --accent-sky: #58a6ff;
 
-  --border-color: rgba(255, 255, 255, 0.12);
-  --border-glow: rgba(99, 102, 241, 0.4);
+  --border-color: #30363d;   /* GitHub Dark border */
+  --border-glow: #238636;
+  --modal-bg: #161b22;
 
-  --input-bg: rgba(9, 12, 28, 0.85);
-  --modal-bg: #0d1026;
-  --header-bg: rgba(10, 13, 31, 0.85);
+  --badge-bg: rgba(35, 134, 54, 0.15);
+  --badge-border: rgba(35, 134, 54, 0.4);
+  --badge-text: #3fb950;
 
-  --badge-bg: rgba(99, 102, 241, 0.15);
-  --badge-border: rgba(99, 102, 241, 0.3);
-  --badge-text: #818cf8;
+  --status-success-bg: rgba(35, 134, 54, 0.15);
+  --status-success-border: rgba(35, 134, 54, 0.4);
+  --status-success-text: #3fb950;
 
-  --status-success-bg: rgba(16, 185, 129, 0.15);
-  --status-success-border: rgba(16, 185, 129, 0.3);
-  --status-success-text: #34d399;
-
-  --status-danger-bg: rgba(244, 63, 94, 0.15);
-  --status-danger-border: rgba(244, 63, 94, 0.3);
-  --status-danger-text: #f87171;
+  --status-danger-bg: rgba(248, 81, 73, 0.15);
+  --status-danger-border: rgba(248, 81, 73, 0.4);
+  --status-danger-text: #f85149;
 }
 
 .light,
@@ -46,39 +46,39 @@
   --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  --bg-main: #f8fafc;
-  --bg-surface: #ffffff;
-  --bg-card: #ffffff;
-  --bg-card-hover: #f1f5f9;
+  /* GitHub / Linear Light Workspace Palette */
+  --bg-main: #f6f8fa;        /* Canvas Base (GitHub Light) */
+  --header-bg: #ffffff;      /* Clean White Header */
+  --bg-surface: #ffffff;     /* White Surface */
+  --bg-card: #ffffff;        /* White Card */
+  --bg-card-hover: #f3f4f6;  /* Light Hover */
+  --input-bg: #f6f8fa;       /* Soft Sunken Input Canvas */
 
-  --text-main: #020617;
-  --text-muted: #1e293b;
-  --text-subtle: #475569;
+  --text-main: #1f2328;      /* GitHub Light primary text */
+  --text-muted: #636c76;     /* Secondary text */
+  --text-subtle: #8c959f;    /* Metadata text */
 
-  --accent-primary: #4f46e5;
-  --accent-primary-hover: #4338ca;
-  --accent-indigo: #4338ca;
-  --accent-cyan: #0891b2;
-  --accent-sky: #0284c7;
+  --accent-primary: #1f883d; /* GitHub Light Green Accent */
+  --accent-primary-hover: #1a7f37;
+  --accent-indigo: #1f883d;
+  --accent-cyan: #0969da;
+  --accent-sky: #0550ae;
 
-  --border-color: #cbd5e1;
-  --border-glow: rgba(79, 70, 229, 0.4);
-
-  --input-bg: #ffffff;
+  --border-color: #d0d7de;   /* GitHub Light border */
+  --border-glow: #1f883d;
   --modal-bg: #ffffff;
-  --header-bg: rgba(255, 255, 255, 0.95);
 
-  --badge-bg: #e0e7ff;
-  --badge-border: #c7d2fe;
-  --badge-text: #3730a3;
+  --badge-bg: #dafbe1;       /* Light Green badge */
+  --badge-border: #4ac26b;
+  --badge-text: #1a7f37;
 
-  --status-success-bg: #d1fae5;
-  --status-success-border: #a7f3d0;
-  --status-success-text: #065f46;
+  --status-success-bg: #dafbe1;
+  --status-success-border: #4ac26b;
+  --status-success-text: #1a7f37;
 
-  --status-danger-bg: #ffe4e6;
-  --status-danger-border: #fecdd3;
-  --status-danger-text: #9f1239;
+  --status-danger-bg: #ffebe9;
+  --status-danger-border: #ff897a;
+  --status-danger-text: #cf222e;
 }
 
 * {
@@ -100,48 +100,41 @@ body {
   font-family: var(--font-mono);
 }
 
-/* Glass & Surface Utility Classes */
+/* Minimal Solid Card Utility Classes */
 .glass-panel {
   background: var(--bg-card);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border-color);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .glass-panel-interactive {
   background: var(--bg-card);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border-color);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s ease;
 }
 
 .glass-panel-interactive:hover {
   background: var(--bg-card-hover);
-  border-color: var(--border-glow);
-  box-shadow: 0 15px 35px var(--border-glow);
-  transform: translateY(-2px);
+  border-color: var(--accent-primary);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
 }
 
 .glass-input {
   background: var(--input-bg);
   border: 1px solid var(--border-color);
   color: var(--text-main);
-  backdrop-filter: blur(8px);
   transition: all 0.2s ease;
 }
 
 .glass-input:focus {
   border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px var(--border-glow);
+  box-shadow: 0 0 0 2px var(--badge-border);
 }
 
-/* Gradient Text */
+/* Clean Solid Text Styling (No Gradients) */
 .gradient-text-indigo {
-  background: linear-gradient(135deg, var(--accent-indigo) 0%, var(--accent-primary) 50%, var(--accent-sky) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--accent-indigo);
+  font-weight: 800;
 }
 
 /* Custom Scrollbars */
@@ -155,7 +148,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border-glow);
+  background: var(--border-color);
   border-radius: 99px;
 }
 
@@ -169,12 +162,12 @@ body {
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(12px) scale(0.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-slide-up {
-  animation: slideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: slideUp 0.2s ease-out;
 }
 
 .animate-fade-in {

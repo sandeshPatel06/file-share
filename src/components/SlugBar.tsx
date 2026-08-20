@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef } from "react";
-import { Pencil, Lock, Unlock, Check, X, Copy, CheckCheck, QrCode } from "lucide-react";
+import { Pencil, Lock, Unlock, Check, X, Copy, CheckCheck, QrCode, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { showToast } from "@/components/ui/Toast";
 import { slugSchema } from "@/lib/validators";
@@ -56,7 +56,11 @@ export function SlugBar({ slug, isProtected, token, onLockClick }: SlugBarProps)
   }
 
   async function handleSave() {
-    if (!available || slugError) return;
+    if (slugError || !newSlug || newSlug === slug) {
+      setEditing(false);
+      return;
+    }
+
     setSaving(true);
     try {
       const res = await fetch(`/api/pages/${slug}/rename`, {
@@ -68,8 +72,14 @@ export function SlugBar({ slug, isProtected, token, onLockClick }: SlugBarProps)
         body: JSON.stringify({ newSlug }),
       });
       const data = await res.json();
-      if (!res.ok) { showToast(data.error ?? "Failed to rename", "error"); return; }
-      showToast("Space URL updated!", "success");
+      if (!res.ok) { showToast(data.error ?? "Failed to navigate", "error"); return; }
+
+      if (data.redirected) {
+        showToast(`Opening existing space /s/${data.newSlug}…`, "info");
+      } else {
+        showToast("Space URL updated!", "success");
+      }
+      setEditing(false);
       router.push(`/s/${data.newSlug}`);
     } catch { showToast("Connection error", "error"); }
     finally { setSaving(false); setEditing(false); }
@@ -104,7 +114,7 @@ export function SlugBar({ slug, isProtected, token, onLockClick }: SlugBarProps)
                 outline-none transition-all
                 ${slugError
                   ? "border-[var(--status-danger-border)] focus:ring-2 focus:ring-[var(--status-danger-border)]"
-                  : available === false ? "border-[var(--status-danger-border)] focus:ring-2 focus:ring-[var(--status-danger-border)]"
+                  : available === false ? "border-[var(--accent-primary)] focus:ring-2 focus:ring-[var(--border-glow)]"
                   : available === true  ? "border-[var(--status-success-border)] focus:ring-2 focus:ring-[var(--status-success-border)]"
                   : "border-[var(--border-color)] focus:border-[var(--accent-primary)] focus:ring-2 focus:ring-[var(--border-glow)]"
                 }
@@ -112,15 +122,22 @@ export function SlugBar({ slug, isProtected, token, onLockClick }: SlugBarProps)
             />
             {!slugError && newSlug !== slug && (
               <span className={`absolute right-2 top-1/2 -translate-y-1/2 text-xs font-semibold ${
-                checking ? "text-[var(--text-muted)]" : available ? "text-[var(--status-success-text)]" : "text-[var(--status-danger-text)]"
+                checking ? "text-[var(--text-muted)]" : available ? "text-[var(--status-success-text)]" : "text-[var(--accent-primary)]"
               }`}>
-                {checking ? "…" : available ? "✓" : "✗"}
+                {checking ? "…" : available ? "✓ New" : "Open ➔"}
               </span>
             )}
           </div>
-          <Button size="sm" variant="secondary" icon={<Check size={13} />}
-            disabled={!!slugError || !available || newSlug === slug || checking}
-            loading={saving} onClick={handleSave} className="shrink-0 h-8" />
+          <Button
+            size="sm"
+            variant="secondary"
+            icon={available === false ? <ArrowRight size={13} /> : <Check size={13} />}
+            disabled={!!slugError || newSlug === slug || checking}
+            loading={saving}
+            onClick={handleSave}
+            title={available === false ? "Open existing workspace" : "Save workspace URL"}
+            className="shrink-0 h-8"
+          />
           <Button size="sm" variant="ghost" icon={<X size={13} />} onClick={cancelEditing} className="shrink-0 h-8" />
         </div>
       ) : (

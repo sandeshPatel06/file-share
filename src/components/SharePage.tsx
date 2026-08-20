@@ -104,7 +104,7 @@ export function SharePage({ pageData }: SharePageProps) {
           className={`
             flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-extrabold transition-all duration-200 cursor-pointer
             ${activeTab === "files"
-              ? "bg-[var(--accent-indigo)] text-white shadow-md scale-105"
+              ? "bg-[var(--accent-primary)] text-white shadow-md scale-105"
               : "text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/5"
             }
           `}
