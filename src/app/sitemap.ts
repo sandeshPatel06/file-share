@@ -6,7 +6,7 @@ interface PageRow {
   updatedAt: string | null;
 }
 
-const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://file-share-dev.onrender.com";
 
 const DEFAULT_FEATURED_SLUGS = [
   "general",
