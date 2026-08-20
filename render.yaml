@@ -6,5 +6,8 @@ services:
     buildCommand: ./deploy.sh
     startCommand: npm start
     autoDeploy: true
+    envVars:
+      - key: NEXT_PUBLIC_APP_URL
+        value: https://file-share-dev.onrender.com
 
 
