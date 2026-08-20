@@ -1,11 +1,11 @@
 "use client";
 import { useEffect, useState, useRef, useCallback } from "react";
 
-export function usePageContent(slug: string) {
-  const [content, setContent] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+export function usePageContent(slug: string, initialContent?: string) {
+  const [content, setContent] = useState<string | null>(initialContent ?? null);
+  const [loading, setLoading] = useState(initialContent === undefined);
   const lastLocalEditAt = useRef<number>(0);
-  const contentRef = useRef<string | null>(null);
+  const contentRef = useRef<string | null>(initialContent ?? null);
 
   const touchLocalEdit = useCallback(() => {
     lastLocalEditAt.current = Date.now();
@@ -15,6 +15,15 @@ export function usePageContent(slug: string) {
   useEffect(() => {
     contentRef.current = content;
   }, [content]);
+
+  // Reset content when slug or initialContent changes
+  useEffect(() => {
+    if (initialContent !== undefined) {
+      setContent(initialContent);
+      contentRef.current = initialContent;
+      setLoading(false);
+    }
+  }, [slug, initialContent]);
 
   useEffect(() => {
     let active = true;
@@ -40,8 +49,10 @@ export function usePageContent(slug: string) {
       }
     }
 
-    // Initial fetch
-    fetchContent();
+    // Fetch initial content if not provided by SSR
+    if (initialContent === undefined) {
+      fetchContent();
+    }
 
     // Instant Real-time Updates via Server-Sent Events (SSE)
     let eventSource: EventSource | null = null;

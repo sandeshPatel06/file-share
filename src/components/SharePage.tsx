@@ -71,7 +71,7 @@ export function SharePage({ pageData }: SharePageProps) {
           flex-1 md:flex flex-col min-h-0 h-full border-r border-[var(--border-color)] transition-all duration-200 pb-20 md:pb-0
           ${activeTab === "editor" ? "flex" : "hidden md:flex"}
         `}>
-          <TextEditor slug={slug} token={effectiveToken} />
+          <TextEditor slug={slug} initialContent={pageData.content} token={effectiveToken} />
         </div>
 
         {/* Right Pane — Shared Files Vault */}
