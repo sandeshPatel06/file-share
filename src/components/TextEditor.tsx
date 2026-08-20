@@ -11,8 +11,9 @@ import { copyToClipboard } from "@/lib/clipboard";
 import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 
 interface TextEditorProps {
-  slug:  string;
-  token: string | null;
+  slug:           string;
+  token:          string | null;
+  initialContent?: string;
 }
 
 type SaveStatus = "idle" | "saving" | "saved";
@@ -24,8 +25,8 @@ const EMOJI_CATEGORIES = [
   { label: "Symbols", emojis: ["✅", "❌", "⚠️", "📌", "🔍", "💬", "📝", "📊", "🔒", "🔑", "🌐", "🛠️"] },
 ];
 
-export function TextEditor({ slug, token }: TextEditorProps) {
-  const { content: serverContent, loading, touchLocalEdit } = usePageContent(slug);
+export function TextEditor({ slug, token, initialContent = "" }: TextEditorProps) {
+  const { content: serverContent, touchLocalEdit } = usePageContent(slug, initialContent);
   const [textVal, setTextVal] = useState<string | null>(null);
   const [copied, setCopied]   = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("write");
@@ -39,7 +40,7 @@ export function TextEditor({ slug, token }: TextEditorProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
 
-  const displayContent = textVal !== null ? textVal : (serverContent ?? "");
+  const displayContent = textVal !== null ? textVal : (serverContent ?? initialContent);
 
   const updateStatusUI = (status: SaveStatus) => {
     if (statusEl.current) {
