@@ -112,7 +112,7 @@ export function FilePanel({ slug, token }: FilePanelProps) {
               {dragging ? "Drop files to upload instantly" : "Drag & drop files here"}
             </p>
             <p className="text-xs text-[var(--text-muted)] mt-1 font-medium">
-              or <span className="text-[var(--accent-indigo)] underline underline-offset-2 font-bold">browse files</span> · max 50 MB each
+              or <span className="text-[var(--accent-indigo)] underline underline-offset-2 font-bold">browse files</span> · max 500 MB each
             </p>
           </div>
         </div>
