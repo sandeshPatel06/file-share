@@ -14,9 +14,9 @@ interface PageRow {
 }
 
 async function isAuthorized(req: NextRequest, slug: string): Promise<boolean> {
-  let page = db.prepare("SELECT isProtected FROM pages WHERE slug = ?").get(slug) as PageRow | undefined;
+  let page = (await db.prepare("SELECT isProtected FROM pages WHERE slug = ?").get(slug)) as PageRow | undefined;
   if (!page) {
-    db.prepare("INSERT OR IGNORE INTO pages (slug, content, isProtected) VALUES (?, '', 0)").run(slug);
+    await db.prepare("INSERT OR IGNORE INTO pages (slug, content, isProtected) VALUES (?, '', 0)").run(slug);
     page = { isProtected: 0 };
   }
   if (!page.isProtected) return true;
@@ -49,7 +49,7 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Validation error" }, { status: 422 });
   }
 
-  db.prepare(`
+  await db.prepare(`
     UPDATE pages
     SET content = ?, updatedAt = CURRENT_TIMESTAMP
     WHERE slug = ?

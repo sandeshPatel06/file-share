@@ -60,14 +60,14 @@ export default async function SlugPage({ params }: Props) {
   }
 
   // Get or auto-initialize page record
-  let page = db.prepare("SELECT slug, isProtected, content FROM pages WHERE slug = ?").get(slug) as PageRow | undefined;
+  let page = (await db.prepare("SELECT slug, isProtected, content FROM pages WHERE slug = ?").get(slug)) as PageRow | undefined;
 
   if (!page) {
     try {
-      db.prepare("INSERT INTO pages (slug, content, isProtected) VALUES (?, ?, 0)").run(slug, "");
+      await db.prepare("INSERT INTO pages (slug, content, isProtected) VALUES (?, ?, 0)").run(slug, "");
       page = { slug, isProtected: 0, content: "" };
     } catch {
-      page = db.prepare("SELECT slug, isProtected, content FROM pages WHERE slug = ?").get(slug) as PageRow | undefined;
+      page = (await db.prepare("SELECT slug, isProtected, content FROM pages WHERE slug = ?").get(slug)) as PageRow | undefined;
       if (!page) notFound();
     }
   }
