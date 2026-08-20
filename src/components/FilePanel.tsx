@@ -10,41 +10,140 @@ interface FilePanelProps {
   token: string | null;
 }
 
+interface UploadProgressItem {
+  id: string;
+  name: string;
+  percent: number;
+  loadedFormatted: string;
+  totalFormatted: string;
+  speedFormatted: string;
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes === 0) return "0 Bytes";
+  const k = 1024;
+  const sizes = ["Bytes", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
+}
+
+function formatSpeed(bytesPerSec: number): string {
+  if (bytesPerSec <= 0) return "0 KB/s";
+  if (bytesPerSec >= 1024 * 1024) {
+    return (bytesPerSec / (1024 * 1024)).toFixed(1) + " MB/s";
+  }
+  return Math.round(bytesPerSec / 1024) + " KB/s";
+}
+
 export function FilePanel({ slug, token }: FilePanelProps) {
   const { files, loading } = useFileList(slug);
   const [dragging,  setDragging]  = useState(false);
-  const [uploading, setUploading] = useState<string[]>([]);
+  const [uploadProgress, setUploadProgress] = useState<Record<string, UploadProgressItem>>({});
   const inputRef = useRef<HTMLInputElement>(null);
 
   const uploadFile = useCallback(async (file: File) => {
-    if (file.size > 50 * 1024 * 1024) {
-      showToast(`File exceeds 50 MB limit: ${file.name}`, "error");
+    if (file.size > 500 * 1024 * 1024) {
+      showToast(`File exceeds 500 MB limit: ${file.name}`, "error");
       return;
     }
 
-    setUploading((u) => [...u, file.name]);
+    const uploadId = `${file.name}-${Date.now()}-${Math.random()}`;
+    const startTime = Date.now();
+
+    setUploadProgress((prev) => ({
+      ...prev,
+      [uploadId]: {
+        id: uploadId,
+        name: file.name,
+        percent: 0,
+        loadedFormatted: "0 Bytes",
+        totalFormatted: formatBytes(file.size),
+        speedFormatted: "Starting...",
+      },
+    }));
 
     try {
-      const formData = new FormData();
-      formData.append("file", file);
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        const formData = new FormData();
+        formData.append("file", file);
 
-      const res = await fetch(`/api/pages/${slug}/files/upload`, {
-        method:  "POST",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        body:    formData,
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) {
+            const percent = Math.min(99, Math.round((e.loaded / e.total) * 100));
+            const elapsed = (Date.now() - startTime) / 1000 || 0.1;
+            const speedBytesSec = e.loaded / elapsed;
+
+            setUploadProgress((prev) => ({
+              ...prev,
+              [uploadId]: {
+                id: uploadId,
+                name: file.name,
+                percent,
+                loadedFormatted: formatBytes(e.loaded),
+                totalFormatted: formatBytes(e.total),
+                speedFormatted: formatSpeed(speedBytesSec),
+              },
+            }));
+          }
+        };
+
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            setUploadProgress((prev) => ({
+              ...prev,
+              [uploadId]: {
+                id: uploadId,
+                name: file.name,
+                percent: 100,
+                loadedFormatted: formatBytes(file.size),
+                totalFormatted: formatBytes(file.size),
+                speedFormatted: "Done",
+              },
+            }));
+            showToast(`${file.name} uploaded successfully`, "success");
+            setTimeout(() => {
+              setUploadProgress((prev) => {
+                const next = { ...prev };
+                delete next[uploadId];
+                return next;
+              });
+            }, 1000);
+            resolve();
+          } else {
+            let errorMsg = `Upload failed for ${file.name}`;
+            try {
+              const res = JSON.parse(xhr.responseText);
+              if (res.error) errorMsg = res.error;
+            } catch {}
+            showToast(errorMsg, "error");
+            setUploadProgress((prev) => {
+              const next = { ...prev };
+              delete next[uploadId];
+              return next;
+            });
+            reject(new Error(errorMsg));
+          }
+        };
+
+        xhr.onerror = () => {
+          showToast(`Connection error during upload of ${file.name}`, "error");
+          setUploadProgress((prev) => {
+            const next = { ...prev };
+            delete next[uploadId];
+            return next;
+          });
+          reject(new Error("Connection error"));
+        };
+
+        xhr.open("POST", `/api/pages/${slug}/files/upload`, true);
+        if (token) {
+          xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+        }
+        xhr.send(formData);
       });
-
-      if (!res.ok) {
-        const err = await res.json();
-        showToast(err.error ?? `Upload failed for ${file.name}`, "error");
-        return;
-      }
-
-      showToast(`${file.name} uploaded successfully`, "success");
     } catch {
-      showToast("Connection error during file upload", "error");
-    } finally {
-      setUploading((u) => u.filter((n) => n !== file.name));
+      // Error handles toast
     }
   }, [slug, token]);
 
@@ -117,17 +216,31 @@ export function FilePanel({ slug, token }: FilePanelProps) {
           </div>
         </div>
 
-        {/* Uploading Progress Items */}
-        {uploading.map((name) => (
-          <div key={name} className="flex items-center gap-3 p-3.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-glow)] animate-fade-in shadow-md">
-            <div className="w-9 h-9 rounded-lg bg-[var(--badge-bg)] flex items-center justify-center shrink-0">
-              <FileUp size={18} className="text-[var(--accent-indigo)] animate-bounce" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs sm:text-sm font-medium text-[var(--text-main)] truncate">{name}</p>
-              <div className="h-1.5 bg-black/10 dark:bg-black/30 rounded-full mt-2 overflow-hidden">
-                <div className="h-full bg-[var(--accent-primary)] rounded-full animate-pulse w-3/4" />
+        {/* Real-time Upload Progress Items */}
+        {Object.values(uploadProgress).map((item) => (
+          <div key={item.id} className="flex flex-col gap-2 p-3.5 rounded-xl bg-[var(--bg-card)] border border-[var(--accent-primary)] animate-fade-in shadow-md">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <FileUp size={16} className="text-[var(--accent-primary)] animate-bounce shrink-0" />
+                <span className="text-xs sm:text-sm font-bold text-[var(--text-main)] truncate">{item.name}</span>
               </div>
+              <span className="text-xs font-mono font-extrabold text-[var(--accent-primary)] shrink-0">
+                {item.percent}%
+              </span>
+            </div>
+
+            {/* Real-time Progress Bar */}
+            <div className="w-full h-2 bg-black/10 dark:bg-white/10 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-[var(--accent-primary)] rounded-full transition-all duration-200"
+                style={{ width: `${item.percent}%` }}
+              />
+            </div>
+
+            {/* Upload Speed & Byte Stats */}
+            <div className="flex items-center justify-between text-[11px] font-mono text-[var(--text-muted)]">
+              <span>{item.loadedFormatted} / {item.totalFormatted}</span>
+              <span className="font-bold text-[var(--accent-primary)]">{item.speedFormatted}</span>
             </div>
           </div>
         ))}
@@ -139,7 +252,7 @@ export function FilePanel({ slug, token }: FilePanelProps) {
               <div key={i} className="h-16 skeleton rounded-xl" />
             ))}
           </div>
-        ) : files.length === 0 && uploading.length === 0 ? (
+        ) : files.length === 0 && Object.keys(uploadProgress).length === 0 ? (
           <div className="text-center py-10 px-4 border border-dashed border-[var(--border-color)] rounded-2xl bg-[var(--bg-card)]">
             <FolderOpen size={32} className="mx-auto text-[var(--text-subtle)] mb-2 opacity-60" />
             <p className="text-sm font-bold text-[var(--text-muted)]">No files in this space yet</p>
