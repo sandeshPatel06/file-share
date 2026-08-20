@@ -26,7 +26,7 @@ const EMOJI_CATEGORIES = [
 ];
 
 export function TextEditor({ slug, token, initialContent = "" }: TextEditorProps) {
-  const { content: serverContent, touchLocalEdit } = usePageContent(slug, initialContent);
+  const { content: serverContent, loading, touchLocalEdit } = usePageContent(slug, initialContent);
   const [textVal, setTextVal] = useState<string | null>(null);
   const [copied, setCopied]   = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("write");

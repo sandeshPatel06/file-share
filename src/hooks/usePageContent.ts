@@ -4,8 +4,16 @@ import { useEffect, useState, useRef, useCallback } from "react";
 export function usePageContent(slug: string, initialContent?: string) {
   const [content, setContent] = useState<string | null>(initialContent ?? null);
   const [loading, setLoading] = useState(initialContent === undefined);
+  const [prevSlug, setPrevSlug] = useState<string>(slug);
   const lastLocalEditAt = useRef<number>(0);
   const contentRef = useRef<string | null>(initialContent ?? null);
+
+  // Sync state during render if slug changes between workspace navigations
+  if (prevSlug !== slug) {
+    setPrevSlug(slug);
+    setContent(initialContent ?? null);
+    setLoading(initialContent === undefined);
+  }
 
   const touchLocalEdit = useCallback(() => {
     lastLocalEditAt.current = Date.now();
@@ -15,15 +23,6 @@ export function usePageContent(slug: string, initialContent?: string) {
   useEffect(() => {
     contentRef.current = content;
   }, [content]);
-
-  // Reset content when slug or initialContent changes
-  useEffect(() => {
-    if (initialContent !== undefined) {
-      setContent(initialContent);
-      contentRef.current = initialContent;
-      setLoading(false);
-    }
-  }, [slug, initialContent]);
 
   useEffect(() => {
     let active = true;
@@ -87,7 +86,7 @@ export function usePageContent(slug: string, initialContent?: string) {
       if (eventSource) eventSource.close();
       clearInterval(fallbackInterval);
     };
-  }, [slug]);
+  }, [slug, initialContent]);
 
   return { content, setContent, loading, touchLocalEdit };
 }
