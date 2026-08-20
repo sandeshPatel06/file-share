@@ -18,7 +18,7 @@ const DEFAULT_FEATURED_SLUGS = [
   "scratchpad",
 ];
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const routes: MetadataRoute.Sitemap = [
     {
       url: appUrl,
@@ -29,10 +29,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ];
 
   try {
-    // Fetch public non-password-protected pages from SQLite
-    const pages = db
+    // Fetch public non-password-protected pages
+    const pages = (await db
       .prepare("SELECT slug, updatedAt FROM pages WHERE isProtected = 0 ORDER BY updatedAt DESC LIMIT 500")
-      .all() as PageRow[];
+      .all()) as PageRow[];
 
     const addedSlugs = new Set<string>();
 

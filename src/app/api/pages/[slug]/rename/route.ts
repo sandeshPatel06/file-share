@@ -30,7 +30,7 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
   const { newSlug } = parsed.data;
 
   // Fetch old page
-  const oldPage = db.prepare("SELECT isProtected FROM pages WHERE slug = ?").get(slug) as PageRow | undefined;
+  const oldPage = (await db.prepare("SELECT isProtected FROM pages WHERE slug = ?").get(slug)) as PageRow | undefined;
   if (!oldPage) {
     return NextResponse.json({ error: "Page not found" }, { status: 404 });
   }
@@ -45,20 +45,19 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
   }
 
   // Check new slug is available
-  const newPage = db.prepare("SELECT slug FROM pages WHERE slug = ?").get(newSlug);
+  const newPage = await db.prepare("SELECT slug FROM pages WHERE slug = ?").get(newSlug);
   if (newPage) {
     return NextResponse.json({ error: "Slug already taken" }, { status: 409 });
   }
 
   try {
-    db.pragma("foreign_keys = OFF;");
-    db.prepare(`
+    await db.prepare(`
       UPDATE pages
       SET slug = ?, updatedAt = CURRENT_TIMESTAMP
       WHERE slug = ?
     `).run(newSlug, slug);
 
-    db.prepare(`
+    await db.prepare(`
       UPDATE files
       SET slug = ?
       WHERE slug = ?
@@ -66,8 +65,6 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Failed to rename slug";
     return NextResponse.json({ error: message }, { status: 500 });
-  } finally {
-    db.pragma("foreign_keys = ON;");
   }
 
   return NextResponse.json({ newSlug });

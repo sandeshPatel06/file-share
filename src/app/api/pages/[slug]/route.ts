@@ -18,7 +18,7 @@ export async function GET(req: NextRequest, ctx: RouteContext) {
   if (limited) return limited;
 
   const { slug } = await ctx.params;
-  const page = db.prepare("SELECT slug, content, isProtected FROM pages WHERE slug = ?").get(slug) as PageRow | undefined;
+  const page = (await db.prepare("SELECT slug, content, isProtected FROM pages WHERE slug = ?").get(slug)) as PageRow | undefined;
 
   if (!page) {
     return NextResponse.json({ error: "Page not found" }, { status: 404 });

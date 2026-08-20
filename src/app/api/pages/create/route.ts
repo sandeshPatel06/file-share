@@ -21,14 +21,14 @@ export async function POST(req: NextRequest) {
   const { slug, password } = parsed.data;
 
   try {
-    const existing = db.prepare("SELECT slug FROM pages WHERE slug = ?").get(slug);
+    const existing = await db.prepare("SELECT slug FROM pages WHERE slug = ?").get(slug);
     if (existing) {
       return NextResponse.json({ error: "This slug is already taken" }, { status: 409 });
     }
 
     const passwordHash = password ? await bcrypt.hash(password, 12) : null;
 
-    db.prepare(`
+    await db.prepare(`
       INSERT INTO pages (slug, content, isProtected, passwordHash)
       VALUES (?, ?, ?, ?)
     `).run(slug, "", password ? 1 : 0, passwordHash);
@@ -52,7 +52,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const existing = db.prepare("SELECT slug FROM pages WHERE slug = ?").get(slug);
+    const existing = await db.prepare("SELECT slug FROM pages WHERE slug = ?").get(slug);
     return NextResponse.json({ available: !existing });
   } catch {
     return NextResponse.json({ available: true });

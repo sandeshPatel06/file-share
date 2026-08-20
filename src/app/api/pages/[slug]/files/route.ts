@@ -24,12 +24,12 @@ export async function GET(req: NextRequest, ctx: RouteContext) {
   const { slug } = await ctx.params;
 
   try {
-    const files = db.prepare(`
+    const files = (await db.prepare(`
       SELECT fileId, originalName, storedName, mimetype, size, downloadURL, uploadedAt
       FROM files
       WHERE slug = ?
       ORDER BY uploadedAt DESC
-    `).all(slug) as FileRow[];
+    `).all(slug)) as FileRow[];
 
     const formattedFiles = files.map((f) => ({
       fileId: f.fileId,

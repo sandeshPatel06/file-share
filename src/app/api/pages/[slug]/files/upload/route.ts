@@ -31,9 +31,9 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
 
   const { slug } = await ctx.params;
 
-  let page = db.prepare("SELECT isProtected FROM pages WHERE slug = ?").get(slug) as PageRow | undefined;
+  let page = (await db.prepare("SELECT isProtected FROM pages WHERE slug = ?").get(slug)) as PageRow | undefined;
   if (!page) {
-    db.prepare("INSERT OR IGNORE INTO pages (slug, content, isProtected) VALUES (?, '', 0)").run(slug);
+    await db.prepare("INSERT OR IGNORE INTO pages (slug, content, isProtected) VALUES (?, '', 0)").run(slug);
     page = { isProtected: 0 };
   }
 
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
 
     const downloadURL = `/api/uploads/${storedName}`;
 
-    db.prepare(`
+    await db.prepare(`
       INSERT INTO files (fileId, slug, originalName, storedName, mimetype, size, downloadURL)
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `).run(fileId, slug, originalName, storedName, mimetype, size, downloadURL);

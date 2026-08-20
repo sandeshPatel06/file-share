@@ -20,7 +20,7 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
 
   const { slug } = await ctx.params;
 
-  const page = db.prepare("SELECT isProtected FROM pages WHERE slug = ?").get(slug) as PageRow | undefined;
+  const page = (await db.prepare("SELECT isProtected FROM pages WHERE slug = ?").get(slug)) as PageRow | undefined;
   if (!page) {
     return NextResponse.json({ error: "Page not found" }, { status: 404 });
   }
@@ -46,7 +46,7 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
   const { password } = parsed.data;
 
   if (password === null) {
-    db.prepare(`
+    await db.prepare(`
       UPDATE pages
       SET isProtected = 0, passwordHash = NULL, updatedAt = CURRENT_TIMESTAMP
       WHERE slug = ?
@@ -55,7 +55,7 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
   }
 
   const passwordHash = await bcrypt.hash(password, 12);
-  db.prepare(`
+  await db.prepare(`
     UPDATE pages
     SET isProtected = 1, passwordHash = ?, updatedAt = CURRENT_TIMESTAMP
     WHERE slug = ?

@@ -1,18 +1,8 @@
 import path from "path";
 import fs from "fs";
 
-// In serverless environments (e.g. Netlify, Vercel, AWS Lambda), native C++ bindings for better-sqlite3 or read-only filesystems need safe fallback handling.
 const isServerless = Boolean(process.env.NETLIFY || process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
 const baseDir = isServerless ? "/tmp" : process.cwd();
-
-const dbDir = path.join(baseDir, "data");
-if (!fs.existsSync(dbDir)) {
-  try {
-    fs.mkdirSync(dbDir, { recursive: true });
-  } catch (err) {
-    console.error("Failed to create dbDir at", dbDir, err);
-  }
-}
 
 const uploadsDir = path.join(baseDir, "uploads");
 if (!fs.existsSync(uploadsDir)) {
@@ -23,97 +13,94 @@ if (!fs.existsSync(uploadsDir)) {
   }
 }
 
-const dbPath = path.join(dbDir, "fileshare.db");
-let db: any;
-
-try {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const Database = require("better-sqlite3");
-  db = new Database(dbPath);
-  try {
-    db.pragma("journal_mode = WAL");
-  } catch {
-    // WAL pragma may fail on ephemeral filesystems
-  }
-} catch (err) {
-  console.warn("better-sqlite3 unavailable, using in-memory fallback store:", err);
-
-  const memoryStore = {
-    pages: new Map<string, any>(),
-    files: new Map<string, any>()
-  };
-
-  db = {
-    pragma: () => {},
-    exec: () => {},
-    prepare: (sql: string) => {
-      const lower = sql.toLowerCase();
-      return {
-        run: (...params: any[]) => {
-          if (lower.includes("insert into pages") || lower.includes("insert or ignore into pages")) {
-            const [slug, content, isProtected, passwordHash] = params;
-            if (!memoryStore.pages.has(slug)) {
-              memoryStore.pages.set(slug, {
-                slug,
-                content: content || "",
-                isProtected: isProtected || 0,
-                passwordHash: passwordHash || null,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
-              });
-            }
-          } else if (lower.includes("update pages")) {
-            if (lower.includes("content =")) {
-              const [content, slug] = params;
-              const page = memoryStore.pages.get(slug) || { slug };
-              page.content = content;
-              page.updatedAt = new Date().toISOString();
-              memoryStore.pages.set(slug, page);
-            }
-          } else if (lower.includes("insert into files")) {
-            const [fileId, slug, originalName, storedName, mimetype, size, downloadURL] = params;
-            memoryStore.files.set(fileId, {
-              fileId,
-              slug,
-              originalName,
-              storedName,
-              mimetype,
-              size,
-              downloadURL,
-              uploadedAt: new Date().toISOString()
-            });
-          } else if (lower.includes("delete from files")) {
-            const [fileId] = params;
-            memoryStore.files.delete(fileId);
-          }
-          return { changes: 1 };
-        },
-        get: (...params: any[]) => {
-          if (lower.includes("from pages")) {
-            const [slug] = params;
-            return memoryStore.pages.get(slug) || undefined;
-          } else if (lower.includes("from files")) {
-            const [fileId] = params;
-            return memoryStore.files.get(fileId) || undefined;
-          }
-          return undefined;
-        },
-        all: (...params: any[]) => {
-          if (lower.includes("from files")) {
-            const [slug] = params;
-            return Array.from(memoryStore.files.values()).filter((f: any) => f.slug === slug);
-          }
-          return [];
-        }
-      };
-    }
-  };
+interface PgPoolClient {
+  query: (sql: string, params?: unknown[]) => Promise<{ rows: Record<string, unknown>[]; rowCount: number | null }>;
 }
 
-// Initialize tables if real db is active
-if (db && typeof db.exec === "function") {
+interface SqlitePrepared {
+  get: (...params: unknown[]) => unknown;
+  run: (...params: unknown[]) => { changes: number };
+  all: (...params: unknown[]) => unknown[];
+}
+
+interface SqliteDbClient {
+  pragma: (sql: string) => void;
+  exec: (sql: string) => void;
+  prepare: (sql: string) => SqlitePrepared;
+}
+
+// Global DB client abstraction supporting PostgreSQL (via DATABASE_URL), SQLite, or Memory Store fallback
+let pgPool: PgPoolClient | null = null;
+let sqliteDb: SqliteDbClient | null = null;
+
+const memoryStore = {
+  pages: new Map<string, Record<string, unknown>>(),
+  files: new Map<string, Record<string, unknown>>(),
+};
+
+const hasPg = Boolean(process.env.DATABASE_URL);
+
+if (hasPg) {
   try {
-    db.exec(`
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { Pool } = require("pg");
+    const connectionString = process.env.DATABASE_URL;
+    const isLocal = connectionString?.includes("localhost") || connectionString?.includes("127.0.0.1");
+    pgPool = new Pool({
+      connectionString,
+      ssl: isLocal ? false : { rejectUnauthorized: false },
+    });
+
+    // Provision PostgreSQL tables
+    pgPool
+      ?.query(`
+        CREATE TABLE IF NOT EXISTS pages (
+          slug VARCHAR(255) PRIMARY KEY,
+          content TEXT DEFAULT '',
+          "isProtected" INTEGER DEFAULT 0,
+          "passwordHash" TEXT DEFAULT NULL,
+          "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS files (
+          "fileId" VARCHAR(255) PRIMARY KEY,
+          slug VARCHAR(255) NOT NULL,
+          "originalName" TEXT NOT NULL,
+          "storedName" TEXT NOT NULL,
+          mimetype TEXT NOT NULL,
+          size BIGINT NOT NULL,
+          "downloadURL" TEXT NOT NULL,
+          "uploadedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (slug) REFERENCES pages(slug) ON DELETE CASCADE ON UPDATE CASCADE
+        );
+      `)
+      .catch((err: unknown) => console.error("PostgreSQL table provisioning error:", err));
+  } catch (err) {
+    console.error("Failed to initialize PostgreSQL pool:", err);
+  }
+} else {
+  const dbDir = path.join(baseDir, "data");
+  if (!fs.existsSync(dbDir)) {
+    try {
+      fs.mkdirSync(dbDir, { recursive: true });
+    } catch (err) {
+      console.error("Failed to create dbDir at", dbDir, err);
+    }
+  }
+
+  const dbPath = path.join(dbDir, "fileshare.db");
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const Database = require("better-sqlite3");
+    sqliteDb = new Database(dbPath);
+    try {
+      sqliteDb?.pragma("journal_mode = WAL");
+    } catch {
+      // WAL pragma may fail on ephemeral filesystems
+    }
+
+    sqliteDb?.exec(`
       CREATE TABLE IF NOT EXISTS pages (
         slug TEXT PRIMARY KEY,
         content TEXT DEFAULT '',
@@ -136,8 +123,171 @@ if (db && typeof db.exec === "function") {
       );
     `);
   } catch (err) {
-    console.error("Table creation failed:", err);
+    console.warn("better-sqlite3 unavailable, using in-memory fallback store:", err);
   }
 }
+
+function convertSqlForPg(sql: string): string {
+  let paramCount = 0;
+  let pgSql = sql.replace(/\?/g, () => {
+    paramCount++;
+    return `$${paramCount}`;
+  });
+
+  if (pgSql.toLowerCase().includes("insert or ignore into pages")) {
+    pgSql = pgSql.replace(/insert or ignore into pages/i, "INSERT INTO pages");
+    if (!pgSql.toLowerCase().includes("on conflict")) {
+      pgSql += " ON CONFLICT (slug) DO NOTHING";
+    }
+  }
+
+  return pgSql;
+}
+
+function normalizeRow(row: Record<string, unknown> | null | undefined): Record<string, unknown> | null | undefined {
+  if (!row) return row;
+  const normalized: Record<string, unknown> = {};
+  for (const key of Object.keys(row)) {
+    const val = row[key];
+    const lower = key.toLowerCase();
+    if (lower === "isprotected") normalized.isProtected = Number(val);
+    else if (lower === "passwordhash") normalized.passwordHash = val;
+    else if (lower === "originalname") normalized.originalName = val;
+    else if (lower === "storedname") normalized.storedName = val;
+    else if (lower === "downloadurl") normalized.downloadURL = val;
+    else if (lower === "fileid") normalized.fileId = val;
+    else if (lower === "createdat") normalized.createdAt = val;
+    else if (lower === "updatedat") normalized.updatedAt = val;
+    else if (lower === "size") normalized.size = Number(val);
+    else normalized[key] = val;
+  }
+  return normalized;
+}
+
+function memoryRun(sql: string, params: unknown[]) {
+  const lower = sql.toLowerCase();
+  if (lower.includes("insert into pages") || lower.includes("insert or ignore into pages")) {
+    const [slug, content, isProtected, passwordHash] = params as [string, string?, number?, string?];
+    if (!memoryStore.pages.has(slug)) {
+      memoryStore.pages.set(slug, {
+        slug,
+        content: content || "",
+        isProtected: isProtected || 0,
+        passwordHash: passwordHash || null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+    }
+  } else if (lower.includes("update pages")) {
+    if (lower.includes("content =")) {
+      const [content, slug] = params as [string, string];
+      const page = memoryStore.pages.get(slug) || { slug };
+      page.content = content;
+      page.updatedAt = new Date().toISOString();
+      memoryStore.pages.set(slug, page);
+    } else if (lower.includes("isprotected =") && lower.includes("passwordhash =")) {
+      if (params.length === 3) {
+        const [isProtected, passwordHash, slug] = params as [number, string, string];
+        const page = memoryStore.pages.get(slug) || { slug };
+        page.isProtected = isProtected;
+        page.passwordHash = passwordHash;
+        memoryStore.pages.set(slug, page);
+      } else {
+        const [slug] = params as [string];
+        const page = memoryStore.pages.get(slug) || { slug };
+        page.isProtected = 0;
+        page.passwordHash = null;
+        memoryStore.pages.set(slug, page);
+      }
+    } else if (lower.includes("slug =")) {
+      const [newSlug, oldSlug] = params as [string, string];
+      const page = memoryStore.pages.get(oldSlug);
+      if (page) {
+        memoryStore.pages.delete(oldSlug);
+        page.slug = newSlug;
+        memoryStore.pages.set(newSlug, page);
+      }
+    }
+  } else if (lower.includes("insert into files")) {
+    const [fileId, slug, originalName, storedName, mimetype, size, downloadURL] = params as [string, string, string, string, string, number, string];
+    memoryStore.files.set(fileId, {
+      fileId,
+      slug,
+      originalName,
+      storedName,
+      mimetype,
+      size,
+      downloadURL,
+      uploadedAt: new Date().toISOString(),
+    });
+  } else if (lower.includes("delete from files")) {
+    const [fileId] = params as [string];
+    memoryStore.files.delete(fileId);
+  }
+  return { changes: 1 };
+}
+
+function memoryGet(sql: string, params: unknown[]) {
+  const lower = sql.toLowerCase();
+  if (lower.includes("from pages")) {
+    const [slug] = params as [string];
+    return memoryStore.pages.get(slug) || undefined;
+  } else if (lower.includes("from files")) {
+    const [fileId] = params as [string];
+    if (fileId) {
+      return memoryStore.files.get(fileId) || undefined;
+    }
+  }
+  return undefined;
+}
+
+function memoryAll(sql: string, params: unknown[]) {
+  const lower = sql.toLowerCase();
+  if (lower.includes("from files")) {
+    const [slug] = params as [string];
+    return Array.from(memoryStore.files.values()).filter((f) => f.slug === slug);
+  }
+  return [];
+}
+
+const db = {
+  prepare: (sql: string) => {
+    return {
+      get: async (...params: unknown[]) => {
+        if (pgPool) {
+          const pgSql = convertSqlForPg(sql);
+          const res = await pgPool.query(pgSql, params.flat());
+          return res.rows.length > 0 ? normalizeRow(res.rows[0]) : undefined;
+        }
+        if (sqliteDb) {
+          return sqliteDb.prepare(sql).get(...params);
+        }
+        return memoryGet(sql, params);
+      },
+      run: async (...params: unknown[]) => {
+        if (pgPool) {
+          const pgSql = convertSqlForPg(sql);
+          const res = await pgPool.query(pgSql, params.flat());
+          return { changes: res.rowCount ?? 0 };
+        }
+        if (sqliteDb) {
+          return sqliteDb.prepare(sql).run(...params);
+        }
+        return memoryRun(sql, params);
+      },
+      all: async (...params: unknown[]) => {
+        if (pgPool) {
+          const pgSql = convertSqlForPg(sql);
+          const res = await pgPool.query(pgSql, params.flat());
+          return res.rows.map(normalizeRow);
+        }
+        if (sqliteDb) {
+          return sqliteDb.prepare(sql).all(...params);
+        }
+        return memoryAll(sql, params);
+      },
+    };
+  },
+};
 
 export default db;
