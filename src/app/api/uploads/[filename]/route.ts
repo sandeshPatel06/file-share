@@ -21,7 +21,7 @@ export async function GET(req: NextRequest, ctx: RouteContext) {
     return NextResponse.json({ error: "File not found" }, { status: 404 });
   }
 
-  const fileRecord = db.prepare("SELECT mimetype FROM files WHERE storedName = ?").get(safeFilename) as FileRow | undefined;
+  const fileRecord = (await db.prepare("SELECT mimetype FROM files WHERE storedName = ?").get(safeFilename)) as FileRow | undefined;
   const contentType = fileRecord?.mimetype || "application/octet-stream";
 
   const fileStream = fs.readFileSync(filePath);

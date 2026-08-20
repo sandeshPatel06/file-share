@@ -30,7 +30,7 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Validation error" }, { status: 422 });
   }
 
-  const page = db.prepare("SELECT isProtected, passwordHash FROM pages WHERE slug = ?").get(slug) as PageRow | undefined;
+  const page = (await db.prepare("SELECT isProtected, passwordHash FROM pages WHERE slug = ?").get(slug)) as PageRow | undefined;
   if (!page || !page.isProtected || !page.passwordHash) {
     return NextResponse.json({ error: "Invalid password" }, { status: 401 });
   }

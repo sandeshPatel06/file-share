@@ -25,7 +25,7 @@ export async function DELETE(req: NextRequest, ctx: RouteContext) {
 
   const { slug, id } = await ctx.params;
 
-  const page = db.prepare("SELECT isProtected FROM pages WHERE slug = ?").get(slug) as PageRow | undefined;
+  const page = (await db.prepare("SELECT isProtected FROM pages WHERE slug = ?").get(slug)) as PageRow | undefined;
   if (!page) {
     return NextResponse.json({ error: "Page not found" }, { status: 404 });
   }
@@ -39,7 +39,7 @@ export async function DELETE(req: NextRequest, ctx: RouteContext) {
     if (payload?.slug !== slug) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const fileRecord = db.prepare("SELECT storedName FROM files WHERE fileId = ? AND slug = ?").get(id, slug) as FileRow | undefined;
+  const fileRecord = (await db.prepare("SELECT storedName FROM files WHERE fileId = ? AND slug = ?").get(id, slug)) as FileRow | undefined;
   if (!fileRecord) {
     return NextResponse.json({ error: "File not found" }, { status: 404 });
   }
@@ -54,8 +54,8 @@ export async function DELETE(req: NextRequest, ctx: RouteContext) {
     console.error("Failed to delete local file:", err);
   }
 
-  // Delete metadata record from SQLite
-  db.prepare("DELETE FROM files WHERE fileId = ? AND slug = ?").run(id, slug);
+  // Delete metadata record from SQLite / Postgres
+  await db.prepare("DELETE FROM files WHERE fileId = ? AND slug = ?").run(id, slug);
 
   // Broadcast real-time file deletion to all connected clients
   pageEvents.emit(slug, {

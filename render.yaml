@@ -1,14 +1,10 @@
 services:
   - type: web
-    name: fileshare
+    name: file0share-dev
     env: node
     plan: free
     buildCommand: ./deploy.sh
     startCommand: npm start
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: JWT_SECRET
-        generateValue: true
-      - key: NEXT_PUBLIC_DEFAULT_THEME
-        value: dark
+    autoDeploy: true
+
+
