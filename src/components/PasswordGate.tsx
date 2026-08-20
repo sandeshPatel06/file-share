@@ -49,7 +49,7 @@ export function PasswordGate({ slug, onUnlocked }: PasswordGateProps) {
       <div className="w-full max-w-md animate-fade-in relative z-10">
         <div className="bg-[var(--bg-surface)] rounded-3xl p-8 border border-[var(--border-color)] shadow-2xl text-center">
           {/* Cyber Lock Icon */}
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-500 to-cyan-500 border border-cyan-400/30 flex items-center justify-center mx-auto mb-6 shadow-lg">
+          <div className="w-16 h-16 rounded-2xl bg-[var(--accent-primary)] border border-emerald-500/30 flex items-center justify-center mx-auto mb-6 shadow-md">
             <Lock size={28} className="text-white" />
           </div>
 

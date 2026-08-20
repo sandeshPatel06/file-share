@@ -10,7 +10,7 @@ export default function NotFound() {
 
       <div className="relative text-center animate-fade-in">
         <div className="flex justify-center mb-6">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center shadow-lg">
+          <div className="w-16 h-16 rounded-2xl bg-[var(--accent-primary)] flex items-center justify-center shadow-md">
             <Share2 size={28} className="text-white" />
           </div>
         </div>
@@ -22,7 +22,7 @@ export default function NotFound() {
         <Link
           href="/"
           className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl
-            bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold
+            bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold
             transition-all duration-200 shadow-md active:scale-[0.97]"
         >
           <ArrowLeft size={15} />

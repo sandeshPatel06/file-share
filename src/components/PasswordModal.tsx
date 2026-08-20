@@ -90,6 +90,7 @@ export function PasswordModal({ open, onClose, slug, isProtected, token, onSucce
           <span className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">New Password</span>
           <div className="relative mt-1.5">
             <input
+              autoFocus
               type={showPw ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}

@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
   try {
     const existing = await db.prepare("SELECT slug FROM pages WHERE slug = ?").get(slug);
     if (existing) {
-      return NextResponse.json({ error: "This slug is already taken" }, { status: 409 });
+      return NextResponse.json({ slug, exists: true }, { status: 200 });
     }
 
     const passwordHash = password ? await bcrypt.hash(password, 12) : null;
