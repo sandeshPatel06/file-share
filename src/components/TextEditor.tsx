@@ -10,6 +10,8 @@ import { showToast } from "@/components/ui/Toast";
 import { copyToClipboard } from "@/lib/clipboard";
 import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
+
 interface TextEditorProps {
   slug:           string;
   token:          string | null;
@@ -33,6 +35,7 @@ export function TextEditor({ slug, token, initialContent = "" }: TextEditorProps
   const [showToolbar, setShowToolbar] = useState(true);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [showConfirmClear, setShowConfirmClear] = useState(false);
 
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const statusEl = useRef<HTMLDivElement>(null);
@@ -97,10 +100,18 @@ export function TextEditor({ slug, token, initialContent = "" }: TextEditorProps
     }
   };
 
-  const handleClearText = () => {
+  const handleClearText = async () => {
+    if (saveTimer.current) clearTimeout(saveTimer.current);
     setTextVal("");
-    scheduleSave("");
-    showToast("Notes cleared", "info");
+    updateStatusUI("saving");
+    const ok = await saveContent("", token);
+    updateStatusUI(ok ? "saved" : "idle");
+    if (ok) {
+      showToast("Notes cleared", "info");
+      setTimeout(() => updateStatusUI("idle"), 2000);
+    } else {
+      showToast("Failed to clear notes", "error");
+    }
   };
 
   // Helper to insert Markdown syntax around selection or cursor
@@ -348,7 +359,7 @@ export function TextEditor({ slug, token, initialContent = "" }: TextEditorProps
             {copied ? <Check size={15} className="text-[var(--status-success-text)]" /> : <Copy size={15} />}
           </button>
           <button
-            onClick={handleClearText}
+            onClick={() => setShowConfirmClear(true)}
             className="p-2 rounded-xl bg-[var(--status-danger-bg)] border border-[var(--status-danger-border)] text-[var(--status-danger-text)] hover:opacity-80 transition-all shadow-sm cursor-pointer"
             title="Clear notes"
           >
@@ -356,6 +367,19 @@ export function TextEditor({ slug, token, initialContent = "" }: TextEditorProps
           </button>
         </div>
       </div>
+
+      <ConfirmModal
+        open={showConfirmClear}
+        onClose={() => setShowConfirmClear(false)}
+        onConfirm={() => {
+          setShowConfirmClear(false);
+          handleClearText();
+        }}
+        title="Clear All Notes?"
+        description="Are you sure you want to clear all text content from this workspace? This action will sync live to all connected devices."
+        confirmText="Clear Notes"
+        variant="danger"
+      />
 
       {/* Main Zoho Cliq-Styled Composer Container */}
       <div className="flex-1 min-h-0 p-3 sm:p-5 flex flex-col relative overflow-hidden bg-[var(--bg-main)]">
