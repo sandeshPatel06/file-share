@@ -54,7 +54,7 @@ export const ALLOWED_MIME_TYPES = new Set([
   "video/mp4", "video/webm",
 ]);
 
-export const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
+export const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500 MB
 
 export const uploadRequestSchema = z.object({
   filename: z.string().min(1).max(255),
@@ -66,5 +66,5 @@ export const uploadRequestSchema = z.object({
     .number()
     .int()
     .positive()
-    .max(MAX_FILE_SIZE, "File exceeds 50 MB limit"),
+    .max(MAX_FILE_SIZE, "File exceeds 500 MB limit"),
 });

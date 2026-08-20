@@ -6,6 +6,11 @@ import { pageEvents } from "@/lib/events";
 import { randomUUID } from "crypto";
 import path from "path";
 import fs from "fs";
+import { Readable } from "stream";
+import busboy from "busboy";
+
+export const dynamic = "force-dynamic";
+export const maxDuration = 300; // 5-minute upload duration limit for large files
 
 interface RouteContext {
   params: Promise<{ slug: string }>;
@@ -24,7 +29,9 @@ async function isAuthorized(req: NextRequest, slug: string, isProtected: boolean
   return payload?.slug === slug;
 }
 
-// POST /api/pages/[slug]/files/upload — handle file upload & broadcast live event
+const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500 MB limit
+
+// POST /api/pages/[slug]/files/upload — stream file upload up to 500 MB
 export async function POST(req: NextRequest, ctx: RouteContext) {
   const limited = await rateLimit(req, "general");
   if (limited) return limited;
@@ -41,58 +48,129 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const contentType = req.headers.get("content-type") ?? "";
+  if (!contentType.includes("multipart/form-data")) {
+    return NextResponse.json({ error: "Content-Type must be multipart/form-data" }, { status: 400 });
+  }
+
   try {
-    const formData = await req.formData();
-    const file = formData.get("file") as File | null;
-
-    if (!file) {
-      return NextResponse.json({ error: "No file provided" }, { status: 400 });
-    }
-
-    const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500 MB limit
-    if (file.size > MAX_FILE_SIZE) {
-      return NextResponse.json({ error: "File size exceeds the 500 MB limit" }, { status: 413 });
-    }
-
-    const fileId = randomUUID();
-    const originalName = file.name;
-    const safeName = originalName.replace(/[^a-zA-Z0-9._-]/g, "_");
-    const storedName = `${fileId}-${safeName}`;
-    const mimetype = file.type || "application/octet-stream";
-    const size = file.size;
+    const bb = busboy({
+      headers: { "content-type": contentType },
+      limits: { fileSize: MAX_FILE_SIZE, files: 1 },
+    });
 
     const uploadsDir = path.join(process.cwd(), "uploads");
     if (!fs.existsSync(uploadsDir)) {
       fs.mkdirSync(uploadsDir, { recursive: true });
     }
 
-    const filePath = path.join(uploadsDir, storedName);
-    const bytes = await file.arrayBuffer();
-    fs.writeFileSync(filePath, Buffer.from(bytes));
+    const fileId = randomUUID();
+    let originalName = "file";
+    let storedName = "";
+    let mimetype = "application/octet-stream";
+    let filePath = "";
+    let fileSize = 0;
+    let limitExceeded = false;
+    let fileFound = false;
 
-    const downloadURL = `/api/uploads/${storedName}`;
+    const parsePromise = new Promise<{
+      fileId: string;
+      originalName: string;
+      storedName: string;
+      mimetype: string;
+      size: number;
+    }>((resolve, reject) => {
+      bb.on("file", (_name, fileStream, info) => {
+        fileFound = true;
+        originalName = info.filename || "file";
+        mimetype = info.mimeType || "application/octet-stream";
+        const safeName = originalName.replace(/[^a-zA-Z0-9._-]/g, "_");
+        storedName = `${fileId}-${safeName}`;
+        filePath = path.join(uploadsDir, storedName);
+
+        const writeStream = fs.createWriteStream(filePath);
+
+        fileStream.on("data", (chunk: Buffer) => {
+          fileSize += chunk.length;
+        });
+
+        fileStream.on("limit", () => {
+          limitExceeded = true;
+          fileStream.resume();
+        });
+
+        fileStream.pipe(writeStream);
+
+        writeStream.on("error", (err) => {
+          reject(err);
+        });
+      });
+
+      bb.on("finish", () => {
+        if (!fileFound) {
+          reject(new Error("No file provided"));
+          return;
+        }
+        if (limitExceeded || fileSize > MAX_FILE_SIZE) {
+          if (filePath && fs.existsSync(filePath)) {
+            try { fs.unlinkSync(filePath); } catch {}
+          }
+          reject(new Error("File size exceeds the 500 MB limit"));
+          return;
+        }
+        resolve({
+          fileId,
+          originalName,
+          storedName,
+          mimetype,
+          size: fileSize,
+        });
+      });
+
+      bb.on("error", (err) => reject(err));
+    });
+
+    if (req.body) {
+      const nodeStream = Readable.fromWeb(req.body as import("stream/web").ReadableStream);
+      nodeStream.pipe(bb);
+    } else {
+      return NextResponse.json({ error: "Empty request body" }, { status: 400 });
+    }
+
+    const uploadedInfo = await parsePromise;
+    const downloadURL = `/api/uploads/${uploadedInfo.storedName}`;
 
     await db.prepare(`
       INSERT INTO files (fileId, slug, originalName, storedName, mimetype, size, downloadURL)
       VALUES (?, ?, ?, ?, ?, ?, ?)
-    `).run(fileId, slug, originalName, storedName, mimetype, size, downloadURL);
+    `).run(
+      uploadedInfo.fileId,
+      slug,
+      uploadedInfo.originalName,
+      uploadedInfo.storedName,
+      uploadedInfo.mimetype,
+      uploadedInfo.size,
+      downloadURL
+    );
 
     // Broadcast real-time file addition to all connected clients
     pageEvents.emit(slug, {
       type: "files_updated",
       action: "uploaded",
-      fileId,
+      fileId: uploadedInfo.fileId,
     });
 
     return NextResponse.json({
-      fileId,
-      originalName,
+      fileId: uploadedInfo.fileId,
+      originalName: uploadedInfo.originalName,
       downloadURL,
-      mimetype,
-      size,
+      mimetype: uploadedInfo.mimetype,
+      size: uploadedInfo.size,
     }, { status: 201 });
+
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "File upload failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const status = message.includes("exceeds") ? 413 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }
