@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 import { generateSlug } from "@/lib/slugGenerator";
 import db from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+
 export default async function Home() {
   const newSlug = generateSlug();
 
@@ -16,3 +18,4 @@ export default async function Home() {
 
   redirect(`/s/${newSlug}`);
 }
+

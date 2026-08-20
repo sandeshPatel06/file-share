@@ -50,7 +50,7 @@ export function TextEditor({ slug, token }: TextEditorProps) {
   const saveContent = useCallback(async (newText: string, authToken: string | null) => {
     touchLocalEdit();
     try {
-      const res = await fetch(`/api/pages/${slug}`, {
+      const res = await fetch(`/api/pages/${slug}/content`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
