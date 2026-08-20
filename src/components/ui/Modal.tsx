@@ -69,3 +69,5 @@ export function Modal({ open, onClose, title, children, maxWidth = "max-w-md" }:
 
   return createPortal(modalContent, document.body);
 }
+
+export const Dialog = Modal;

@@ -1,6 +1,6 @@
 "use client";
 import { FileItem } from "@/hooks/useFileList";
-import { Download, Trash2, File, FileText, Image as ImageIcon, FileArchive, FileAudio, FileVideo, Code2, Eye, Copy, Check } from "lucide-react";
+import { Download, Trash2, File, FileText, Image as ImageIcon, FileArchive, FileAudio, FileVideo, Eye, Copy, Check, FileSpreadsheet, Presentation, FileCode } from "lucide-react";
 import { showToast } from "@/components/ui/Toast";
 import { useState } from "react";
 import { FilePreviewModal } from "@/components/FilePreviewModal";
@@ -12,14 +12,69 @@ interface FileCardProps {
   token: string | null;
 }
 
-function FileIcon({ mimetype }: { mimetype: string }) {
+function FileIcon({ filename, mimetype }: { filename: string; mimetype: string }) {
   const cls = "shrink-0";
-  if (mimetype.startsWith("image/"))  return <ImageIcon size={18} className={`${cls} text-[var(--accent-sky)]`} />;
-  if (mimetype.startsWith("audio/"))  return <FileAudio size={18} className={`${cls} text-purple-500 dark:text-purple-400`} />;
-  if (mimetype.startsWith("video/"))  return <FileVideo size={18} className={`${cls} text-[var(--status-danger-text)]`} />;
-  if (mimetype === "application/pdf") return <FileText  size={18} className={`${cls} text-amber-600 dark:text-amber-400`} />;
-  if (mimetype.includes("zip") || mimetype.includes("rar") || mimetype.includes("tar")) return <FileArchive size={18} className={`${cls} text-[var(--status-success-text)]`} />;
-  if (mimetype.startsWith("text/") || mimetype === "application/json" || mimetype.includes("javascript")) return <Code2 size={18} className={`${cls} text-[var(--accent-indigo)]`} />;
+  const ext = (filename.includes(".") ? (filename.split(".").pop() || "") : "").toUpperCase();
+
+  // Images
+  if (mimetype.startsWith("image/") || ["JPG", "JPEG", "PNG", "GIF", "WEBP", "SVG", "ICO", "BMP", "TIFF"].includes(ext)) {
+    return <ImageIcon size={18} className={`${cls} text-[var(--accent-sky)]`} />;
+  }
+
+  // Audio
+  if (mimetype.startsWith("audio/") || ["MP3", "WAV", "OGG", "FLAC", "AAC", "M4A", "WMA"].includes(ext)) {
+    return <FileAudio size={18} className={`${cls} text-purple-500 dark:text-purple-400`} />;
+  }
+
+  // Video
+  if (mimetype.startsWith("video/") || ["MP4", "WEBM", "MKV", "AVI", "MOV", "WMV", "FLV"].includes(ext)) {
+    return <FileVideo size={18} className={`${cls} text-[var(--status-danger-text)]`} />;
+  }
+
+  // PDF
+  if (mimetype === "application/pdf" || ext === "PDF") {
+    return <FileText size={18} className={`${cls} text-amber-500`} />;
+  }
+
+  // Spreadsheets
+  if (["XLS", "XLSX", "CSV", "TSV", "ODS"].includes(ext) || mimetype.includes("spreadsheet") || mimetype.includes("excel") || mimetype === "text/csv") {
+    return <FileSpreadsheet size={18} className={`${cls} text-emerald-500`} />;
+  }
+
+  // Presentations
+  if (["PPT", "PPTX", "KEY", "ODP"].includes(ext) || mimetype.includes("presentation") || mimetype.includes("powerpoint")) {
+    return <Presentation size={18} className={`${cls} text-orange-500`} />;
+  }
+
+  // Word Documents
+  if (["DOC", "DOCX", "ODT", "RTF"].includes(ext) || mimetype.includes("wordprocessingml") || mimetype.includes("msword")) {
+    return <FileText size={18} className={`${cls} text-blue-500`} />;
+  }
+
+  // Archives
+  if (["ZIP", "RAR", "7Z", "TAR", "GZ", "BZ2", "XZ"].includes(ext) || mimetype.includes("zip") || mimetype.includes("compressed") || mimetype.includes("archive")) {
+    return <FileArchive size={18} className={`${cls} text-purple-400`} />;
+  }
+
+  // Code & Text Scripts
+  if (
+    mimetype.startsWith("text/") ||
+    mimetype.includes("json") ||
+    mimetype.includes("javascript") ||
+    ["JS", "TS", "TSX", "JSX", "PY", "HTML", "CSS", "JSON", "SH", "C", "CPP", "GO", "RS", "JAVA", "PHP", "RB", "SQL", "MD", "XML", "YAML", "YML"].includes(ext)
+  ) {
+    return <FileCode size={18} className={`${cls} text-[var(--accent-indigo)]`} />;
+  }
+
+  // Fallback Pill Badge for Unknown Extensions (e.g. SIG, APK, ISO, DAT, BIN, EXE, PSD, AI)
+  if (ext) {
+    return (
+      <span className="font-mono text-[9px] font-extrabold text-[var(--accent-indigo)] tracking-tighter uppercase select-none">
+        {ext.slice(0, 3)}
+      </span>
+    );
+  }
+
   return <File size={18} className={`${cls} text-[var(--text-muted)]`} />;
 }
 
@@ -31,25 +86,32 @@ function formatBytes(bytes: number): string {
 
 function timeAgo(seconds: number): string {
   const diff = Math.floor(Date.now() / 1000) - seconds;
-  if (diff < 60)   return "just now";
+  if (diff < 15)    return "just now";
+  if (diff < 60)   return `${Math.max(1, diff)}s ago`;
   if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
   if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
   return `${Math.floor(diff / 86400)}d ago`;
 }
 
+function formatUserLocalDateTime(seconds: number): string {
+  const d = new Date(seconds * 1000);
+  return d.toLocaleString(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
+
 export function FileCard({ file, slug, token }: FileCardProps) {
-  const [deleting, setDeleting] = useState(false);
-  const [confirmDel, setConfirmDel] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
-  const [copiedUrl, setCopiedUrl] = useState(false);
+  const [deleting,          setDeleting]          = useState(false);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [showPreview,       setShowPreview]       = useState(false);
+  const [copiedUrl,         setCopiedUrl]         = useState(false);
 
   async function handleDelete() {
-    if (!confirmDel) {
-      setConfirmDel(true);
-      setTimeout(() => setConfirmDel(false), 3500);
-      return;
-    }
-
     setDeleting(true);
     try {
       const res = await fetch(`/api/pages/${slug}/files/${file.fileId}`, {
@@ -59,7 +121,7 @@ export function FileCard({ file, slug, token }: FileCardProps) {
       if (!res.ok) { showToast("Failed to delete file", "error"); return; }
       showToast("File deleted", "info");
     } catch { showToast("Connection error", "error"); }
-    finally { setDeleting(false); setConfirmDel(false); }
+    finally { setDeleting(false); setShowConfirmDelete(false); }
   }
 
   async function handleCopyUrl() {
@@ -89,7 +151,7 @@ export function FileCard({ file, slug, token }: FileCardProps) {
             className="w-9 h-9 rounded-xl bg-[var(--badge-bg)] border border-[var(--badge-border)] hover:border-[var(--accent-primary)] flex items-center justify-center shrink-0 shadow-sm transition-all hover:scale-105 cursor-pointer"
             title="Click to preview file"
           >
-            <FileIcon mimetype={file.mimetype} />
+            <FileIcon filename={file.originalName} mimetype={file.mimetype} />
           </button>
 
           {/* File name and single-line metadata */}
@@ -100,7 +162,9 @@ export function FileCard({ file, slug, token }: FileCardProps) {
             <p className="text-[11px] text-[var(--text-muted)] mt-0.5 font-mono whitespace-nowrap truncate font-semibold">
               {formatBytes(file.size)}
               {file.uploadedAt && (
-                <span className="text-[var(--text-subtle)]"> · {timeAgo(file.uploadedAt.seconds)}</span>
+                <span className="text-[var(--text-subtle)]" title={formatUserLocalDateTime(file.uploadedAt.seconds)}>
+                  {" · "}{timeAgo(file.uploadedAt.seconds)}
+                </span>
               )}
             </p>
           </div>
@@ -140,27 +204,31 @@ export function FileCard({ file, slug, token }: FileCardProps) {
           </a>
 
           <button
-            onClick={handleDelete}
-            disabled={deleting}
-            title={confirmDel ? "Click again to confirm delete" : "Delete file"}
-            className={`
-              p-2 rounded-xl transition-all shadow-sm font-bold text-xs flex items-center gap-1 border cursor-pointer
-              ${confirmDel
-                ? "bg-rose-600 text-white border-rose-700"
-                : "bg-[var(--status-danger-bg)] text-[var(--status-danger-text)] border-[var(--status-danger-border)] hover:opacity-80"
-              }
-            `}
+            onClick={() => setShowConfirmDelete(true)}
+            title="Delete file"
+            className="p-2 rounded-xl bg-[var(--status-danger-bg)] text-[var(--status-danger-text)] border border-[var(--status-danger-border)] hover:opacity-80 transition-all shadow-sm flex items-center justify-center cursor-pointer"
           >
             <Trash2 size={14} />
-            {confirmDel ? "Confirm?" : ""}
           </button>
         </div>
       </div>
 
       <FilePreviewModal
         file={file}
+        token={token}
         open={showPreview}
         onClose={() => setShowPreview(false)}
+      />
+
+      <ConfirmModal
+        open={showConfirmDelete}
+        onClose={() => setShowConfirmDelete(false)}
+        onConfirm={handleDelete}
+        title="Delete File?"
+        description={`Are you sure you want to permanently delete "${file.originalName}"?`}
+        confirmText="Delete File"
+        variant="danger"
+        loading={deleting}
       />
     </>
   );

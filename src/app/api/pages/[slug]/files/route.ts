@@ -21,6 +21,13 @@ interface PageRow {
   isProtected: number;
 }
 
+function parseUtcSeconds(uploadedAt: string): number {
+  const iso = uploadedAt.includes("T")
+    ? (uploadedAt.endsWith("Z") ? uploadedAt : `${uploadedAt}Z`)
+    : `${uploadedAt.replace(" ", "T")}Z`;
+  return Math.floor(new Date(iso).getTime() / 1000);
+}
+
 // GET /api/pages/[slug]/files — list all files for a page (verifies auth if protected)
 export async function GET(req: NextRequest, ctx: RouteContext) {
   const limited = await rateLimit(req, "general");
@@ -54,7 +61,7 @@ export async function GET(req: NextRequest, ctx: RouteContext) {
       mimetype: f.mimetype,
       size: f.size,
       downloadURL: f.downloadURL,
-      uploadedAt: f.uploadedAt ? { seconds: Math.floor(new Date(f.uploadedAt).getTime() / 1000) } : null,
+      uploadedAt: f.uploadedAt ? { seconds: parseUtcSeconds(f.uploadedAt) } : null,
     }));
 
     return NextResponse.json(formattedFiles);
