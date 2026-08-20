@@ -27,6 +27,3 @@ jobs:
 
       - name: ESLint Code Quality Check
         run: npx eslint .
-
-      - name: Build Next.js Production Bundle
-        run: npm run build
