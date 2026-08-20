@@ -1,8 +1,14 @@
 import { NextRequest } from "next/server";
 import { pageEvents } from "@/lib/events";
+import db from "@/lib/db";
+import { verifyPageToken } from "@/lib/jwt";
 
 interface RouteContext {
   params: Promise<{ slug: string }>;
+}
+
+interface PageRow {
+  isProtected: number;
 }
 
 export const dynamic = "force-dynamic";
@@ -11,6 +17,22 @@ export const runtime = "nodejs";
 // GET /api/pages/[slug]/events — Server-Sent Events stream for instant real-time updates
 export async function GET(req: NextRequest, ctx: RouteContext) {
   const { slug } = await ctx.params;
+
+  const page = (await db.prepare("SELECT isProtected FROM pages WHERE slug = ?").get(slug)) as PageRow | undefined;
+  if (page?.isProtected) {
+    const authHeader = req.headers.get("authorization") ?? "";
+    const tokenParam = req.nextUrl.searchParams.get("token") ?? "";
+    const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : tokenParam;
+
+    if (!token) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
+    }
+    const payload = await verifyPageToken(token);
+    if (payload?.slug !== slug) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } });
+    }
+  }
+
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream({
