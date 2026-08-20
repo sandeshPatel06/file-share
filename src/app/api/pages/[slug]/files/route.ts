@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
 import { rateLimit } from "@/lib/rateLimiter";
+import { verifyPageToken } from "@/lib/jwt";
 
 interface RouteContext {
   params: Promise<{ slug: string }>;
@@ -16,12 +17,28 @@ interface FileRow {
   uploadedAt: string | null;
 }
 
-// GET /api/pages/[slug]/files — list all files for a page
+interface PageRow {
+  isProtected: number;
+}
+
+// GET /api/pages/[slug]/files — list all files for a page (verifies auth if protected)
 export async function GET(req: NextRequest, ctx: RouteContext) {
   const limited = await rateLimit(req, "general");
   if (limited) return limited;
 
   const { slug } = await ctx.params;
+
+  const page = (await db.prepare("SELECT isProtected FROM pages WHERE slug = ?").get(slug)) as PageRow | undefined;
+  if (page?.isProtected) {
+    const authHeader = req.headers.get("authorization") ?? "";
+    const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
+    if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    
+    const payload = await verifyPageToken(token);
+    if (payload?.slug !== slug) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+  }
 
   try {
     const files = (await db.prepare(`
