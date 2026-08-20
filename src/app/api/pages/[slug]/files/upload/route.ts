@@ -49,6 +49,11 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
+    const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500 MB limit
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json({ error: "File size exceeds the 500 MB limit" }, { status: 413 });
+    }
+
     const fileId = randomUUID();
     const originalName = file.name;
     const safeName = originalName.replace(/[^a-zA-Z0-9._-]/g, "_");
