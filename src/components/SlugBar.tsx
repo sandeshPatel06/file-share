@@ -136,15 +136,16 @@ export function SlugBar({ slug, isProtected, token, onLockClick }: SlugBarProps)
             loading={saving}
             onClick={handleSave}
             title={available === false ? "Open existing workspace" : "Save workspace URL"}
+            aria-label={available === false ? "Open existing workspace" : "Save workspace URL"}
             className="shrink-0 h-8"
           />
-          <Button size="sm" variant="ghost" icon={<X size={13} />} onClick={cancelEditing} className="shrink-0 h-8" />
+          <Button size="sm" variant="ghost" icon={<X size={13} />} onClick={cancelEditing} aria-label="Cancel editing" className="shrink-0 h-8" />
         </div>
       ) : (
         <div className="flex items-center gap-2 min-w-0 shrink">
           <div className="w-7 h-7 rounded-xl overflow-hidden shadow-md border border-[var(--border-glow)] shrink-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="FileShare Logo" className="w-full h-full object-cover" />
+            <img src="/logo.png" alt="FileShare Logo" width={28} height={28} decoding="async" className="w-full h-full object-cover" />
           </div>
           <span className="text-[var(--text-subtle)] text-xs font-mono select-none hidden sm:inline">/s/</span>
           <span className="text-xs sm:text-base font-extrabold text-[var(--text-main)] truncate max-w-[80px] min-[400px]:max-w-[140px] sm:max-w-[220px] font-mono tracking-tight">
@@ -154,6 +155,7 @@ export function SlugBar({ slug, isProtected, token, onLockClick }: SlugBarProps)
             onClick={startEditing}
             className="text-[var(--text-subtle)] hover:text-[var(--accent-indigo)] hover:bg-black/5 dark:hover:bg-white/10 p-1 rounded-lg transition-colors shrink-0 cursor-pointer"
             title="Edit workspace URL"
+            aria-label="Edit workspace URL"
           >
             <Pencil size={13} />
           </button>
@@ -166,6 +168,7 @@ export function SlugBar({ slug, isProtected, token, onLockClick }: SlugBarProps)
           onClick={() => setShowQR(true)}
           className="p-1.5 sm:p-2 rounded-xl bg-[var(--badge-bg)] border border-[var(--border-color)] text-[var(--text-main)] hover:opacity-80 transition-all shadow-sm cursor-pointer"
           title="Show QR Code"
+          aria-label="Show QR Code"
         >
           <QrCode size={14} />
         </button>
@@ -181,6 +184,7 @@ export function SlugBar({ slug, isProtected, token, onLockClick }: SlugBarProps)
             }
           `}
           title="Copy workspace link"
+          aria-label="Copy workspace link"
         >
           {copied ? <CheckCheck size={14} className="text-[var(--status-success-text)]" /> : <Copy size={14} />}
           <span className="hidden sm:inline">{copied ? "Copied!" : "Copy Link"}</span>
@@ -190,15 +194,16 @@ export function SlugBar({ slug, isProtected, token, onLockClick }: SlugBarProps)
         <button
           onClick={onLockClick}
           title={isProtected ? "Protected with password" : "Set protection password"}
+          aria-label={isProtected ? "Protected with password" : "Set protection password"}
           className={`
             flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-extrabold transition-all duration-200 border shadow-sm cursor-pointer
             ${isProtected
-              ? "text-[var(--badge-text)] bg-[var(--badge-bg)] border-[var(--badge-border)]"
-              : "text-[var(--text-main)] bg-[var(--badge-bg)] hover:bg-[var(--border-color)] border-[var(--border-color)]"
+              ? "bg-[var(--badge-bg)] text-[var(--badge-text)] border-[var(--badge-border)]"
+              : "bg-[var(--badge-bg)] text-[var(--text-main)] hover:bg-[var(--border-color)] border-[var(--border-color)]"
             }
           `}
         >
-          {isProtected ? <Lock size={14} /> : <Unlock size={14} />}
+          {isProtected ? <Lock size={14} className="text-[var(--badge-text)]" /> : <Unlock size={14} />}
           <span className="hidden sm:inline">{isProtected ? "Protected" : "Protect"}</span>
         </button>
 

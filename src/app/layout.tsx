@@ -20,8 +20,8 @@ const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#090d16" },
-    { media: "(prefers-color-scheme: light)", color: "#f8fafc" },
+    { media: "(prefers-color-scheme: dark)", color: "#0d1117" },
+    { media: "(prefers-color-scheme: light)", color: "#f6f8fa" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -31,12 +31,12 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl),
   title: {
-    default: "FileShare — Real-Time Notes & File Sharing Vault",
+    default: "FileShare — Instant Real-Time Notes & Secure File Sharing Vault",
     template: "%s | FileShare",
   },
   description: "Create instant, anonymous workspaces to collaborate, edit live Markdown notes, and share files in real-time. Zero registration required.",
   keywords: [
-    "file sharing",
+    "file share",
     "real-time notes",
     "online notepad",
     "collaborative markdown editor",
@@ -44,20 +44,28 @@ export const metadata: Metadata = {
     "anonymous file transfer",
     "temporary workspace",
     "instant code sharing",
+    "live text editor",
+    "secure file storage",
   ],
-  authors: [{ name: "FileShare Team" }],
-  creator: "FileShare",
+  authors: [{ name: "SANDESH-PATEL" }],
+  creator: "SANDESH-PATEL",
   publisher: "FileShare",
   category: "Productivity",
+  alternates: {
+    canonical: appUrl,
+  },
   icons: {
-    icon: "/icon.png",
+    icon: [
+      { url: "/icon.png", type: "image/png" },
+      { url: "/favicon.png", type: "image/png" },
+    ],
     shortcut: "/icon.png",
-    apple: "/logo.png",
+    apple: "/apple-icon.png",
   },
   manifest: "/manifest.json",
   openGraph: {
-    title: "FileShare — Real-Time Notes & File Sharing Vault",
-    description: "Share notes & large files instantly with live real-time synchronization. Zero registration needed.",
+    title: "FileShare — Instant Real-Time Notes & Secure File Sharing Vault",
+    description: "Share notes & large files instantly with live real-time synchronization. Zero registration required.",
     url: appUrl,
     siteName: "FileShare",
     locale: "en_US",
@@ -67,13 +75,13 @@ export const metadata: Metadata = {
         url: `${appUrl}/logo.png`,
         width: 512,
         height: 512,
-        alt: "FileShare Logo",
+        alt: "FileShare Logo — Real-Time Notes & File Sharing Vault",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "FileShare — Real-Time Notes & File Sharing Vault",
+    title: "FileShare — Instant Real-Time Notes & Secure File Sharing Vault",
     description: "Share notes & files instantly in real-time. No sign-up required.",
     images: [`${appUrl}/logo.png`],
   },
@@ -97,10 +105,11 @@ export default function RootLayout({
 }) {
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "WebApplication",
+    "@type": "SoftwareApplication",
     "name": "FileShare",
     "url": appUrl,
-    "description": "Real-time collaborative text editor and secure file sharing workspace.",
+    "image": `${appUrl}/logo.png`,
+    "description": "Instant real-time collaborative text editor and secure file sharing workspace.",
     "applicationCategory": "ProductivityApplication",
     "operatingSystem": "All",
     "browserRequirements": "Requires JavaScript. Requires HTML5.",
@@ -109,17 +118,38 @@ export default function RootLayout({
       "price": "0",
       "priceCurrency": "USD",
     },
+    "featureList": [
+      "Real-time live Markdown editing",
+      "Instant multi-file upload vault",
+      "Password protection & encryption",
+      "Custom workspace URL slugs",
+      "Zero registration required"
+    ],
   };
 
   return (
     <html lang="en" className={`${plusJakartaSans.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
       <head>
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="FileShare" />
+        <meta property="og:title" content="FileShare — Instant Real-Time Notes & Secure File Sharing Vault" />
+        <meta property="og:description" content="Create instant, anonymous workspaces to collaborate, edit live Markdown notes, and share files in real-time. Zero registration required." />
+        <meta property="og:url" content={appUrl} />
+        <meta property="og:image" content={`${appUrl}/logo.png`} />
+        <meta property="og:image:width" content="512" />
+        <meta property="og:image:height" content="512" />
+        <meta property="og:image:type" content="image/png" />
+        <meta property="og:image:alt" content="FileShare Logo — Real-Time Notes & File Sharing Vault" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="FileShare — Instant Real-Time Notes & Secure File Sharing Vault" />
+        <meta name="twitter:description" content="Share notes & files instantly in real-time. No sign-up required." />
+        <meta name="twitter:image" content={`${appUrl}/logo.png`} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-        <body className="antialiased bg-[var(--bg-main)] text-[var(--text-main)] min-h-dvh font-sans transition-colors duration-200">
+      <body className="antialiased bg-[var(--bg-main)] text-[var(--text-main)] min-h-dvh font-sans transition-colors duration-200">
         <ThemeProvider
           attribute="class"
           defaultTheme={process.env.NEXT_PUBLIC_DEFAULT_THEME || "dark"}

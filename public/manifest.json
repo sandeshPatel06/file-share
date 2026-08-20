@@ -4,8 +4,8 @@
   "description": "Share notes & files instantly in real-time. No sign-up required.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#090d16",
-  "theme_color": "#090d16",
+  "background_color": "#0d1117",
+  "theme_color": "#0d1117",
   "icons": [
     {
       "src": "/icon.png",

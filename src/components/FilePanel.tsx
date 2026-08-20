@@ -93,6 +93,7 @@ export function FilePanel({ slug, token }: FilePanelProps) {
             ref={inputRef}
             type="file"
             multiple
+            aria-label="Upload files to space vault"
             className="hidden"
             onChange={(e) => handleFiles(e.target.files)}
           />
