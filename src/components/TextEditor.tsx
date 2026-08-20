@@ -447,6 +447,7 @@ export function TextEditor({ slug, token }: TextEditorProps) {
                   value={displayContent}
                   onChange={handleChange}
                   placeholder="Type or paste notes here…"
+                  aria-label="Notes markdown content editor"
                   className="w-full flex-1 resize-none bg-transparent text-[var(--text-main)] p-4 sm:p-5 outline-none font-mono text-sm leading-relaxed placeholder-[var(--text-subtle)]"
                 />
 
@@ -458,6 +459,7 @@ export function TextEditor({ slug, token }: TextEditorProps) {
                       onClick={() => fileInputRef.current?.click()}
                       disabled={uploading}
                       title="Attach File to Space Vault"
+                      aria-label="Attach File to Space Vault"
                       className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer disabled:opacity-50"
                     >
                       {uploading ? <Loader2 size={15} className="animate-spin text-[var(--accent-indigo)]" /> : <Paperclip size={15} />}
@@ -466,6 +468,7 @@ export function TextEditor({ slug, token }: TextEditorProps) {
                     <button
                       onClick={() => applyFormat("[🎙️ Audio Note](", ")")}
                       title="Voice / Audio Note format"
+                      aria-label="Voice / Audio Note format"
                       className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
                     >
                       <Mic size={15} />
@@ -473,6 +476,7 @@ export function TextEditor({ slug, token }: TextEditorProps) {
                     <button
                       onClick={() => videoInputRef.current?.click()}
                       title="Attach Video file"
+                      aria-label="Attach Video file"
                       className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
                     >
                       <Video size={15} />
@@ -480,6 +484,7 @@ export function TextEditor({ slug, token }: TextEditorProps) {
                     <button
                       onClick={() => applyFormat("```javascript\n// Code Snippet\n", "\n```")}
                       title="Insert Code Snippet"
+                      aria-label="Insert Code Snippet"
                       className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
                     >
                       <Monitor size={15} />
@@ -488,6 +493,7 @@ export function TextEditor({ slug, token }: TextEditorProps) {
                     <button
                       onClick={() => applyFormat("```\n", "\n```")}
                       title="Insert Code Block"
+                      aria-label="Insert Code Block"
                       className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
                     >
                       <FileCode size={15} />
@@ -500,6 +506,7 @@ export function TextEditor({ slug, token }: TextEditorProps) {
                     <button
                       onClick={() => setShowToolbar(!showToolbar)}
                       title="Toggle Formatting Toolbar"
+                      aria-label="Toggle Formatting Toolbar"
                       className={`p-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                         showToolbar
                           ? "bg-[var(--accent-primary)] text-white shadow-sm"
@@ -514,6 +521,7 @@ export function TextEditor({ slug, token }: TextEditorProps) {
                       <button
                         onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                         title="Insert Emoji"
+                        aria-label="Insert Emoji"
                         className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
                       >
                         <Smile size={16} />
