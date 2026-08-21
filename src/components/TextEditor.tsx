@@ -1,179 +1,180 @@
 "use client";
-import { useCallback, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import {
-  CheckCircle2, Loader2, Sparkles, Copy, Check, Trash2,
-  Quote, Link, Eye, Edit3, Columns, Paperclip, Smile, Code2, Code,
-  Bold, Italic, Strikethrough, Heading1, Heading2, Heading3, List,
-  ListOrdered, CheckSquare, Table, Image as ImageIcon, Minus
+  Heading1, Heading2, Heading3, Bold, Italic, Strikethrough,
+  List, ListOrdered, CheckSquare, Quote, Code, Table, Sparkles,
+  CheckCircle2, Loader2, Upload, Layout, Eye, Columns,
+  Maximize2, Minimize2, Download, Printer, FileText, FileCode,
+  Image as ImageIcon, FileSpreadsheet, ChevronDown, Check, FileJson
 } from "lucide-react";
 import { usePageContent } from "@/hooks/usePageContent";
 import { showToast } from "@/components/ui/Toast";
-import { copyToClipboard } from "@/lib/clipboard";
 import { MarkdownRenderer } from "@/components/MarkdownRenderer";
-import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { Modal } from "@/components/ui/Modal";
+import { Button } from "@/components/ui/Button";
 
 interface TextEditorProps {
-  slug:           string;
-  token:          string | null;
-  initialContent?: string;
+  slug: string;
+  initialContent: string;
+  token: string | null;
 }
 
-type SaveStatus = "idle" | "saving" | "saved";
-type ViewMode = "write" | "split" | "preview";
+type ViewMode = "write" | "preview" | "split";
 
-// Emoji catalog for the quick picker
-const EMOJI_CATEGORIES = [
-  { label: "Smiles", emojis: ["😊", "😄", "🚀", "⚡", "🔥", "✨", "💡", "🎉", "👍", "❤️", "🙌", "🎯"] },
-  { label: "Symbols", emojis: ["✅", "❌", "⚠️", "📌", "🔍", "💬", "📝", "📊", "🔒", "🔑", "🌐", "🛠️"] },
+const TEMPLATES = [
+  {
+    id: "meeting",
+    title: "📅 Meeting Notes",
+    description: "Agenda, attendees, key decisions, and action items",
+    content: `# 📅 Meeting Notes: [Topic]\n**Date**: ${new Date().toLocaleDateString()} | **Time**: 10:00 AM\n**Attendees**: @person1, @person2, @person3\n\n---\n\n## 🎯 Meeting Objectives\n- Objective 1\n- Objective 2\n\n---\n\n## 📝 Key Discussion Points\n1. Item 1: Summary of discussion\n2. Item 2: Summary of discussion\n\n---\n\n## 🚀 Action Items\n- [ ] Task 1 - Assigned to @person1\n- [ ] Task 2 - Assigned to @person2\n\n---\n\n## ✅ Final Decisions\n> Decision 1 reached during meeting.\n`,
+  },
+  {
+    id: "kanban",
+    title: "📋 Project Task Board",
+    description: "To-do, in-progress, review, and done task list",
+    content: `# 📋 Project Task Board\n\n---\n\n### ⏳ To Do\n- [ ] Design mockup reviews\n- [ ] Database schema migration\n- [ ] Unit test implementation\n\n---\n\n### 🏃 In Progress\n- [ ] API endpoint optimization\n- [ ] UI spacing & theme polish\n\n---\n\n### 🔍 In Review\n- [ ] User authentication flow\n\n---\n\n### ✅ Completed\n- [x] Initial project setup\n- [x] Database initial seeding\n`,
+  },
+  {
+    id: "techspec",
+    title: "🚀 Technical Specification",
+    description: "Architecture roadmap, endpoints, and data model",
+    content: `# 🚀 Tech Spec: [Feature Name]\n\n---\n\n## 1. Overview\nBrief description of problem statement and architecture design.\n\n---\n\n## 2. System Architecture\n\`\`\`mermaid\ngraph TD\n    A[Client UI] -->|HTTP Request| B[API Gateway]\n    B -->|Query| C[(SQLite DB)]\n    B -->|Push Event| D[SSE Event Engine]\n\`\`\`\n\n---\n\n## 3. API Contract\n| Method | Endpoint | Description |\n| :--- | :--- | :--- |\n| \`GET\` | \`/api/resource\` | Fetch list of resources |\n| \`POST\` | \`/api/resource\` | Create new resource |\n\n---\n\n## 4. Key Security Considerations\n- JWT Token Verification\n- Rate Limiting (100 req / min)\n`,
+  },
+  {
+    id: "journal",
+    title: "📔 Daily Work Log",
+    description: "Today's wins, learnings, blockers, and notes",
+    content: `# 📔 Work Log — ${new Date().toLocaleDateString()}\n\n---\n\n## 🏆 Key Accomplishments\n- Accomplishment 1\n- Accomplishment 2\n\n---\n\n## 💡 Learnings & Insights\n- Insight 1\n- Insight 2\n\n---\n\n## 🚧 Current Blockers\n- None\n\n---\n\n## 🎯 Tomorrow's Priorities\n- [ ] Priority 1\n- [ ] Priority 2\n`,
+  },
 ];
 
-export function TextEditor({ slug, token, initialContent = "" }: TextEditorProps) {
+export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
   const { content: serverContent, loading, touchLocalEdit } = usePageContent(slug, initialContent);
-  const [textVal, setTextVal] = useState<string | null>(null);
-  const [copied, setCopied]   = useState(false);
-  const [viewMode, setViewMode] = useState<ViewMode>("split");
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [showConfirmClear, setShowConfirmClear] = useState(false);
 
-  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const statusEl = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const lineNumbersRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [displayContent, setDisplayContent] = useState(initialContent);
+  const [viewMode, setViewMode]             = useState<ViewMode>("split");
+  const [uploading, setUploading]           = useState(false);
+  const [zenMode, setZenMode]               = useState(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
 
-  const displayContent = textVal !== null ? textVal : (serverContent ?? initialContent);
+  const fileInputRef    = useRef<HTMLInputElement>(null);
+  const textareaRef     = useRef<HTMLTextAreaElement>(null);
+  const lineNumbersRef  = useRef<HTMLDivElement>(null);
+  const statusEl        = useRef<HTMLDivElement>(null);
+  const exportMenuRef   = useRef<HTMLDivElement>(null);
+  const lastPushedRef   = useRef<string>(initialContent);
+  const debounceTimer   = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const updateStatusUI = (status: SaveStatus) => {
-    if (statusEl.current) {
-      statusEl.current.setAttribute("data-status", status);
+  // Sync server updates if user hasn't edited locally
+  useEffect(() => {
+    if (serverContent !== null && serverContent !== lastPushedRef.current) {
+      setDisplayContent(serverContent);
+      lastPushedRef.current = serverContent;
     }
-  };
+  }, [serverContent]);
 
-  const saveContent = useCallback(async (newText: string, authToken: string | null) => {
-    touchLocalEdit();
-    try {
-      const res = await fetch(`/api/pages/${slug}/content`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
-        },
-        body: JSON.stringify({ content: newText }),
-      });
-      return res.ok;
-    } catch {
-      return false;
-    }
-  }, [slug, touchLocalEdit]);
-
-  const scheduleSave = useCallback((newText: string) => {
-    updateStatusUI("saving");
-    if (saveTimer.current) clearTimeout(saveTimer.current);
-
-    saveTimer.current = setTimeout(async () => {
-      try {
-        const ok = await saveContent(newText, token);
-        updateStatusUI(ok ? "saved" : "idle");
-        if (ok) setTimeout(() => updateStatusUI("idle"), 2500);
-      } catch {
-        updateStatusUI("idle");
+  // Keyboard shortcut for Zen Mode exit & export menu click-away
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        if (zenMode) setZenMode(false);
+        if (showExportMenu) setShowExportMenu(false);
       }
-    }, 600);
-  }, [saveContent, token]);
+    }
+    function handleClickOutside(e: MouseEvent) {
+      if (exportMenuRef.current && !exportMenuRef.current.contains(e.target as Node)) {
+        setShowExportMenu(false);
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [zenMode, showExportMenu]);
+
+  // Debounced auto-save push to API
+  const pushUpdate = useCallback((val: string) => {
+    touchLocalEdit();
+    if (val === lastPushedRef.current) return;
+    if (statusEl.current) statusEl.current.setAttribute("data-status", "saving");
+
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+
+    debounceTimer.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/pages/${slug}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ content: val }),
+        });
+
+        if (res.ok) {
+          lastPushedRef.current = val;
+          if (statusEl.current) statusEl.current.setAttribute("data-status", "saved");
+          setTimeout(() => {
+            if (statusEl.current && statusEl.current.getAttribute("data-status") === "saved") {
+              statusEl.current.setAttribute("data-status", "idle");
+            }
+          }, 2000);
+        } else {
+          if (statusEl.current) statusEl.current.setAttribute("data-status", "error");
+        }
+      } catch {
+        if (statusEl.current) statusEl.current.setAttribute("data-status", "error");
+      }
+    }, 400);
+  }, [slug, token, touchLocalEdit]);
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const val = e.target.value;
-    setTextVal(val);
-    scheduleSave(val);
+    setDisplayContent(val);
+    pushUpdate(val);
   };
 
-  // Sync line numbers scroll with textarea
+  // Sync line numbers scrolling with editor textarea
   const handleScroll = () => {
     if (textareaRef.current && lineNumbersRef.current) {
       lineNumbersRef.current.scrollTop = textareaRef.current.scrollTop;
     }
   };
 
-  const handleCopyText = async () => {
-    const ok = await copyToClipboard(displayContent);
-    if (ok) {
-      setCopied(true);
-      showToast("Notes copied to clipboard!", "success");
-      setTimeout(() => setCopied(false), 2000);
-    } else {
-      showToast("Failed to copy notes", "error");
-    }
-  };
-
-  const handleClearText = async () => {
-    if (saveTimer.current) clearTimeout(saveTimer.current);
-    setTextVal("");
-    updateStatusUI("saving");
-    const ok = await saveContent("", token);
-    updateStatusUI(ok ? "saved" : "idle");
-    if (ok) {
-      showToast("Notes cleared", "info");
-      setTimeout(() => updateStatusUI("idle"), 2000);
-    } else {
-      showToast("Failed to clear notes", "error");
-    }
-  };
-
-  // Helper to insert Markdown syntax around selection or cursor
+  // Format Helper Injection
   const applyFormat = (prefix: string, suffix: string = "") => {
-    const el = textareaRef.current;
-    if (!el) return;
+    const textarea = textareaRef.current;
+    if (!textarea) return;
 
-    const start = el.selectionStart;
-    const end = el.selectionEnd;
-    const current = displayContent;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = displayContent.substring(start, end);
 
-    const selectedText = current.substring(start, end);
-    const replacement = `${prefix}${selectedText || ""}${suffix}`;
-    const nextContent = current.substring(0, start) + replacement + current.substring(end);
-
-    setTextVal(nextContent);
-    scheduleSave(nextContent);
-
-    setTimeout(() => {
-      el.focus();
-      const newCursorPos = start + prefix.length + (selectedText ? selectedText.length : 0);
-      el.setSelectionRange(newCursorPos, newCursorPos);
-    }, 50);
-  };
-
-  // Insert emoji at cursor position
-  const insertEmoji = (emoji: string) => {
-    const el = textareaRef.current;
-    if (!el) {
-      const nextContent = displayContent + emoji;
-      setTextVal(nextContent);
-      scheduleSave(nextContent);
-      return;
+    let replacement = "";
+    if (selectedText) {
+      replacement = `${prefix}${selectedText}${suffix}`;
+    } else {
+      replacement = prefix.endsWith(" ") || prefix.endsWith("\n") ? `${prefix}` : `${prefix}text${suffix}`;
     }
 
-    const start = el.selectionStart;
-    const end = el.selectionEnd;
-    const current = displayContent;
-
-    const nextContent = current.substring(0, start) + emoji + current.substring(end);
-    setTextVal(nextContent);
-    scheduleSave(nextContent);
+    const newContent = displayContent.substring(0, start) + replacement + displayContent.substring(end);
+    setDisplayContent(newContent);
+    pushUpdate(newContent);
 
     setTimeout(() => {
-      el.focus();
-      const newCursorPos = start + emoji.length;
-      el.setSelectionRange(newCursorPos, newCursorPos);
-    }, 50);
-    setShowEmojiPicker(false);
+      textarea.focus();
+      const cursorOffset = selectedText ? start + replacement.length : start + prefix.length;
+      textarea.setSelectionRange(cursorOffset, cursorOffset);
+    }, 0);
   };
 
-  // File Upload
+  // Image / File Upload Helper
   const handleFileUpload = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
     setUploading(true);
-    showToast(`Uploading ${files.length} file(s)…`, "info");
 
     try {
       for (const file of Array.from(files)) {
@@ -242,26 +243,196 @@ export function TextEditor({ slug, token, initialContent = "" }: TextEditorProps
       formattedLines.push(trimmed);
     }
 
-    const formattedText = formattedLines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+    let cleanedText = formattedLines.join("\n").replace(/\n{3,}/g, "\n\n");
+    if (!cleanedText.endsWith("\n")) {
+      cleanedText += "\n";
+    }
 
-    if (formattedText === displayContent) {
-      showToast("Notes are already formatted cleanly!", "info");
+    setDisplayContent(cleanedText);
+    pushUpdate(cleanedText);
+    showToast("Markdown document formatted with AI Copilot!", "success");
+  };
+
+  // Insert Template Content
+  const insertTemplate = (templateContent: string) => {
+    const newContent = displayContent.trim()
+      ? `${displayContent}\n\n${templateContent}`
+      : templateContent;
+    setDisplayContent(newContent);
+    pushUpdate(newContent);
+    setShowTemplateModal(false);
+    showToast("Starter template inserted!", "success");
+  };
+
+  // Export Engine Functions
+  const downloadFile = (contentStr: string, filename: string, mime: string) => {
+    const blob = new Blob([contentStr], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExportMarkdown = () => {
+    downloadFile(displayContent, `${slug}.md`, "text/markdown");
+    setShowExportMenu(false);
+    showToast("Exported Markdown (.md) file!", "success");
+  };
+
+  const handleExportText = () => {
+    downloadFile(displayContent, `${slug}.txt`, "text/plain");
+    setShowExportMenu(false);
+    showToast("Exported Plain Text (.txt) file!", "success");
+  };
+
+  const handleExportJSON = () => {
+    const dataObj = {
+      content: displayContent,
+      wordCount,
+      charCount,
+      lineCount,
+      exportedAt: new Date().toISOString(),
+    };
+    downloadFile(JSON.stringify(dataObj, null, 2), `${slug}.json`, "application/json");
+    setShowExportMenu(false);
+    showToast("Exported JSON dataset!", "success");
+  };
+
+  const handleExportHTML = () => {
+    const htmlDoc = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document Export</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; color: #0f172a; background: #ffffff; line-height: 1.6; }
+    h1, h2, h3 { color: #0f172a; font-weight: 800; }
+    pre { background: #0d1117; color: #e6edf3; padding: 16px; border-radius: 12px; overflow-x: auto; }
+    code { font-family: monospace; background: rgba(0,0,0,0.06); padding: 2px 6px; border-radius: 4px; color: #0969da; }
+    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+    th, td { border: 1px solid #cbd5e1; padding: 8px 12px; text-align: left; }
+    th { background: #f8fafc; }
+    blockquote { border-left: 4px solid #10b981; margin: 0; padding-left: 16px; color: #64748b; font-style: italic; }
+  </style>
+</head>
+<body>
+  <div style="font-size: 14px; white-space: pre-wrap; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">${displayContent.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+</body>
+</html>`;
+    downloadFile(htmlDoc, `${slug}.html`, "text/html");
+    setShowExportMenu(false);
+    showToast("Exported HTML document!", "success");
+  };
+
+  const handleExportImage = () => {
+    const svgData = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1000">
+      <foreignObject width="100%" height="100%">
+        <div xmlns="http://www.w3.org/1999/xhtml" style="font-family: -apple-system, BlinkMacSystemFont, sans-serif; padding: 32px; background: #0d1117; color: #e6edf3; min-height: 1000px; box-sizing: border-box;">
+          <div style="font-size: 14px; line-height: 1.6; white-space: pre-wrap; font-family: monospace; opacity: 0.9;">${displayContent.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+        </div>
+      </foreignObject>
+    </svg>`;
+
+    const img = new Image();
+    const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(svgBlob);
+
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 800;
+      canvas.height = 1000;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.drawImage(img, 0, 0);
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const pngUrl = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = pngUrl;
+            a.download = `${slug}.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(pngUrl);
+          }
+        }, "image/png");
+      }
+      URL.revokeObjectURL(url);
+    };
+    img.src = url;
+
+    setShowExportMenu(false);
+    showToast("Exported Image (.png) snapshot!", "success");
+  };
+
+  const handlePrintPDF = () => {
+    setShowExportMenu(false);
+
+    // Create an isolated iframe for clean document print export
+    const iframe = document.createElement("iframe");
+    iframe.style.position = "fixed";
+    iframe.style.right = "0";
+    iframe.style.bottom = "0";
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    iframe.style.border = "0";
+
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentWindow?.document;
+    if (!doc) {
+      window.print();
       return;
     }
 
-    setTextVal(formattedText);
-    scheduleSave(formattedText);
-    showToast("AI Copilot formatted your notes cleanly!", "success");
+    doc.open();
+    doc.write(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document Export</title>
+  <style>
+    @page { margin: 15mm; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #0f172a; background: #ffffff; line-height: 1.6; padding: 0; margin: 0; }
+    h1, h2, h3 { color: #0f172a; font-weight: 800; }
+    pre { background: #0d1117; color: #e6edf3; padding: 16px; border-radius: 12px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; }
+    code { font-family: monospace; background: rgba(0,0,0,0.06); padding: 2px 6px; border-radius: 4px; color: #0969da; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th, td { border: 1px solid #cbd5e1; padding: 8px 12px; text-align: left; }
+    th { background: #f8fafc; font-weight: 700; }
+    blockquote { border-left: 4px solid #10b981; margin: 0; padding-left: 16px; color: #64748b; font-style: italic; }
+  </style>
+</head>
+<body>
+  <div style="font-size: 14px; white-space: pre-wrap; font-family: monospace;">${displayContent.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+</body>
+</html>`);
+    doc.close();
+
+    setTimeout(() => {
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+      setTimeout(() => {
+        try { document.body.removeChild(iframe); } catch {}
+      }, 1000);
+    }, 250);
   };
 
-  const linesArray = displayContent.split("\n");
-  const lineCount = Math.max(1, linesArray.length);
+  const lineCount = displayContent.split("\n").length;
   const wordCount = displayContent.trim() ? displayContent.trim().split(/\s+/).length : 0;
   const charCount = displayContent.length;
   const readTime  = Math.max(1, Math.ceil(wordCount / 200));
 
   return (
-    <div className="flex flex-col h-full w-full bg-[var(--bg-main)] transition-colors duration-200 overflow-hidden select-none">
+    <div className={`
+      flex flex-col h-full w-full bg-[var(--bg-main)] transition-all duration-200 overflow-hidden select-none
+      ${zenMode ? "fixed inset-0 z-[9999] bg-[var(--bg-main)]" : "relative"}
+    `}>
       {/* Hidden File Input */}
       <input
         type="file"
@@ -272,7 +443,7 @@ export function TextEditor({ slug, token, initialContent = "" }: TextEditorProps
       />
 
       {/* Sleek IDE Top Toolbar (100% Width) */}
-      <div className="flex items-center justify-between px-2.5 py-1 border-b border-[var(--border-color)] bg-[var(--bg-surface)] shrink-0 gap-2 overflow-x-auto select-none min-h-[38px]">
+      <div className="relative z-20 flex items-center justify-between px-2.5 py-1 border-b border-[var(--border-color)] bg-[var(--bg-surface)] shrink-0 gap-2 select-none min-h-[38px]">
         {/* Left: Markdown Format Icons Toolbar */}
         <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap shrink-0">
           <div className="flex items-center gap-0.5 bg-[var(--bg-card)] p-0.5 rounded-lg border border-[var(--border-color)]">
@@ -352,12 +523,17 @@ export function TextEditor({ slug, token, initialContent = "" }: TextEditorProps
             </button>
             <button
               onClick={() => applyFormat("- [ ] ")}
-              title="Task List (- [ ])"
-              aria-label="Task List"
+              title="Task Checkbox (- [ ])"
+              aria-label="Task Checkbox"
               className="p-1.5 rounded text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
               <CheckSquare size={14} />
             </button>
+          </div>
+
+          <div className="w-px h-4 bg-[var(--border-color)] mx-0.5 hidden md:block" />
+
+          <div className="hidden md:flex items-center gap-0.5 bg-[var(--bg-card)] p-0.5 rounded-lg border border-[var(--border-color)]">
             <button
               onClick={() => applyFormat("> ")}
               title="Blockquote (>)"
@@ -366,187 +542,162 @@ export function TextEditor({ slug, token, initialContent = "" }: TextEditorProps
             >
               <Quote size={14} />
             </button>
-          </div>
-
-          <div className="w-px h-4 bg-[var(--border-color)] mx-0.5 hidden md:block" />
-
-          <div className="hidden md:flex items-center gap-0.5 bg-[var(--bg-card)] p-0.5 rounded-lg border border-[var(--border-color)]">
             <button
-              onClick={() => applyFormat("`", "`")}
-              title="Inline Code (`code`)"
-              aria-label="Inline Code"
+              onClick={() => applyFormat("```\n", "\n```")}
+              title="Code Block (```)"
+              aria-label="Code Block"
               className="p-1.5 rounded text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
               <Code size={14} />
             </button>
             <button
-              onClick={() => applyFormat("```\n", "\n```")}
-              title="Code Block (```)"
-              aria-label="Code Block"
-              className="p-1.5 rounded text-[var(--accent-indigo)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
-            >
-              <Code2 size={14} />
-            </button>
-            <button
-              onClick={() => applyFormat("[", "](https://)")}
-              title="Insert Link"
-              aria-label="Insert Link"
-              className="p-1.5 rounded text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
-            >
-              <Link size={14} />
-            </button>
-            <button
-              onClick={() => applyFormat("![alt](", ")")}
-              title="Insert Image"
-              aria-label="Insert Image"
-              className="p-1.5 rounded text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
-            >
-              <ImageIcon size={14} />
-            </button>
-            <button
-              onClick={() => applyFormat("\n| Header 1 | Header 2 |\n| --- | --- |\n| Cell 1 | Cell 2 |\n")}
+              onClick={() => applyFormat("| Header 1 | Header 2 |\n| :--- | :--- |\n| Cell 1 | Cell 2 |\n")}
               title="Insert Table"
               aria-label="Insert Table"
               className="p-1.5 rounded text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
               <Table size={14} />
             </button>
-            <button
-              onClick={() => applyFormat("\n---\n")}
-              title="Horizontal Rule (---)"
-              aria-label="Horizontal Rule"
-              className="p-1.5 rounded text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
-            >
-              <Minus size={14} />
-            </button>
-          </div>
-
-          <div className="w-px h-4 bg-[var(--border-color)] mx-0.5" />
-
-          {/* AI Copilot & Upload Buttons */}
-          <button
-            onClick={handleAICopilotFormat}
-            className="p-1.5 rounded-lg bg-[var(--badge-bg)] text-[var(--accent-indigo)] border border-[var(--badge-border)] hover:border-[var(--accent-indigo)] transition-all cursor-pointer flex items-center gap-1 text-xs font-extrabold"
-            title="AI Copilot Auto-Format Markdown"
-          >
-            <Sparkles size={13} />
-            <span className="hidden xl:inline">AI Format</span>
-          </button>
-
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            title="Attach File"
-            className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer disabled:opacity-50"
-          >
-            {uploading ? <Loader2 size={14} className="animate-spin text-[var(--accent-indigo)]" /> : <Paperclip size={14} />}
-          </button>
-
-          {/* Emoji Popover */}
-          <div className="relative">
-            <button
-              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-              title="Insert Emoji"
-              aria-label="Insert Emoji"
-              className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
-            >
-              <Smile size={15} />
-            </button>
-
-            {showEmojiPicker && (
-              <div className="absolute left-0 top-9 z-50 w-64 p-3 bg-[var(--modal-bg)] border border-[var(--border-color)] rounded-2xl shadow-2xl animate-slide-up">
-                <div className="text-xs font-extrabold text-[var(--text-muted)] mb-2 px-1">Insert Emoji</div>
-                {EMOJI_CATEGORIES.map((cat) => (
-                  <div key={cat.label} className="mb-2">
-                    <div className="text-[10px] font-mono uppercase text-[var(--text-subtle)] mb-1 px-1">{cat.label}</div>
-                    <div className="grid grid-cols-6 gap-1">
-                      {cat.emojis.map((emoji) => (
-                        <button
-                          key={emoji}
-                          onClick={() => insertEmoji(emoji)}
-                          className="p-1.5 text-base rounded-lg hover:bg-black/10 dark:hover:bg-white/10 transition-transform active:scale-125 cursor-pointer text-center"
-                        >
-                          {emoji}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         </div>
 
-        {/* Right Controls: View Mode & Actions */}
+        {/* Right: AI Assistant, Templates, Export, Zen, & View Controls */}
         <div className="flex items-center gap-1.5 shrink-0 ml-auto">
-          {/* View Mode Segmented Controls */}
-          <div className="flex items-center p-0.5 rounded-xl bg-[var(--badge-bg)] border border-[var(--border-color)] text-xs font-extrabold">
+          {/* Starter Templates Button */}
+          <button
+            onClick={() => setShowTemplateModal(true)}
+            className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[var(--badge-bg)] border border-[var(--border-color)] text-[var(--text-main)] hover:bg-[var(--border-color)] transition-all text-xs font-bold cursor-pointer"
+            title="Starter Templates Gallery"
+          >
+            <FileText size={13} className="text-[var(--accent-indigo)]" />
+            <span className="hidden lg:inline">Templates</span>
+          </button>
+
+          {/* AI Copilot Button */}
+          <button
+            onClick={handleAICopilotFormat}
+            className="flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-[var(--accent-indigo)] hover:bg-emerald-500/20 transition-all text-xs font-bold cursor-pointer shadow-sm"
+            title="AI Copilot: Auto-format document"
+          >
+            <Sparkles size={13} className="text-[var(--accent-indigo)] animate-pulse" />
+            <span className="hidden sm:inline">AI Format</span>
+          </button>
+
+          {/* Attach File Button */}
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            className="p-1.5 rounded-lg bg-[var(--badge-bg)] border border-[var(--border-color)] text-[var(--text-main)] hover:bg-[var(--border-color)] transition-all cursor-pointer"
+            title="Attach file to notes"
+          >
+            <Upload size={13} />
+          </button>
+
+          {/* Rich Export Menu Dropdown */}
+          <div className="relative" ref={exportMenuRef}>
+            <button
+              onClick={() => setShowExportMenu((v) => !v)}
+              className="px-2.5 py-1 rounded-lg bg-[var(--badge-bg)] border border-[var(--border-color)] text-[var(--text-main)] hover:bg-[var(--border-color)] transition-all cursor-pointer flex items-center gap-1.5 text-xs font-extrabold shadow-sm"
+              title="Export Document Options"
+            >
+              <Download size={13} className="text-[var(--accent-indigo)]" />
+              <span>Export</span>
+              <ChevronDown size={12} className={`transition-transform duration-200 ${showExportMenu ? "rotate-180" : ""}`} />
+            </button>
+            {showExportMenu && (
+              <div className="absolute right-0 top-full mt-1.5 w-48 rounded-xl bg-[var(--modal-bg)] border border-[var(--border-color)] shadow-2xl p-1 z-[100] animate-modal-pop text-xs font-bold">
+                <button
+                  onClick={handleExportMarkdown}
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer"
+                >
+                  <FileText size={14} className="text-[var(--accent-indigo)]" />
+                  <span>Markdown (.md)</span>
+                </button>
+                <button
+                  onClick={handleExportHTML}
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer"
+                >
+                  <FileCode size={14} className="text-[var(--accent-sky)]" />
+                  <span>HTML Document</span>
+                </button>
+                <button
+                  onClick={handlePrintPDF}
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer"
+                >
+                  <Printer size={14} className="text-purple-400" />
+                  <span>PDF Document</span>
+                </button>
+                <button
+                  onClick={handleExportImage}
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer"
+                >
+                  <ImageIcon size={14} className="text-emerald-400" />
+                  <span>Image (.png)</span>
+                </button>
+                <div className="my-1 border-t border-[var(--border-color)]" />
+                <button
+                  onClick={handleExportText}
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer"
+                >
+                  <FileSpreadsheet size={14} className="text-amber-400" />
+                  <span>Plain Text (.txt)</span>
+                </button>
+                <button
+                  onClick={handleExportJSON}
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer"
+                >
+                  <FileJson size={14} className="text-rose-400" />
+                  <span>JSON Dataset (.json)</span>
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Zen Focus Mode Toggle */}
+          <button
+            onClick={() => setZenMode(!zenMode)}
+            className={`p-1.5 rounded-lg border transition-all cursor-pointer ${
+              zenMode
+                ? "bg-[var(--accent-indigo)] text-white border-[var(--accent-indigo)] shadow-sm"
+                : "bg-[var(--badge-bg)] text-[var(--text-main)] border-[var(--border-color)] hover:bg-[var(--border-color)]"
+            }`}
+            title={zenMode ? "Exit Zen Mode (Esc)" : "Zen Focus Writing Mode"}
+          >
+            {zenMode ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
+          </button>
+
+          {/* View Mode Toggle Segmented Control */}
+          <div className="flex items-center p-0.5 rounded-lg bg-[var(--badge-bg)] border border-[var(--border-color)]">
             <button
               onClick={() => setViewMode("write")}
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-lg font-extrabold transition-all cursor-pointer ${
+              className={`p-1 rounded transition-colors cursor-pointer ${
                 viewMode === "write" ? "bg-[var(--accent-primary)] text-white shadow-sm" : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
               }`}
-              title="Raw Editor View"
+              title="Write Mode"
             >
-              <Edit3 size={12} />
-              <span className="hidden sm:inline">Write</span>
+              <Layout size={13} />
             </button>
             <button
               onClick={() => setViewMode("split")}
-              className={`hidden md:flex items-center gap-1 px-2.5 py-1 rounded-lg font-extrabold transition-all cursor-pointer ${
+              className={`p-1 rounded transition-colors cursor-pointer hidden sm:block ${
                 viewMode === "split" ? "bg-[var(--accent-primary)] text-white shadow-sm" : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
               }`}
               title="Split View"
             >
-              <Columns size={12} />
-              <span>Split</span>
+              <Columns size={13} />
             </button>
             <button
               onClick={() => setViewMode("preview")}
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-lg font-extrabold transition-all cursor-pointer ${
+              className={`p-1 rounded transition-colors cursor-pointer ${
                 viewMode === "preview" ? "bg-[var(--accent-primary)] text-white shadow-sm" : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
               }`}
-              title="Markdown Preview"
+              title="Preview Mode"
             >
-              <Eye size={12} />
-              <span className="hidden sm:inline">Preview</span>
+              <Eye size={13} />
             </button>
           </div>
-
-          <div className="h-4 w-px bg-[var(--border-color)] mx-0.5" />
-
-          {/* Copy Button */}
-          <button
-            onClick={handleCopyText}
-            className="p-1.5 sm:p-2 rounded-xl bg-[var(--badge-bg)] hover:bg-[var(--border-color)] border border-[var(--border-color)] text-[var(--text-main)] transition-all shadow-sm cursor-pointer"
-            title="Copy notes to clipboard"
-          >
-            {copied ? <Check size={14} className="text-[var(--status-success-text)]" /> : <Copy size={14} />}
-          </button>
-
-          {/* Clear Button */}
-          <button
-            onClick={() => setShowConfirmClear(true)}
-            className="p-1.5 sm:p-2 rounded-xl bg-[var(--status-danger-bg)] border border-[var(--status-danger-border)] text-[var(--status-danger-text)] hover:opacity-80 transition-all shadow-sm cursor-pointer"
-            title="Clear all notes"
-          >
-            <Trash2 size={14} />
-          </button>
         </div>
       </div>
-
-      <ConfirmModal
-        open={showConfirmClear}
-        onClose={() => setShowConfirmClear(false)}
-        onConfirm={() => {
-          setShowConfirmClear(false);
-          handleClearText();
-        }}
-        title="Clear All Notes?"
-        description="Are you sure you want to clear all text content from this workspace? This action will sync live to all connected devices."
-        confirmText="Clear Notes"
-        variant="danger"
-      />
 
       {/* Main Workspace Canvas (Full Width & Height, Zero Outer Padding) */}
       <div className="flex-1 min-h-0 flex overflow-hidden relative bg-[var(--bg-main)]">
@@ -629,6 +780,31 @@ export function TextEditor({ slug, token, initialContent = "" }: TextEditorProps
           </div>
         </div>
       </div>
+
+      {/* Starter Templates Modal */}
+      <Modal open={showTemplateModal} onClose={() => setShowTemplateModal(false)} title="Starter Markdown Templates" maxWidth="max-w-md">
+        <div className="grid grid-cols-1 gap-2.5 pt-0.5">
+          {TEMPLATES.map((tmpl) => (
+            <div
+              key={tmpl.id}
+              onClick={() => insertTemplate(tmpl.content)}
+              className="group p-3 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] hover:shadow-md transition-all cursor-pointer flex flex-col gap-1"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs sm:text-sm font-extrabold text-[var(--text-main)] group-hover:text-[var(--accent-indigo)] transition-colors">
+                  {tmpl.title}
+                </span>
+                <Button size="xs" variant="secondary" icon={<Check size={11} />}>
+                  Insert
+                </Button>
+              </div>
+              <p className="text-[11px] text-[var(--text-muted)] font-medium leading-relaxed">
+                {tmpl.description}
+              </p>
+            </div>
+          ))}
+        </div>
+      </Modal>
     </div>
   );
 }

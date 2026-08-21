@@ -328,3 +328,44 @@ body {
   margin-top: 2rem;
   padding-top: 1rem;
 }
+
+/* ── Print Styles for Clean Document PDF Export ── */
+@media print {
+  header,
+  aside,
+  button,
+  input,
+  textarea,
+  nav,
+  .no-print,
+  [aria-label="Notes markdown content editor"],
+  [aria-hidden="true"] {
+    display: none !important;
+  }
+
+  body, html {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  main, div {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    overflow: visible !important;
+  }
+
+  .markdown-body {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    font-size: 12pt !important;
+    line-height: 1.6 !important;
+    color: #0f172a !important;
+    padding: 15mm !important;
+  }
+}
