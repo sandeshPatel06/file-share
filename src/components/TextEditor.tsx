@@ -57,10 +57,17 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
   const [zenMode, setZenMode]               = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [showOutline, setShowOutline]       = useState(false);
+  
+  // Slash Commands state
+  const [slashMenu, setSlashMenu] = useState<{ open: boolean; filter: string; activeIndex: number }>({ 
+    open: false, filter: "", activeIndex: 0 
+  });
 
   const fileInputRef    = useRef<HTMLInputElement>(null);
   const textareaRef     = useRef<HTMLTextAreaElement>(null);
   const lineNumbersRef  = useRef<HTMLDivElement>(null);
+  const previewRef      = useRef<HTMLDivElement>(null);
   const statusEl        = useRef<HTMLDivElement>(null);
   const exportMenuRef   = useRef<HTMLDivElement>(null);
   const lastPushedRef   = useRef<string>(initialContent);
@@ -135,12 +142,115 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
     const val = e.target.value;
     setDisplayContent(val);
     pushUpdate(val);
+    
+    // Slash Menu Detection
+    const cursor = e.target.selectionStart;
+    const textBeforeCursor = val.substring(0, cursor);
+    const lastLine = textBeforeCursor.split('\n').pop() || "";
+    
+    // If the line starts with an optional whitespace and a slash, followed by alphabetical chars
+    if (lastLine.match(/^\s*\/[a-zA-Z]*$/)) {
+      setSlashMenu(prev => ({ 
+        open: true, 
+        filter: lastLine.replace(/^\s*\//, "").toLowerCase(), 
+        activeIndex: prev.open ? prev.activeIndex : 0 
+      }));
+    } else {
+      setSlashMenu({ open: false, filter: "", activeIndex: 0 });
+    }
   };
 
-  // Sync line numbers scrolling with editor textarea
+  // Slash Menu Options
+  const slashOptions = [
+    { id: "h1", icon: <Heading1 size={14} />, label: "Heading 1", insert: "# " },
+    { id: "h2", icon: <Heading2 size={14} />, label: "Heading 2", insert: "## " },
+    { id: "h3", icon: <Heading3 size={14} />, label: "Heading 3", insert: "### " },
+    { id: "todo", icon: <CheckSquare size={14} />, label: "To-do list", insert: "- [ ] " },
+    { id: "ul", icon: <List size={14} />, label: "Bulleted list", insert: "- " },
+    { id: "code", icon: <Code size={14} />, label: "Code block", insert: "```\n\n```" },
+    { id: "table", icon: <Table size={14} />, label: "Table", insert: "| Header 1 | Header 2 |\n| :--- | :--- |\n| Cell 1 | Cell 2 |\n" }
+  ];
+  const filteredSlashOptions = slashOptions.filter(o => o.label.toLowerCase().includes(slashMenu.filter));
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (slashMenu.open) {
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setSlashMenu(prev => ({ ...prev, activeIndex: (prev.activeIndex + 1) % filteredSlashOptions.length }));
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setSlashMenu(prev => ({ ...prev, activeIndex: (prev.activeIndex - 1 + filteredSlashOptions.length) % filteredSlashOptions.length }));
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        if (filteredSlashOptions.length > 0) {
+          executeSlashCommand(filteredSlashOptions[slashMenu.activeIndex]);
+        }
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        setSlashMenu({ open: false, filter: "", activeIndex: 0 });
+      }
+    }
+  };
+
+  const executeSlashCommand = (option: typeof slashOptions[0]) => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    
+    const cursor = textarea.selectionStart;
+    const textBeforeCursor = displayContent.substring(0, cursor);
+    const textAfterCursor = displayContent.substring(textarea.selectionEnd);
+    
+    // Find where the slash command started on the current line
+    const lastNewlineIdx = textBeforeCursor.lastIndexOf('\n');
+    const lineStart = lastNewlineIdx === -1 ? 0 : lastNewlineIdx + 1;
+    const textBeforeLine = displayContent.substring(0, lineStart);
+    const currentLine = textBeforeCursor.substring(lineStart);
+    
+    // Replace the slash and filter text with the actual command
+    const leadingSpaces = currentLine.match(/^\s*/)?.[0] || "";
+    const replacement = leadingSpaces + option.insert;
+    
+    const newContent = textBeforeLine + replacement + textAfterCursor;
+    setDisplayContent(newContent);
+    pushUpdate(newContent);
+    setSlashMenu({ open: false, filter: "", activeIndex: 0 });
+    
+    setTimeout(() => {
+      textarea.focus();
+      let newCursor = textBeforeLine.length + replacement.length;
+      if (option.id === "code") newCursor -= 4; // place cursor inside the backticks
+      textarea.setSelectionRange(newCursor, newCursor);
+    }, 0);
+  };
+
+  // Sync line numbers and preview scrolling with editor textarea
   const handleScroll = () => {
-    if (textareaRef.current && lineNumbersRef.current) {
-      lineNumbersRef.current.scrollTop = textareaRef.current.scrollTop;
+    if (textareaRef.current) {
+      if (lineNumbersRef.current) {
+        lineNumbersRef.current.scrollTop = textareaRef.current.scrollTop;
+      }
+      if (previewRef.current) {
+        const textH = textareaRef.current.scrollHeight - textareaRef.current.clientHeight;
+        const prevH = previewRef.current.scrollHeight - previewRef.current.clientHeight;
+        if (textH > 0 && prevH > 0) {
+          const ratio = textareaRef.current.scrollTop / textH;
+          previewRef.current.scrollTop = ratio * prevH;
+        }
+      }
+    }
+  };
+
+  // Feature: Interactive Task Checkboxes in Preview
+  const handleToggleTask = (lineIndex: number, checked: boolean) => {
+    const lines = displayContent.split(/\r?\n/);
+    if (lineIndex >= 0 && lineIndex < lines.length) {
+      const line = lines[lineIndex];
+      // Replace - [ ] or - [x] or - [X]
+      const replaced = line.replace(/-\s*\[([ xX])\]/, checked ? "- [x]" : "- [ ]");
+      lines[lineIndex] = replaced;
+      const newContent = lines.join('\n');
+      setDisplayContent(newContent);
+      pushUpdate(newContent);
     }
   };
 
@@ -428,6 +538,25 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
   const charCount = displayContent.length;
   const readTime  = Math.max(1, Math.ceil(wordCount / 200));
 
+  // Feature 3: Checklist Progress Tracker
+  const taskCheckboxes = displayContent.match(/-\s*\[([ xX])\]/g) || [];
+  const completedTasks = displayContent.match(/-\s*\[([xX])\]/g) || [];
+  const totalTasks = taskCheckboxes.length;
+  const completedCount = completedTasks.length;
+  const taskProgress = totalTasks > 0 ? Math.round((completedCount / totalTasks) * 100) : 0;
+
+  // Feature 2: Table of Contents (Outline)
+  const headings = displayContent
+    .split("\n")
+    .filter((line) => /^#{1,3}\s/.test(line))
+    .map((line) => {
+      const level = line.match(/^#{1,3}/)?.[0].length || 1;
+      const text = line.replace(/^#{1,3}\s/, "");
+      // simple slugification for anchors
+      const id = text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+      return { level, text, id };
+    });
+
   return (
     <div className={`
       flex flex-col h-full w-full bg-[var(--bg-main)] transition-all duration-200 overflow-hidden select-none
@@ -583,6 +712,19 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
             <span className="hidden sm:inline">AI Format</span>
           </button>
 
+          {/* Outline / ToC Toggle */}
+          <button
+            onClick={() => setShowOutline(prev => !prev)}
+            className={`p-1.5 rounded-lg border transition-all cursor-pointer ${
+              showOutline 
+                ? "bg-[var(--accent-primary)] border-[var(--accent-primary)] text-white" 
+                : "bg-[var(--badge-bg)] border-[var(--border-color)] text-[var(--text-main)] hover:bg-[var(--border-color)]"
+            }`}
+            title="Toggle Document Outline"
+          >
+            <ListOrdered size={13} />
+          </button>
+
           {/* Attach File Button */}
           <button
             onClick={() => fileInputRef.current?.click()}
@@ -605,7 +747,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
               <ChevronDown size={12} className={`transition-transform duration-200 ${showExportMenu ? "rotate-180" : ""}`} />
             </button>
             {showExportMenu && (
-              <div className="absolute right-0 top-full mt-1.5 w-48 rounded-xl bg-[var(--modal-bg)] border border-[var(--border-color)] shadow-2xl p-1 z-[100] animate-modal-pop text-xs font-bold">
+              <div className="absolute right-0 top-full mt-1.5 w-48 rounded-xl bg-[var(--modal-bg)] border border-[var(--border-color)] shadow-2xl p-1 z-[100] animate-slide-down text-xs font-bold">
                 <button
                   onClick={handleExportMarkdown}
                   className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer"
@@ -709,6 +851,40 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
           </div>
         ) : (
           <div className="w-full h-full flex min-h-0 overflow-hidden">
+            {/* Outline Sidebar Pane */}
+            {showOutline && (
+              <div className="w-48 sm:w-64 h-full min-w-0 flex flex-col bg-[var(--bg-surface)] border-r border-[var(--border-color)] overflow-hidden shrink-0 animate-fade-in">
+                <div className="px-3 py-2.5 border-b border-[var(--border-color)] flex items-center justify-between">
+                  <span className="text-xs font-extrabold text-[var(--text-main)] uppercase tracking-wider">Outline</span>
+                </div>
+                <div className="flex-1 overflow-y-auto p-3 space-y-1">
+                  {headings.length === 0 ? (
+                    <p className="text-xs text-[var(--text-subtle)] italic">No headings found in document.</p>
+                  ) : (
+                    headings.map((h, i) => (
+                      <a
+                        key={i}
+                        href={`#${h.id}`}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          const el = document.getElementById(h.id);
+                          if (el) el.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                        className={`block text-xs truncate hover:text-[var(--accent-indigo)] transition-colors cursor-pointer py-1 ${
+                          h.level === 1 ? "font-bold text-[var(--text-main)] mt-2" :
+                          h.level === 2 ? "font-medium text-[var(--text-muted)] ml-3" :
+                          "text-[var(--text-subtle)] ml-6"
+                        }`}
+                        title={h.text}
+                      >
+                        {h.text}
+                      </a>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* Writer Pane */}
             {(viewMode === "write" || viewMode === "split") && (
               <div className="flex-1 h-full min-w-0 flex flex-col bg-[var(--bg-card)] relative overflow-hidden border-r border-[var(--border-color)]">
@@ -731,12 +907,45 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
                     ref={textareaRef}
                     value={displayContent}
                     onChange={handleChange}
+                    onKeyDown={handleKeyDown}
                     onScroll={handleScroll}
-                    placeholder="Type or paste Markdown here..."
+                    placeholder="Type or paste Markdown here... (Type '/' for commands)"
                     aria-label="Notes markdown content editor"
-                    className="w-full flex-1 resize-none bg-transparent text-[var(--text-main)] py-3 px-3 sm:px-4 outline-none font-mono text-[13px] sm:text-sm leading-[1.625rem] placeholder-[var(--text-subtle)] overflow-y-auto selection:bg-[var(--accent-indigo)]/20"
+                    className="w-full flex-1 resize-none bg-transparent text-[var(--text-main)] py-3 px-3 sm:px-4 outline-none font-mono text-[13px] sm:text-sm leading-[1.625rem] placeholder-[var(--text-subtle)] overflow-y-auto selection:bg-[var(--accent-indigo)]/20 relative z-10"
                     spellCheck="false"
                   />
+
+                  {/* Floating Slash Commands Menu */}
+                  {slashMenu.open && filteredSlashOptions.length > 0 && (
+                    <div 
+                      className="absolute bottom-4 left-1/2 -translate-x-1/2 w-64 bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl shadow-2xl overflow-hidden z-50 animate-scale-in"
+                    >
+                      <div className="px-3 py-2 border-b border-[var(--border-color)] bg-[var(--bg-card)]">
+                        <span className="text-[10px] font-extrabold uppercase text-[var(--text-muted)] tracking-wider">
+                          Basic Blocks
+                        </span>
+                      </div>
+                      <div className="max-h-64 overflow-y-auto p-1.5 space-y-0.5">
+                        {filteredSlashOptions.map((opt, i) => (
+                          <div
+                            key={opt.id}
+                            onClick={() => executeSlashCommand(opt)}
+                            onMouseEnter={() => setSlashMenu(prev => ({ ...prev, activeIndex: i }))}
+                            className={`flex items-center gap-2.5 px-3 py-2 rounded-lg cursor-pointer transition-colors ${
+                              i === slashMenu.activeIndex 
+                                ? "bg-[var(--accent-primary)] text-white" 
+                                : "text-[var(--text-main)] hover:bg-[var(--bg-card)]"
+                            }`}
+                          >
+                            <div className={i === slashMenu.activeIndex ? "text-white" : "text-[var(--text-muted)]"}>
+                              {opt.icon}
+                            </div>
+                            <span className="text-xs font-bold">{opt.label}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -744,8 +953,8 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
             {/* Formatted Markdown Live Preview Pane */}
             {(viewMode === "preview" || viewMode === "split") && (
               <div className="flex-1 h-full min-w-0 flex flex-col bg-[var(--bg-card)] overflow-hidden">
-                <div className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto max-w-none">
-                  <MarkdownRenderer content={displayContent} />
+                <div ref={previewRef} className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto max-w-none scroll-smooth">
+                  <MarkdownRenderer content={displayContent} onToggleTask={handleToggleTask} />
                 </div>
               </div>
             )}
@@ -763,6 +972,21 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
           <span>🔤 {charCount} Chars</span>
           <span className="hidden md:inline">·</span>
           <span className="hidden md:inline">📄 {lineCount} Lines</span>
+          {totalTasks > 0 && (
+            <>
+              <span className="hidden md:inline">·</span>
+              <span className="hidden md:flex items-center gap-1.5" title={`${completedCount} of ${totalTasks} tasks completed`}>
+                <CheckSquare size={11} className={completedCount === totalTasks ? "text-[var(--status-success-text)]" : ""} />
+                <div className="w-16 h-1.5 bg-[var(--border-color)] rounded-full overflow-hidden flex">
+                  <div 
+                    className="h-full bg-[var(--status-success-text)] transition-all duration-300"
+                    style={{ width: `${taskProgress}%` }}
+                  />
+                </div>
+                <span className="text-[9px] font-bold">{taskProgress}%</span>
+              </span>
+            </>
+          )}
         </div>
 
         <div ref={statusEl} data-status="idle" className="flex items-center gap-2">

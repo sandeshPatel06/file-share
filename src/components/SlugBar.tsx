@@ -75,7 +75,7 @@ export function SlugBar({ slug, isProtected, token, onLockClick, onToggleFilePan
       <div className="flex items-center gap-1 sm:gap-1.5 shrink-0 ml-auto">
         <button
           onClick={() => setShowQR(true)}
-          className="p-1.5 sm:p-2 rounded-xl bg-[var(--badge-bg)] border border-[var(--border-color)] text-[var(--text-main)] hover:opacity-80 transition-all shadow-sm cursor-pointer"
+          className="p-1.5 sm:p-2 rounded-xl bg-[var(--badge-bg)] border border-[var(--border-color)] text-[var(--text-main)] hover:opacity-80 active:scale-95 transition-all shadow-sm cursor-pointer"
           title="Show QR Code"
           aria-label="Show QR Code"
         >
@@ -86,7 +86,7 @@ export function SlugBar({ slug, isProtected, token, onLockClick, onToggleFilePan
         <button
           onClick={copyLink}
           className={`
-            flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-extrabold transition-all duration-200 border shadow-sm cursor-pointer
+            flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-extrabold active:scale-95 transition-all duration-200 border shadow-sm cursor-pointer
             ${copied
               ? "bg-[var(--status-success-bg)] text-[var(--status-success-text)] border-[var(--status-success-border)]"
               : "bg-[var(--badge-bg)] text-[var(--text-main)] hover:bg-[var(--border-color)] border-[var(--border-color)]"

@@ -60,7 +60,7 @@ export function Modal({ open, onClose, title, children, maxWidth = "max-w-md" }:
         className={`
           relative w-full ${maxWidth} max-h-[88vh] bg-[var(--modal-bg)] text-[var(--text-main)]
           rounded-2xl p-4 sm:p-5 border border-[var(--border-color)]
-          shadow-2xl z-[10000] my-auto flex flex-col animate-modal-pop outline-none
+          shadow-2xl z-[10000] my-auto flex flex-col animate-scale-in outline-none
         `}
       >
         {/* Header */}
