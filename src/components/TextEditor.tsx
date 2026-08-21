@@ -112,8 +112,8 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
 
     debounceTimer.current = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/pages/${slug}`, {
-          method: "PUT",
+        const res = await fetch(`/api/pages/${slug}/content`, {
+          method: "PATCH",
           headers: {
             "Content-Type": "application/json",
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
