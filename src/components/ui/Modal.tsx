@@ -6,7 +6,7 @@ import { X } from "lucide-react";
 interface ModalProps {
   open: boolean;
   onClose: () => void;
-  title: string;
+  title?: string;
   children: React.ReactNode;
   maxWidth?: string;
 }
@@ -38,7 +38,7 @@ export function Modal({ open, onClose, title, children, maxWidth = "max-w-md" }:
 
   const modalContent = (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-black/75 backdrop-blur-md overflow-y-auto"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-sm overflow-y-auto"
       onClick={onClose}
     >
       {/* Modal Dialog Box */}
@@ -47,20 +47,31 @@ export function Modal({ open, onClose, title, children, maxWidth = "max-w-md" }:
         onClick={(e) => e.stopPropagation()}
         className={`
           relative w-full ${maxWidth} bg-[var(--modal-bg)] text-[var(--text-main)]
-          rounded-3xl p-6 border border-[var(--border-color)]
-          shadow-2xl z-[10000] my-auto animate-slide-up
+          rounded-2xl p-4 sm:p-5 border border-[var(--border-color)]
+          shadow-2xl z-[10000] my-auto animate-slide-up overflow-hidden transition-all
         `}
       >
         {/* Header */}
-        <div className="flex items-center justify-between mb-5 pb-3 border-b border-[var(--border-color)]">
-          <h2 className="text-base font-extrabold text-[var(--text-main)]">{title}</h2>
+        {title ? (
+          <div className="flex items-center justify-between mb-3.5 pb-2.5 border-b border-[var(--border-color)]">
+            <h2 className="text-sm sm:text-base font-extrabold text-[var(--text-main)] truncate pr-2">{title}</h2>
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-all cursor-pointer shrink-0"
+              aria-label="Close dialog"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        ) : (
           <button
             onClick={onClose}
-            className="p-1.5 rounded-xl text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-all cursor-pointer"
+            className="absolute top-3 right-3 p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-all cursor-pointer z-10"
+            aria-label="Close dialog"
           >
-            <X size={18} />
+            <X size={16} />
           </button>
-        </div>
+        )}
 
         {children}
       </div>
