@@ -97,7 +97,7 @@ export function MermaidRenderer({ chart }: MermaidRendererProps) {
   return (
     <div
       ref={containerRef}
-      className="my-4 p-4 rounded-xl border border-[var(--border-color)] bg-white dark:bg-[#1e1e2e] overflow-x-auto flex justify-center"
+      className="my-2.5 p-3 rounded-xl border border-[var(--border-color)] bg-white dark:bg-[#1e1e2e] overflow-x-auto flex justify-center"
       dangerouslySetInnerHTML={{ __html: svg }}
     />
   );

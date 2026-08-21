@@ -59,14 +59,14 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
 
             // Fenced code block with syntax highlighting
             return (
-              <div className="my-4 rounded-xl border border-[var(--border-color)] overflow-hidden">
-                <div className="flex items-center justify-between px-4 py-1.5 bg-[var(--bg-surface)] border-b border-[var(--border-color)]">
+              <div className="my-2.5 rounded-xl border border-[var(--border-color)] overflow-hidden">
+                <div className="flex items-center justify-between px-3 py-1 bg-[var(--bg-surface)] border-b border-[var(--border-color)]">
                   <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--text-muted)] font-extrabold">
                     {lang}
                   </span>
                   <CopyCodeButton code={codeStr} />
                 </div>
-                <pre className="p-4 bg-[var(--input-bg)] overflow-x-auto text-xs md:text-sm font-mono leading-relaxed">
+                <pre className="p-3 bg-[var(--input-bg)] overflow-x-auto text-xs md:text-sm font-mono leading-relaxed">
                   <code className={`hljs language-${lang} bg-transparent`} {...props}>
                     {codeStr}
                   </code>
@@ -78,7 +78,7 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
           // ── Tables ──
           table({ children }) {
             return (
-              <div className="my-4 overflow-x-auto rounded-xl border border-[var(--border-color)]">
+              <div className="my-2.5 overflow-x-auto rounded-xl border border-[var(--border-color)]">
                 <table className="min-w-full text-xs md:text-sm border-collapse">{children}</table>
               </div>
             );
@@ -96,14 +96,14 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
           },
           th({ children, style }) {
             return (
-              <th style={style} className="px-3 py-2 text-left text-[11px] font-extrabold uppercase tracking-wider text-[var(--text-muted)] border-r border-[var(--border-color)] last:border-r-0">
+              <th style={style} className="px-2.5 py-1.5 text-left text-[11px] font-extrabold uppercase tracking-wider text-[var(--text-muted)] border-r border-[var(--border-color)] last:border-r-0">
                 {children}
               </th>
             );
           },
           td({ children, style }) {
             return (
-              <td style={style} className="px-3 py-2 border-r border-t border-[var(--border-color)] last:border-r-0 text-[var(--text-main)]">
+              <td style={style} className="px-2.5 py-1.5 border-r border-[var(--border-color)] last:border-r-0">
                 {children}
               </td>
             );
@@ -112,7 +112,7 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
           // ── Blockquotes ──
           blockquote({ children }) {
             return (
-              <blockquote className="my-3 pl-4 border-l-4 border-[var(--accent-primary)] text-[var(--text-muted)] italic bg-[var(--badge-bg)] rounded-r-lg py-2 pr-3 font-medium">
+              <blockquote className="my-2.5 pl-3.5 border-l-4 border-[var(--accent-indigo)] bg-[var(--badge-bg)] text-[var(--text-main)] italic rounded-r-xl py-1.5 pr-3">
                 {children}
               </blockquote>
             );
@@ -140,7 +140,7 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
               <img
                 src={src}
                 alt={alt || ""}
-                className="my-3 rounded-xl max-w-full h-auto border border-[var(--border-color)] shadow-md"
+                className="my-2.5 rounded-xl max-w-full h-auto border border-[var(--border-color)] shadow-md"
                 loading="lazy"
               />
             );
@@ -148,34 +148,34 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
 
           // ── Horizontal Rule ──
           hr() {
-            return <hr className="my-6 border-t-2 border-[var(--border-color)]" />;
+            return <hr className="my-4 border-t-2 border-[var(--border-color)]" />;
           },
 
           // ── Headings ──
           h1({ children, id }) {
             return (
-              <h1 id={id} className="text-xl md:text-2xl font-extrabold tracking-tight text-[var(--text-main)] pb-1 border-b border-[var(--border-color)] mt-6 mb-3">
+              <h1 id={id} className="text-xl md:text-2xl font-extrabold tracking-tight text-[var(--text-main)] pb-1 border-b border-[var(--border-color)] mt-4 mb-2">
                 {children}
               </h1>
             );
           },
           h2({ children, id }) {
             return (
-              <h2 id={id} className="text-lg md:text-xl font-bold tracking-tight text-[var(--text-main)] pb-0.5 border-b border-[var(--border-color)]/60 mt-5 mb-2">
+              <h2 id={id} className="text-lg md:text-xl font-bold tracking-tight text-[var(--text-main)] pb-0.5 border-b border-[var(--border-color)]/60 mt-3.5 mb-1.5">
                 {children}
               </h2>
             );
           },
           h3({ children, id }) {
             return (
-              <h3 id={id} className="text-base md:text-lg font-bold text-[var(--accent-indigo)] mt-4 mb-1">
+              <h3 id={id} className="text-base md:text-lg font-bold text-[var(--accent-indigo)] mt-3 mb-1">
                 {children}
               </h3>
             );
           },
           h4({ children, id }) {
             return (
-              <h4 id={id} className="text-sm md:text-base font-bold text-[var(--text-main)] mt-3 mb-1">
+              <h4 id={id} className="text-sm md:text-base font-bold text-[var(--text-main)] mt-2.5 mb-1">
                 {children}
               </h4>
             );
@@ -183,16 +183,15 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
 
           // ── Lists ──
           ul({ children }) {
-            return <ul className="my-2 pl-6 space-y-0.5 list-disc marker:text-[var(--accent-primary)]">{children}</ul>;
+            return <ul className="my-1.5 pl-5 space-y-0.5 list-disc marker:text-[var(--accent-primary)]">{children}</ul>;
           },
           ol({ children }) {
-            return <ol className="my-2 pl-6 space-y-0.5 list-decimal marker:text-[var(--text-muted)] marker:font-bold">{children}</ol>;
+            return <ol className="my-1.5 pl-5 space-y-0.5 list-decimal marker:text-[var(--text-muted)] marker:font-bold">{children}</ol>;
           },
           li({ children }) {
-            // Check if this li contains a task checkbox
             const hasTask = hasTaskCheckbox(children);
             if (hasTask) {
-              return <li className="my-1 list-none -ml-6">{children}</li>;
+              return <li className="my-0.5 list-none -ml-5">{children}</li>;
             }
             return <li className="my-0.5 pl-1">{children}</li>;
           },
@@ -215,11 +214,10 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
 
           // ── Paragraphs ──
           p({ children }) {
-            // Don't wrap images in p margins
             if (isValidElement(children) && children.type === "img") {
               return <>{children}</>;
             }
-            return <p className="my-2 leading-relaxed">{children}</p>;
+            return <p className="my-1.5 leading-relaxed">{children}</p>;
           },
 
           // ── Strong / Bold ──
@@ -246,9 +244,6 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
 
 // ── Helpers ──
 
-/**
- * Recursively checks if React children contain a task checkbox input.
- */
 function hasTaskCheckbox(children: React.ReactNode): boolean {
   if (!children) return false;
   if (isValidElement(children)) {
@@ -266,7 +261,6 @@ function hasTaskCheckbox(children: React.ReactNode): boolean {
   return false;
 }
 
-// ── Copy-to-clipboard button for code blocks ──
 function CopyCodeButton({ code }: { code: string }) {
   const [copied, setCopied] = React.useState(false);
 
@@ -276,7 +270,6 @@ function CopyCodeButton({ code }: { code: string }) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Fallback for older browsers / non-HTTPS
       const textarea = document.createElement("textarea");
       textarea.value = code;
       textarea.style.position = "fixed";
