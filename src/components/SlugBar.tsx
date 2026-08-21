@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Pencil, Lock, Unlock, Copy, CheckCheck, QrCode } from "lucide-react";
+import { Pencil, Lock, Unlock, Copy, CheckCheck, QrCode, PanelRightClose, PanelRightOpen } from "lucide-react";
 import { showToast } from "@/components/ui/Toast";
 import { QRCodeModal } from "@/components/QRCodeModal";
 import { RenameSlugModal } from "@/components/RenameSlugModal";
@@ -12,9 +12,11 @@ interface SlugBarProps {
   isProtected: boolean;
   token:       string | null;
   onLockClick: () => void;
+  onToggleFilePanel?: () => void;
+  filePanelOpen?: boolean;
 }
 
-export function SlugBar({ slug, isProtected, token, onLockClick }: SlugBarProps) {
+export function SlugBar({ slug, isProtected, token, onLockClick, onToggleFilePanel, filePanelOpen }: SlugBarProps) {
   const [copied,          setCopied]          = useState(false);
   const [showQR,          setShowQR]          = useState(false);
   const [showRenameModal, setShowRenameModal] = useState(false);
@@ -98,7 +100,36 @@ export function SlugBar({ slug, isProtected, token, onLockClick }: SlugBarProps)
           <span className="hidden sm:inline">{isProtected ? "Protected" : "Protect"}</span>
         </button>
 
+        <a
+          href="https://github.com/sandeshPatel06/file-share"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="p-1.5 sm:p-2 rounded-xl bg-[var(--badge-bg)] border border-[var(--border-color)] hover:bg-[var(--border-color)] hover:scale-105 transition-all shadow-sm flex items-center justify-center shrink-0 cursor-pointer"
+          title="View GitHub Repository"
+          aria-label="View GitHub Repository"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/github-icon.svg" alt="GitHub Repository" width={16} height={16} className="w-4 h-4 object-contain" />
+        </a>
+
         <ThemeToggle />
+
+        {onToggleFilePanel && (
+          <button
+            onClick={onToggleFilePanel}
+            title={filePanelOpen ? "Hide File Explorer" : "Show File Explorer"}
+            aria-label={filePanelOpen ? "Hide File Explorer" : "Show File Explorer"}
+            className={`
+              p-1.5 sm:p-2 rounded-xl border transition-all shadow-sm cursor-pointer flex items-center justify-center shrink-0
+              ${filePanelOpen
+                ? "bg-[var(--accent-indigo)]/15 text-[var(--accent-indigo)] border-[var(--accent-indigo)]/40 hover:bg-[var(--accent-indigo)]/25"
+                : "bg-[var(--badge-bg)] text-[var(--text-main)] border-[var(--border-color)] hover:opacity-80"
+              }
+            `}
+          >
+            {filePanelOpen ? <PanelRightClose size={14} /> : <PanelRightOpen size={14} />}
+          </button>
+        )}
       </div>
 
       <QRCodeModal

@@ -159,19 +159,19 @@ export function FilePanel({ slug, token }: FilePanelProps) {
   return (
     <div className="flex flex-col h-full bg-[var(--bg-surface)] transition-colors duration-200">
       {/* Panel Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-color)] bg-[var(--bg-surface)] shrink-0 transition-colors duration-200">
+      <div className="items-center justify-between px-3 py-2.5 border-b border-[var(--border-color)] bg-[var(--bg-surface)] shrink-0 transition-colors duration-200 hidden sm:flex">
         <div className="flex items-center gap-2 text-[var(--text-main)] font-extrabold">
-          <FolderOpen size={16} className="text-[var(--accent-indigo)]" />
-          <span className="text-xs uppercase tracking-wider">Shared Files Vault</span>
+          <FolderOpen size={15} className="text-[var(--accent-indigo)]" />
+          <span className="text-[11px] uppercase tracking-wider">Explorer</span>
         </div>
         {files.length > 0 && (
-          <span className="px-2.5 py-0.5 rounded-full bg-[var(--badge-bg)] border border-[var(--badge-border)] text-[var(--badge-text)] text-[11px] font-extrabold">
-            {files.length} {files.length === 1 ? "file" : "files"}
+          <span className="px-2 py-0.5 rounded-full bg-[var(--badge-bg)] border border-[var(--badge-border)] text-[var(--badge-text)] text-[10px] font-extrabold">
+            {files.length}
           </span>
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-2.5 sm:p-3 space-y-2.5">
         {/* Drop zone container */}
         <div
           onDragOver={onDragOver}
@@ -179,8 +179,8 @@ export function FilePanel({ slug, token }: FilePanelProps) {
           onDrop={onDrop}
           onClick={() => inputRef.current?.click()}
           className={`
-            relative flex flex-col items-center justify-center gap-3
-            rounded-2xl border-2 border-dashed p-6 sm:p-8 cursor-pointer
+            relative flex flex-col items-center justify-center gap-2
+            rounded-xl border-2 border-dashed p-4 sm:p-5 cursor-pointer
             transition-all duration-200 group
             ${dragging
               ? "border-[var(--accent-primary)] bg-[var(--badge-bg)] scale-[1.01] shadow-lg"
@@ -197,21 +197,21 @@ export function FilePanel({ slug, token }: FilePanelProps) {
             onChange={(e) => handleFiles(e.target.files)}
           />
           <div className={`
-            w-12 h-12 rounded-2xl flex items-center justify-center
+            w-10 h-10 rounded-xl flex items-center justify-center
             transition-all duration-200 border
             ${dragging
               ? "bg-[var(--badge-bg)] border-[var(--accent-primary)]"
               : "bg-[var(--badge-bg)] border-[var(--badge-border)] group-hover:scale-105"
             }
           `}>
-            <UploadCloud size={24} className="text-[var(--accent-indigo)]" />
+            <UploadCloud size={20} className="text-[var(--accent-indigo)]" />
           </div>
           <div className="text-center">
-            <p className={`text-sm font-bold transition-colors ${dragging ? "text-[var(--accent-primary)]" : "text-[var(--text-main)]"}`}>
-              {dragging ? "Drop files to upload instantly" : "Drag & drop files here"}
+            <p className={`text-xs font-bold transition-colors ${dragging ? "text-[var(--accent-primary)]" : "text-[var(--text-main)]"}`}>
+              {dragging ? "Drop files" : "Drag & drop"}
             </p>
-            <p className="text-xs text-[var(--text-muted)] mt-1 font-medium">
-              or <span className="text-[var(--accent-indigo)] underline underline-offset-2 font-bold">browse files</span> · max 500 MB each
+            <p className="text-[10px] text-[var(--text-muted)] mt-0.5 font-medium">
+              or <span className="text-[var(--accent-indigo)] underline underline-offset-2 font-bold">browse</span>
             </p>
           </div>
         </div>
@@ -253,10 +253,10 @@ export function FilePanel({ slug, token }: FilePanelProps) {
             ))}
           </div>
         ) : files.length === 0 && Object.keys(uploadProgress).length === 0 ? (
-          <div className="text-center py-10 px-4 border border-dashed border-[var(--border-color)] rounded-2xl bg-[var(--bg-card)]">
-            <FolderOpen size={32} className="mx-auto text-[var(--text-subtle)] mb-2 opacity-60" />
-            <p className="text-sm font-bold text-[var(--text-muted)]">No files in this space yet</p>
-            <p className="text-xs text-[var(--text-subtle)] mt-1 font-medium">Upload documents, images, or audio above.</p>
+          <div className="text-center py-8 px-3 border border-dashed border-[var(--border-color)] rounded-xl bg-[var(--bg-card)]">
+            <FolderOpen size={24} className="mx-auto text-[var(--text-subtle)] mb-2 opacity-60" />
+            <p className="text-xs font-bold text-[var(--text-muted)]">No files yet</p>
+            <p className="text-[10px] text-[var(--text-subtle)] mt-1 font-medium">Upload docs, images, or audio</p>
           </div>
         ) : (
           <div className="space-y-2.5">
