@@ -1,11 +1,11 @@
 "use client";
-import { useState, useSyncExternalStore } from "react";
+import { useState, useEffect, useSyncExternalStore } from "react";
 import { SlugBar } from "@/components/SlugBar";
 import { TextEditor } from "@/components/TextEditor";
 import { FilePanel } from "@/components/FilePanel";
 import { PasswordGate } from "@/components/PasswordGate";
 import { PasswordModal } from "@/components/PasswordModal";
-import { FileText, FolderOpen } from "lucide-react";
+import { PanelRightClose, FolderOpen } from "lucide-react";
 
 interface SharePageProps {
   pageData: {
@@ -26,11 +26,27 @@ export function SharePage({ pageData }: SharePageProps) {
     () => null
   );
 
-  const [tokenState, setTokenState]     = useState<string | null>(null);
-  const [isProtected, setIsProtected]   = useState(initialProtected);
+  const [tokenState, setTokenState]           = useState<string | null>(null);
+  const [isProtected, setIsProtected]         = useState(initialProtected);
   const [isUnlockedState, setIsUnlockedState] = useState(false);
-  const [showPwModal, setShowPwModal]   = useState(false);
-  const [activeTab, setActiveTab]       = useState<"editor" | "files">("editor");
+  const [showPwModal, setShowPwModal]         = useState(false);
+  const [showFilePanel, setShowFilePanel]     = useState(() => {
+    if (typeof window !== "undefined") {
+      return window.innerWidth >= 640;
+    }
+    return true;
+  });
+
+  // Close on Escape key on mobile
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape" && showFilePanel && typeof window !== "undefined" && window.innerWidth < 640) {
+        setShowFilePanel(false);
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [showFilePanel]);
 
   const effectiveToken = tokenState ?? storedToken;
   const isUnlocked = !isProtected || Boolean(effectiveToken) || isUnlockedState;
@@ -61,58 +77,56 @@ export function SharePage({ pageData }: SharePageProps) {
           isProtected={isProtected}
           token={effectiveToken}
           onLockClick={handleLockClick}
+          onToggleFilePanel={() => setShowFilePanel((v) => !v)}
+          filePanelOpen={showFilePanel}
         />
       </header>
 
-      {/* Main Workspace Dual-Pane View */}
-      <main className="flex-1 flex flex-col md:flex-row min-h-0 relative overflow-hidden">
-        {/* Left Pane — Live Text Editor */}
-        <div className={`
-          flex-1 md:flex flex-col min-h-0 h-full border-r border-[var(--border-color)] transition-all duration-200 pb-20 md:pb-0
-          ${activeTab === "editor" ? "flex" : "hidden md:flex"}
-        `}>
+      {/* Main Workspace */}
+      <main className="flex-1 flex min-h-0 relative overflow-hidden">
+        {/* Left Editor Pane */}
+        <div className="flex-1 min-w-0 h-full flex flex-col">
           <TextEditor slug={slug} initialContent={pageData.content} token={effectiveToken} />
         </div>
 
-        {/* Right Pane — Shared Files Vault */}
-        <div className={`
-          w-full md:w-[400px] lg:w-[460px] md:flex flex-col min-h-0 h-full shrink-0 transition-all duration-200 pb-20 md:pb-0
-          ${activeTab === "files" ? "flex" : "hidden md:flex"}
-        `}>
+        {/* Right File Explorer Sidebar */}
+        <aside
+          className={`
+            fixed sm:static inset-y-0 right-0 z-40 sm:z-auto
+            bg-[var(--bg-surface)]
+            flex flex-col shrink-0
+            transition-all duration-200 ease-in-out
+            ${showFilePanel
+              ? "translate-x-0 w-[280px] sm:w-[300px] md:w-[320px] border-l border-[var(--border-color)] opacity-100 shadow-2xl sm:shadow-none"
+              : "translate-x-full sm:translate-x-0 sm:w-0 sm:border-l-0 sm:opacity-0 sm:overflow-hidden"
+            }
+          `}
+        >
+          {/* Mobile close handle */}
+          <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-color)] sm:hidden shrink-0">
+            <div className="flex items-center gap-2 text-[var(--text-main)] font-extrabold">
+              <FolderOpen size={16} className="text-[var(--accent-indigo)]" />
+              <span className="text-xs uppercase tracking-wider font-mono">Explorer</span>
+            </div>
+            <button
+              onClick={() => setShowFilePanel(false)}
+              className="p-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer transition-colors"
+              aria-label="Close file explorer"
+            >
+              <PanelRightClose size={16} />
+            </button>
+          </div>
           <FilePanel slug={slug} token={effectiveToken} />
-        </div>
+        </aside>
+
+        {/* Mobile overlay backdrop */}
+        {showFilePanel && (
+          <div
+            className="sm:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-30"
+            onClick={() => setShowFilePanel(false)}
+          />
+        )}
       </main>
-
-      {/* Mobile Floating Segmented Tab Switcher (< 768px) */}
-      <div className="md:hidden fixed bottom-4 left-1/2 -translate-x-1/2 z-40 p-1.5 rounded-2xl bg-[var(--bg-surface)]/95 backdrop-blur-xl border border-[var(--border-color)] shadow-2xl flex items-center gap-1.5 max-w-[90vw]">
-        <button
-          onClick={() => setActiveTab("editor")}
-          className={`
-            flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-extrabold transition-all duration-200 cursor-pointer
-            ${activeTab === "editor"
-              ? "bg-[var(--accent-primary)] text-white shadow-md scale-105"
-              : "text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/5"
-            }
-          `}
-        >
-          <FileText size={15} />
-          <span>Notes Editor</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab("files")}
-          className={`
-            flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-extrabold transition-all duration-200 cursor-pointer
-            ${activeTab === "files"
-              ? "bg-[var(--accent-primary)] text-white shadow-md scale-105"
-              : "text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/5"
-            }
-          `}
-        >
-          <FolderOpen size={15} />
-          <span>Files Vault</span>
-        </button>
-      </div>
 
       <PasswordModal
         slug={slug}
