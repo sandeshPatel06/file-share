@@ -9,6 +9,7 @@ import { MermaidRenderer } from "@/components/MermaidRenderer";
 
 interface MarkdownRendererProps {
   content: string;
+  onToggleTask?: (lineIndex: number, checked: boolean) => void;
 }
 
 /**
@@ -19,7 +20,7 @@ interface MarkdownRendererProps {
  * - Raw HTML passthrough (for embedded rich content)
  * - Heading anchor IDs (`rehype-slug`)
  */
-export function MarkdownRenderer({ content }: MarkdownRendererProps) {
+export function MarkdownRenderer({ content, onToggleTask }: MarkdownRendererProps) {
   if (!content.trim()) {
     return (
       <div className="h-full flex items-center justify-center text-xs font-mono text-[var(--text-subtle)] italic select-none">
@@ -27,6 +28,29 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
       </div>
     );
   }
+
+  // Feature 4: Bidirectional Page Linking
+  // Convert [[slug]] to [slug](/s/slug) outside of code blocks
+  const parseBidirectionalLinks = (text: string) => {
+    const parts = text.split(/(```[\s\S]*?```)/g);
+    for (let i = 0; i < parts.length; i++) {
+      if (i % 2 === 0) {
+        const inlineParts = parts[i].split(/(`[^`]+`)/g);
+        for (let j = 0; j < inlineParts.length; j++) {
+          if (j % 2 === 0) {
+            inlineParts[j] = inlineParts[j].replace(/\[\[(.*?)\]\]/g, (match, p1) => {
+              const cleanSlug = p1.trim();
+              return `[${cleanSlug}](/s/${cleanSlug})`;
+            });
+          }
+        }
+        parts[i] = inlineParts.join("");
+      }
+    }
+    return parts.join("");
+  };
+
+  const parsedContent = parseBidirectionalLinks(content);
 
   return (
     <div className="max-w-none text-sm leading-relaxed text-[var(--text-main)] select-text markdown-body">
@@ -197,19 +221,25 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
           },
 
           // ── Task checkbox rendering ──
-          input({ type, checked, disabled, id }) {
+          input({ type, checked, disabled, id, node, ...props }) {
             if (type === "checkbox") {
+              const lineIndex = node?.position?.start?.line;
               return (
                 <input
                   type="checkbox"
                   checked={checked}
-                  readOnly
+                  disabled={!onToggleTask}
+                  onChange={(e) => {
+                    if (onToggleTask && lineIndex) {
+                      onToggleTask(lineIndex - 1, e.target.checked); // 0-indexed line
+                    }
+                  }}
                   id={id}
-                  className="rounded accent-[var(--accent-primary)] mr-2 align-middle"
+                  className={`rounded accent-[var(--accent-primary)] mr-2 align-middle ${onToggleTask ? 'cursor-pointer' : ''}`}
                 />
               );
             }
-            return <input type={type} checked={checked} disabled={disabled} id={id} />;
+            return <input type={type} checked={checked} disabled={disabled} id={id} {...props} />;
           },
 
           // ── Paragraphs ──
@@ -236,7 +266,7 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
           },
         }}
       >
-        {content}
+        {parsedContent}
       </ReactMarkdown>
     </div>
   );
