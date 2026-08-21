@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import Link from "next/link";
 import { Pencil, Lock, Unlock, Copy, CheckCheck, QrCode, PanelRightClose, PanelRightOpen } from "lucide-react";
 import { showToast } from "@/components/ui/Toast";
 import { QRCodeModal } from "@/components/QRCodeModal";
@@ -35,23 +36,38 @@ export function SlugBar({ slug, isProtected, token, onLockClick, onToggleFilePan
 
   return (
     <div className="flex items-center justify-between gap-2 w-full min-w-0 h-full select-none">
-      {/* Workspace Brand & Slug Display */}
-      <div className="flex items-center gap-2 min-w-0 shrink">
-        <div className="w-7 h-7 rounded-xl overflow-hidden shadow-md border border-[var(--border-glow)] shrink-0">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.png" alt="FileShare Logo" width={28} height={28} decoding="async" className="w-full h-full object-cover" />
-        </div>
-        <span className="text-[var(--text-subtle)] text-xs font-mono select-none hidden sm:inline">/s/</span>
-        <span className="text-xs sm:text-base font-extrabold text-[var(--text-main)] truncate max-w-[80px] min-[400px]:max-w-[140px] sm:max-w-[220px] font-mono tracking-tight">
-          {slug}
-        </span>
+      {/* Workspace Brand & Interactive Workspace Pill */}
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0 shrink">
+        {/* Brand Logo & Name */}
+        <Link
+          href="/"
+          className="relative group flex items-center gap-2 shrink-0 cursor-pointer no-underline"
+          title="FileShare Home"
+        >
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl overflow-hidden p-[1.5px] bg-gradient-to-tr from-[var(--accent-indigo)] via-indigo-400 to-purple-500 shadow-md group-hover:scale-105 transition-transform duration-200">
+            <div className="w-full h-full rounded-[9px] sm:rounded-[10px] overflow-hidden bg-[var(--bg-surface)]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo.png" alt="FileShare Logo" width={32} height={32} decoding="async" className="w-full h-full object-cover" />
+            </div>
+          </div>
+          <span className="font-extrabold text-sm sm:text-base tracking-tight text-[var(--text-main)] hidden sm:inline group-hover:text-[var(--accent-indigo)] transition-colors">
+            FileShare
+          </span>
+        </Link>
+
+        {/* Interactive Workspace Slug Pill */}
         <button
           onClick={() => setShowRenameModal(true)}
-          className="text-[var(--text-subtle)] hover:text-[var(--accent-indigo)] hover:bg-black/5 dark:hover:bg-white/10 p-1 rounded-lg transition-colors shrink-0 cursor-pointer"
-          title="Edit workspace URL in modal"
-          aria-label="Edit workspace URL in modal"
+          title="Click to edit workspace URL"
+          aria-label="Click to edit workspace URL"
+          className="group/pill flex items-center gap-1.5 px-3 py-1 sm:py-1.5 rounded-xl bg-[var(--badge-bg)] hover:bg-[var(--border-color)]/60 border border-[var(--border-color)] hover:border-[var(--accent-indigo)]/40 transition-all duration-200 cursor-pointer min-w-0 shadow-sm"
         >
-          <Pencil size={13} />
+          <span className="text-xs sm:text-sm font-extrabold text-[var(--text-main)] group-hover/pill:text-[var(--accent-indigo)] truncate max-w-[100px] min-[400px]:max-w-[160px] sm:max-w-[240px] font-mono tracking-tight transition-colors">
+            {slug}
+          </span>
+          <span className="p-0.5 rounded-md text-[var(--text-subtle)] group-hover/pill:text-[var(--accent-indigo)] group-hover/pill:bg-[var(--accent-indigo)]/10 transition-all ml-0.5 shrink-0">
+            <Pencil size={12} />
+          </span>
         </button>
       </div>
 
