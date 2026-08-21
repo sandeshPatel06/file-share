@@ -28,36 +28,36 @@ export function QRCodeModal({ open, onClose, slug }: QRCodeModalProps) {
   }
 
   // Pure clean QR Code format readable by all camera readers
-  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(url)}&color=0f172a&bgcolor=ffffff&margin=10`;
+  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}&color=0f172a&bgcolor=ffffff&margin=8`;
 
   return (
-    <Modal open={open} onClose={onClose} title="Scan QR Code to Open Space">
-      <div className="flex flex-col items-center justify-center p-2 text-center">
+    <Modal open={open} onClose={onClose} title="Scan QR Code to Open Space" maxWidth="max-w-xs sm:max-w-sm">
+      <div className="flex flex-col items-center justify-center pt-0.5 text-center">
         {/* QR Code Card Frame */}
-        <div className="p-4 rounded-2xl bg-white border border-[var(--border-color)] shadow-lg mb-5">
+        <div className="p-3 rounded-xl bg-white border border-[var(--border-color)] shadow-md mb-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={qrImageUrl}
             alt={`QR code for ${url}`}
-            width={200}
-            height={200}
-            className="rounded-xl shadow-inner border border-slate-100"
+            width={180}
+            height={180}
+            className="rounded-lg border border-slate-100"
           />
         </div>
 
-        <p className="text-xs text-[var(--text-muted)] font-medium mb-5 max-w-xs leading-relaxed">
-          Scan this QR code using your phone camera to open <span className="text-[var(--accent-indigo)] font-bold font-mono">/s/{slug}</span> instantly.
+        <p className="text-xs text-[var(--text-muted)] font-medium mb-3 max-w-xs leading-relaxed">
+          Scan this QR code using your phone camera to open <span className="text-[var(--accent-indigo)] font-extrabold font-mono">/s/{slug}</span> instantly.
         </p>
 
         {/* URL Copy Bar */}
-        <div className="w-full flex items-center bg-[var(--input-bg)] border border-[var(--border-color)] rounded-2xl p-1.5 mb-4">
+        <div className="w-full flex items-center bg-[var(--input-bg)] border border-[var(--border-color)] rounded-xl p-1 mb-2.5">
           <input
             readOnly
             value={url}
-            className="flex-1 px-3 py-1.5 text-xs text-[var(--text-main)] bg-transparent outline-none font-mono truncate select-all font-bold"
+            className="flex-1 px-2.5 py-1 text-xs text-[var(--text-main)] bg-transparent outline-none font-mono truncate select-all font-bold"
           />
           <Button size="sm" variant={copied ? "success" : "secondary"} icon={copied ? <CheckCheck size={13} /> : <Copy size={13} />} onClick={handleCopy}>
-            {copied ? "Copied" : "Copy Link"}
+            {copied ? "Copied" : "Copy"}
           </Button>
         </div>
 

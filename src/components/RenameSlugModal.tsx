@@ -23,8 +23,6 @@ export function RenameSlugModal({ open, onClose, slug, token }: RenameSlugModalP
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const router = useRouter();
 
-  // Reset state when slug changes or modal opens
-
   function handleSlugChange(val: string) {
     setNewSlug(val);
     setAvailable(null);
@@ -86,26 +84,26 @@ export function RenameSlugModal({ open, onClose, slug, token }: RenameSlugModalP
   }
 
   return (
-    <Modal open={open} onClose={onClose} title="Rename Workspace URL" maxWidth="max-w-md">
-      <div className="flex flex-col gap-4 p-1">
+    <Modal open={open} onClose={onClose} title="Rename Workspace URL" maxWidth="max-w-sm sm:max-w-md">
+      <div className="flex flex-col gap-3.5 pt-0.5">
         {/* Current URL Card */}
-        <div className="flex items-center gap-3 p-3 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)]">
-          <div className="w-10 h-10 rounded-xl bg-[var(--badge-bg)] border border-[var(--badge-border)] flex items-center justify-center text-[var(--accent-indigo)] shrink-0 shadow-sm">
-            <Globe size={20} />
+        <div className="flex items-center gap-3 p-3 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)]">
+          <div className="w-9 h-9 rounded-lg bg-[var(--badge-bg)] border border-[var(--badge-border)] flex items-center justify-center text-[var(--accent-indigo)] shrink-0 shadow-sm">
+            <Globe size={18} />
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-[10px] font-bold text-[var(--text-subtle)] uppercase tracking-wider font-mono">Current Workspace</p>
-            <p className="text-sm font-extrabold text-[var(--text-main)] font-mono truncate">/s/{slug}</p>
+            <p className="text-xs sm:text-sm font-extrabold text-[var(--text-main)] font-mono truncate">/s/{slug}</p>
           </div>
         </div>
 
         {/* New Slug Input */}
         <div>
-          <label className="block text-xs font-bold text-[var(--text-muted)] mb-1.5 font-mono">
+          <label className="block text-xs font-bold text-[var(--text-muted)] mb-1 font-mono">
             New Workspace URL
           </label>
           <div className="relative flex items-center">
-            <span className="absolute left-3 text-xs font-mono text-[var(--text-subtle)] font-bold select-none">
+            <span className="absolute left-3 text-xs font-mono text-[var(--text-subtle)] font-extrabold select-none">
               /s/
             </span>
             <input
@@ -118,7 +116,7 @@ export function RenameSlugModal({ open, onClose, slug, token }: RenameSlugModalP
               }}
               placeholder="my-custom-space"
               className={`
-                w-full pl-9 pr-24 py-2.5 bg-[var(--input-bg)] border rounded-2xl text-xs sm:text-sm text-[var(--text-main)] font-mono
+                w-full pl-9 pr-24 py-2 bg-[var(--input-bg)] border rounded-xl text-xs sm:text-sm text-[var(--text-main)] font-mono
                 outline-none transition-all shadow-inner font-bold
                 ${slugError
                   ? "border-[var(--status-danger-border)] focus:ring-2 focus:ring-[var(--status-danger-border)]"
@@ -137,19 +135,19 @@ export function RenameSlugModal({ open, onClose, slug, token }: RenameSlugModalP
             )}
           </div>
           {slugError && (
-            <p className="text-xs text-[var(--status-danger-text)] mt-1.5 font-semibold px-1">
+            <p className="text-xs text-[var(--status-danger-text)] mt-1 font-semibold px-1">
               {slugError}
             </p>
           )}
           {available === false && !slugError && (
-            <p className="text-xs text-[var(--accent-primary)] mt-1.5 font-medium px-1">
+            <p className="text-xs text-[var(--accent-primary)] mt-1 font-medium px-1">
               This space already exists. Renaming will navigate to the existing workspace.
             </p>
           )}
         </div>
 
         {/* Modal Action Controls */}
-        <div className="flex items-center justify-end gap-2 pt-3 border-t border-[var(--border-color)]">
+        <div className="flex items-center justify-end gap-2 pt-3 mt-1 border-t border-[var(--border-color)]">
           <Button variant="secondary" size="sm" onClick={onClose}>
             Cancel
           </Button>
