@@ -110,6 +110,10 @@ export function FileCard({ file, slug, token }: FileCardProps) {
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [showPreview,       setShowPreview]       = useState(false);
   const [copiedUrl,         setCopiedUrl]         = useState(false);
+  const [imgError,          setImgError]          = useState(false);
+
+  const isImage = file.mimetype.startsWith("image/");
+  const previewUrl = token ? `${file.downloadURL}?token=${encodeURIComponent(token)}` : file.downloadURL;
 
   async function handleDelete() {
     setDeleting(true);
@@ -143,15 +147,26 @@ export function FileCard({ file, slug, token }: FileCardProps) {
         hover:border-[var(--border-glow)] hover:shadow-md
         transition-all duration-200 animate-fade-in min-w-0
       ">
-        {/* Left Side: Icon & Metadata */}
+        {/* Left Side: Thumbnail / Icon & Metadata */}
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
-          {/* File icon badge (Click to preview) */}
+          {/* File thumbnail / icon badge (Click to preview) */}
           <button
             onClick={() => setShowPreview(true)}
-            className="w-9 h-9 rounded-xl bg-[var(--badge-bg)] border border-[var(--badge-border)] hover:border-[var(--accent-primary)] flex items-center justify-center shrink-0 shadow-sm transition-all hover:scale-105 cursor-pointer"
+            className="w-9 h-9 rounded-xl bg-[var(--badge-bg)] border border-[var(--badge-border)] hover:border-[var(--accent-primary)] flex items-center justify-center shrink-0 shadow-sm transition-all hover:scale-105 cursor-pointer overflow-hidden"
             title="Click to preview file"
           >
-            <FileIcon filename={file.originalName} mimetype={file.mimetype} />
+            {isImage && !imgError ? (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                src={previewUrl}
+                alt={file.originalName}
+                onError={() => setImgError(true)}
+                decoding="async"
+                className="w-full h-full object-cover rounded-xl"
+              />
+            ) : (
+              <FileIcon filename={file.originalName} mimetype={file.mimetype} />
+            )}
           </button>
 
           {/* File name and single-line metadata */}

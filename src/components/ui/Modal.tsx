@@ -14,20 +14,31 @@ interface ModalProps {
 const emptySubscribe = () => () => {};
 
 export function Modal({ open, onClose, title, children, maxWidth = "max-w-md" }: ModalProps) {
-  const ref = useRef<HTMLDivElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
   const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
 
   // Close on Escape key
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && open) {
+        onClose();
+      }
+    };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
-  }, [onClose]);
+  }, [open, onClose]);
 
-  // Lock body scroll
+  // Lock body scroll and auto-focus dialog
   useEffect(() => {
     if (open) {
       document.body.style.overflow = "hidden";
+      // Auto-focus dialog box or first input
+      setTimeout(() => {
+        const input = dialogRef.current?.querySelector<HTMLInputElement | HTMLButtonElement>("input, button, [tabindex]");
+        if (input) {
+          input.focus();
+        }
+      }, 50);
     } else {
       document.body.style.overflow = "";
     }
@@ -38,22 +49,23 @@ export function Modal({ open, onClose, title, children, maxWidth = "max-w-md" }:
 
   const modalContent = (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-sm overflow-y-auto"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-sm overflow-y-auto animate-fade-in"
       onClick={onClose}
     >
       {/* Modal Dialog Box */}
       <div
-        ref={ref}
+        ref={dialogRef}
         onClick={(e) => e.stopPropagation()}
+        tabIndex={-1}
         className={`
-          relative w-full ${maxWidth} bg-[var(--modal-bg)] text-[var(--text-main)]
+          relative w-full ${maxWidth} max-h-[88vh] bg-[var(--modal-bg)] text-[var(--text-main)]
           rounded-2xl p-4 sm:p-5 border border-[var(--border-color)]
-          shadow-2xl z-[10000] my-auto animate-slide-up overflow-hidden transition-all
+          shadow-2xl z-[10000] my-auto flex flex-col animate-modal-pop outline-none
         `}
       >
         {/* Header */}
         {title ? (
-          <div className="flex items-center justify-between mb-3.5 pb-2.5 border-b border-[var(--border-color)]">
+          <div className="flex items-center justify-between mb-3.5 pb-2.5 border-b border-[var(--border-color)] shrink-0 select-none">
             <h2 className="text-sm sm:text-base font-extrabold text-[var(--text-main)] truncate pr-2">{title}</h2>
             <button
               onClick={onClose}
@@ -73,7 +85,10 @@ export function Modal({ open, onClose, title, children, maxWidth = "max-w-md" }:
           </button>
         )}
 
-        {children}
+        {/* Modal Scrollable Body */}
+        <div className="flex-1 min-h-0 overflow-y-auto">
+          {children}
+        </div>
       </div>
     </div>
   );
