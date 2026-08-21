@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useRef, useState } from "react";
 import { UploadCloud, FolderOpen, FileUp, Search, LayoutGrid, LayoutList, X } from "lucide-react";
-import { useFileList } from "@/hooks/useFileList";
+import { useFileList, FileItem } from "@/hooks/useFileList";
 import { FileCard } from "@/components/FileCard";
 import { showToast } from "@/components/ui/Toast";
 
@@ -19,6 +19,8 @@ interface UploadProgressItem {
   speedFormatted: string;
 }
 
+type FileCategory = "all" | "images" | "docs" | "code" | "media";
+
 function formatBytes(bytes: number): string {
   if (bytes === 0) return "0 Bytes";
   const k = 1024;
@@ -35,11 +37,46 @@ function formatSpeed(bytesPerSec: number): string {
   return Math.round(bytesPerSec / 1024) + " KB/s";
 }
 
+function matchCategory(file: FileItem, cat: FileCategory): boolean {
+  if (cat === "all") return true;
+  const mime = file.mimetype.toLowerCase();
+  const ext = (file.originalName.includes(".") ? file.originalName.split(".").pop() : "")?.toLowerCase() || "";
+
+  if (cat === "images") {
+    return mime.startsWith("image/") || ["jpg", "jpeg", "png", "gif", "webp", "svg", "ico", "bmp"].includes(ext);
+  }
+  if (cat === "media") {
+    return mime.startsWith("audio/") || mime.startsWith("video/") || ["mp3", "wav", "ogg", "flac", "mp4", "webm", "mkv", "avi", "mov"].includes(ext);
+  }
+  if (cat === "docs") {
+    return (
+      mime === "application/pdf" ||
+      mime.includes("document") ||
+      mime.includes("word") ||
+      mime.includes("spreadsheet") ||
+      mime.includes("presentation") ||
+      ["pdf", "doc", "docx", "txt", "rtf", "odt", "xls", "xlsx", "csv", "ppt", "pptx"].includes(ext)
+    );
+  }
+  if (cat === "code") {
+    return (
+      mime.startsWith("text/") ||
+      mime.includes("json") ||
+      mime.includes("javascript") ||
+      mime.includes("typescript") ||
+      mime.includes("xml") ||
+      ["js", "ts", "tsx", "jsx", "py", "html", "css", "json", "sh", "c", "cpp", "go", "rs", "java", "php", "sql", "md", "yaml", "yml"].includes(ext)
+    );
+  }
+  return true;
+}
+
 export function FilePanel({ slug, token }: FilePanelProps) {
   const { files, loading } = useFileList(slug);
-  const [dragging,  setDragging]  = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [viewLayout, setViewLayout]   = useState<"list" | "grid">("list");
+  const [dragging,       setDragging]       = useState(false);
+  const [searchQuery,    setSearchQuery]    = useState("");
+  const [activeCategory, setActiveCategory] = useState<FileCategory>("all");
+  const [viewLayout,     setViewLayout]     = useState<"list" | "grid">("list");
   const [uploadProgress, setUploadProgress] = useState<Record<string, UploadProgressItem>>({});
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -158,9 +195,19 @@ export function FilePanel({ slug, token }: FilePanelProps) {
   function onDragLeave()                  { setDragging(false); }
   function onDrop(e: React.DragEvent)     { e.preventDefault(); setDragging(false); handleFiles(e.dataTransfer.files); }
 
-  const filteredFiles = files.filter((f) =>
-    f.originalName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredFiles = files.filter((f) => {
+    const matchesSearch = f.originalName.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCat = matchCategory(f, activeCategory);
+    return matchesSearch && matchesCat;
+  });
+
+  const categories: { id: FileCategory; label: string }[] = [
+    { id: "all",    label: "All" },
+    { id: "images", label: "Images" },
+    { id: "docs",   label: "Docs" },
+    { id: "code",   label: "Code" },
+    { id: "media",  label: "Media" },
+  ];
 
   return (
     <div className="flex flex-col h-full bg-[var(--bg-surface)] transition-colors duration-200 select-none">
@@ -186,7 +233,7 @@ export function FilePanel({ slug, token }: FilePanelProps) {
           )}
         </div>
 
-        {/* View Layout & Search Actions */}
+        {/* View Layout Actions */}
         <div className="flex items-center gap-1 shrink-0">
           <div className="flex items-center p-0.5 rounded-lg bg-[var(--badge-bg)] border border-[var(--border-color)]">
             <button
@@ -211,16 +258,16 @@ export function FilePanel({ slug, token }: FilePanelProps) {
         </div>
       </div>
 
-      {/* Search Input Bar */}
+      {/* Search Bar & Category Filter Pills */}
       {files.length > 0 && (
-        <div className="px-2.5 pt-2 shrink-0">
+        <div className="px-2.5 pt-2 pb-1 shrink-0 space-y-1.5 border-b border-[var(--border-color)]/40">
           <div className="relative flex items-center">
             <Search size={13} className="absolute left-2.5 text-[var(--text-subtle)] pointer-events-none" />
             <input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Filter files…"
-              className="w-full pl-8 pr-7 py-1.5 bg-[var(--input-bg)] border border-[var(--border-color)] focus:border-[var(--accent-primary)] rounded-lg text-xs font-mono text-[var(--text-main)] placeholder-[var(--text-subtle)] outline-none transition-all"
+              placeholder="Search files…"
+              className="w-full pl-8 pr-7 py-1.5 bg-[var(--input-bg)] border border-[var(--border-color)] focus:border-[var(--accent-primary)] rounded-lg text-xs font-mono text-[var(--text-main)] placeholder-[var(--text-subtle)] outline-none transition-all font-semibold"
             />
             {searchQuery && (
               <button
@@ -230,6 +277,25 @@ export function FilePanel({ slug, token }: FilePanelProps) {
                 <X size={12} />
               </button>
             )}
+          </div>
+
+          {/* Category Tabs */}
+          <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pb-1">
+            {categories.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setActiveCategory(cat.id)}
+                className={`
+                  px-2 py-0.5 rounded-md text-[10px] font-extrabold transition-all cursor-pointer whitespace-nowrap border
+                  ${activeCategory === cat.id
+                    ? "bg-[var(--accent-primary)] text-white border-[var(--accent-primary)] shadow-sm"
+                    : "bg-[var(--badge-bg)] text-[var(--text-muted)] hover:text-[var(--text-main)] border-[var(--border-color)]"
+                  }
+                `}
+              >
+                {cat.label}
+              </button>
+            ))}
           </div>
         </div>
       )}
@@ -328,10 +394,14 @@ export function FilePanel({ slug, token }: FilePanelProps) {
           <div className="text-center py-8 px-3 border border-dashed border-[var(--border-color)] rounded-xl bg-[var(--bg-card)]">
             <FolderOpen size={24} className="mx-auto text-[var(--text-subtle)] mb-2 opacity-60" />
             <p className="text-xs font-bold text-[var(--text-muted)]">
-              {searchQuery ? `No files match "${searchQuery}"` : "No files yet"}
+              {searchQuery || activeCategory !== "all"
+                ? "No matching files"
+                : "No files yet"}
             </p>
             <p className="text-[10px] text-[var(--text-subtle)] mt-1 font-medium">
-              {searchQuery ? "Try searching for another file name" : "Upload docs, images, or audio"}
+              {searchQuery || activeCategory !== "all"
+                ? "Try clearing filters or search term"
+                : "Upload docs, images, or audio"}
             </p>
           </div>
         ) : (
