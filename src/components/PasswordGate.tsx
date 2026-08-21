@@ -46,17 +46,17 @@ export function PasswordGate({ slug, onUnlocked }: PasswordGateProps) {
       {/* Glow Orbs */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[var(--border-glow)] rounded-full blur-[150px] pointer-events-none" />
 
-      <div className="w-full max-w-md animate-fade-in relative z-10">
-        <div className="bg-[var(--bg-surface)] rounded-3xl p-8 border border-[var(--border-color)] shadow-2xl text-center">
+      <div className="w-full max-w-sm sm:max-w-md animate-fade-in relative z-10">
+        <div className="bg-[var(--bg-surface)] rounded-2xl p-5 sm:p-7 border border-[var(--border-color)] shadow-2xl text-center">
           {/* Cyber Lock Icon */}
-          <div className="w-16 h-16 rounded-2xl bg-[var(--accent-primary)] border border-emerald-500/30 flex items-center justify-center mx-auto mb-6 shadow-md">
-            <Lock size={28} className="text-white" />
+          <div className="w-14 h-14 rounded-2xl bg-[var(--accent-primary)] border border-emerald-500/30 flex items-center justify-center mx-auto mb-4 shadow-md">
+            <Lock size={26} className="text-white" />
           </div>
 
-          <h2 className="text-2xl font-extrabold tracking-tight text-[var(--text-main)]">Protected Space</h2>
-          <p className="text-xs font-mono text-[var(--accent-indigo)] font-bold mt-1.5 mb-6">/s/{slug}</p>
+          <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-[var(--text-main)]">Protected Space</h2>
+          <p className="text-xs font-mono text-[var(--accent-indigo)] font-bold mt-1 mb-4">/s/{slug}</p>
 
-          <p className="text-sm text-[var(--text-muted)] mb-6 leading-relaxed font-medium">
+          <p className="text-xs sm:text-sm text-[var(--text-muted)] mb-5 leading-relaxed font-medium">
             This space is encrypted with a security passphrase. Enter password to view notes and files.
           </p>
 

@@ -30,7 +30,14 @@ export function FilePreviewModal({ file, token, open, onClose }: FilePreviewModa
   const isAudio = file?.mimetype.startsWith("audio/");
   const isPDF   = file?.mimetype === "application/pdf" || file?.originalName.toLowerCase().endsWith(".pdf");
 
-  const previewUrl = file ? (token ? `${file.downloadURL}?token=${encodeURIComponent(token)}` : file.downloadURL) : "";
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  const relativePath = file
+    ? token && !file.downloadURL.includes("token=")
+      ? `${file.downloadURL}${file.downloadURL.includes("?") ? "&" : "?"}token=${encodeURIComponent(token)}`
+      : file.downloadURL
+    : "";
+  const previewUrl = relativePath;
+  const fullDownloadUrl = relativePath ? (relativePath.startsWith("http") ? relativePath : `${origin}${relativePath}`) : "";
 
   const isTextLike = file && (
     file.mimetype.startsWith("text/") ||
@@ -82,8 +89,7 @@ export function FilePreviewModal({ file, token, open, onClose }: FilePreviewModa
 
   async function handleCopyLink() {
     if (!file) return;
-    const fullUrl = `${window.location.origin}${previewUrl}`;
-    const ok = await copyToClipboard(fullUrl);
+    const ok = await copyToClipboard(fullDownloadUrl);
     if (ok) {
       setCopied(true);
       showToast("Direct file link copied to clipboard!", "success");
@@ -134,7 +140,7 @@ export function FilePreviewModal({ file, token, open, onClose }: FilePreviewModa
                 </p>
               </div>
               <div className="w-full flex items-center justify-center gap-2 mt-1">
-                <a href={previewUrl} target="_blank" rel="noopener noreferrer" className="flex-1 max-w-xs">
+                <a href={fullDownloadUrl} target="_blank" rel="noopener noreferrer" className="flex-1 max-w-xs">
                   <Button variant="primary" size="sm" icon={<ExternalLink size={13} />} className="w-full text-xs font-extrabold">
                     Open PDF Document
                   </Button>
@@ -169,7 +175,7 @@ export function FilePreviewModal({ file, token, open, onClose }: FilePreviewModa
         <div className="w-full flex items-center bg-[var(--input-bg)] border border-[var(--border-color)] rounded-xl p-1">
           <input
             readOnly
-            value={`${typeof window !== "undefined" ? window.location.origin : ""}${previewUrl}`}
+            value={fullDownloadUrl}
             className="flex-1 px-2.5 py-1 text-xs text-[var(--text-main)] bg-transparent outline-none font-mono truncate select-all font-bold"
           />
           <Button size="sm" variant={copied ? "success" : "secondary"} icon={copied ? <CheckCheck size={13} /> : <Copy size={13} />} onClick={handleCopyLink}>
@@ -179,12 +185,12 @@ export function FilePreviewModal({ file, token, open, onClose }: FilePreviewModa
 
         {/* Action Controls */}
         <div className="flex items-center gap-2 w-full pt-2.5 border-t border-[var(--border-color)]">
-          <a href={previewUrl} download={file.originalName} target="_blank" rel="noopener noreferrer" className="flex-1">
+          <a href={fullDownloadUrl} download={file.originalName} target="_blank" rel="noopener noreferrer" className="flex-1">
             <Button variant="primary" size="sm" icon={<Download size={14} />} className="w-full font-extrabold">
               Download File
             </Button>
           </a>
-          <a href={previewUrl} target="_blank" rel="noopener noreferrer">
+          <a href={fullDownloadUrl} target="_blank" rel="noopener noreferrer">
             <Button variant="secondary" size="sm" icon={<ExternalLink size={14} />}>
               Open in New Tab
             </Button>

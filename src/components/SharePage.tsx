@@ -71,7 +71,7 @@ export function SharePage({ pageData }: SharePageProps) {
   return (
     <div className="flex flex-col h-screen w-full overflow-hidden bg-[var(--bg-main)] text-[var(--text-main)] transition-colors duration-200 relative">
       {/* Top Header Navigation */}
-      <header className="h-14 sm:h-16 px-3 sm:px-6 bg-[var(--header-bg)] backdrop-blur-xl border-b border-[var(--border-color)] flex items-center shrink-0 z-30 transition-colors duration-200">
+      <header className="h-12 sm:h-13 px-2.5 sm:px-4 bg-[var(--header-bg)] backdrop-blur-xl border-b border-[var(--border-color)] flex items-center shrink-0 z-30 transition-colors duration-200">
         <SlugBar
           slug={slug}
           isProtected={isProtected}
