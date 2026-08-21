@@ -1,10 +1,24 @@
 "use client";
-import React from "react";
+import React, { isValidElement } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
+import rehypeHighlight from "rehype-highlight";
+import rehypeSlug from "rehype-slug";
+import { MermaidRenderer } from "@/components/MermaidRenderer";
 
 interface MarkdownRendererProps {
   content: string;
 }
 
+/**
+ * Full-featured Markdown renderer supporting:
+ * - GitHub Flavored Markdown (tables, task lists, strikethrough, autolinks)
+ * - Syntax-highlighted fenced code blocks
+ * - Mermaid diagrams via ```mermaid fences
+ * - Raw HTML passthrough (for embedded rich content)
+ * - Heading anchor IDs (`rehype-slug`)
+ */
 export function MarkdownRenderer({ content }: MarkdownRendererProps) {
   if (!content.trim()) {
     return (
@@ -14,152 +28,277 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
     );
   }
 
-  const lines = content.split("\n");
-
   return (
-    <div className="prose dark:prose-invert max-w-none text-xs md:text-sm font-sans leading-relaxed text-[var(--text-main)] space-y-2 select-text">
-      {lines.map((line, idx) => {
-        // Headers
-        if (line.startsWith("# ")) {
-          return (
-            <h1 key={idx} className="text-xl md:text-2xl font-extrabold tracking-tight text-[var(--text-main)] pb-1 border-b border-[var(--border-color)] mt-4 mb-2">
-              {renderInline(line.slice(2))}
-            </h1>
-          );
-        }
-        if (line.startsWith("## ")) {
-          return (
-            <h2 key={idx} className="text-lg md:text-xl font-bold tracking-tight text-[var(--text-main)] pb-0.5 border-b border-[var(--border-color)]/60 mt-3 mb-2">
-              {renderInline(line.slice(3))}
-            </h2>
-          );
-        }
-        if (line.startsWith("### ")) {
-          return (
-            <h3 key={idx} className="text-base md:text-lg font-bold text-[var(--accent-indigo)] mt-3 mb-1">
-              {renderInline(line.slice(4))}
-            </h3>
-          );
-        }
+    <div className="max-w-none text-sm leading-relaxed text-[var(--text-main)] select-text markdown-body">
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        rehypePlugins={[rehypeRaw, rehypeHighlight, rehypeSlug]}
+        components={{
+          // ── Code blocks: detect mermaid fences ──
+          code({ className, children, ...props }) {
+            const match = /language-(\w+)/.exec(className || "");
+            const lang = match?.[1];
+            const codeStr = String(children).replace(/\n$/, "");
 
-        // Horizontal Rule
-        if (line.trim() === "---" || line.trim() === "***") {
-          return <hr key={idx} className="my-4 border-t border-[var(--border-color)]" />;
-        }
+            // Mermaid diagram block
+            if (lang === "mermaid") {
+              return <MermaidRenderer chart={codeStr} />;
+            }
 
-        // Blockquotes
-        if (line.startsWith("> ")) {
-          return (
-            <blockquote key={idx} className="pl-3 border-l-4 border-[var(--accent-primary)] text-[var(--text-muted)] italic my-2 py-0.5 bg-[var(--badge-bg)] rounded-r-lg font-medium">
-              {renderInline(line.slice(2))}
-            </blockquote>
-          );
-        }
+            // Inline code (no language class)
+            if (!lang) {
+              return (
+                <code
+                  className="px-1.5 py-0.5 rounded-md bg-[var(--input-bg)] border border-[var(--border-color)] font-mono text-[0.8125rem] text-[var(--accent-cyan)] font-bold"
+                  {...props}
+                >
+                  {children}
+                </code>
+              );
+            }
 
-        // Task Checkboxes
-        if (line.startsWith("- [ ] ") || line.startsWith("- [x] ")) {
-          const checked = line.startsWith("- [x] ");
-          return (
-            <div key={idx} className="flex items-center gap-2 my-1 text-[var(--text-main)] font-medium">
-              <input type="checkbox" checked={checked} readOnly className="rounded accent-[var(--accent-primary)]" />
-              <span className={checked ? "line-through text-[var(--text-subtle)]" : ""}>
-                {renderInline(line.slice(6))}
-              </span>
-            </div>
-          );
-        }
+            // Fenced code block with syntax highlighting
+            return (
+              <div className="my-4 rounded-xl border border-[var(--border-color)] overflow-hidden">
+                <div className="flex items-center justify-between px-4 py-1.5 bg-[var(--bg-surface)] border-b border-[var(--border-color)]">
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--text-muted)] font-extrabold">
+                    {lang}
+                  </span>
+                  <CopyCodeButton code={codeStr} />
+                </div>
+                <pre className="p-4 bg-[var(--input-bg)] overflow-x-auto text-xs md:text-sm font-mono leading-relaxed">
+                  <code className={`hljs language-${lang} bg-transparent`} {...props}>
+                    {codeStr}
+                  </code>
+                </pre>
+              </div>
+            );
+          },
 
-        // Unordered Lists
-        if (line.startsWith("- ") || line.startsWith("* ")) {
-          return (
-            <li key={idx} className="ml-4 list-disc text-[var(--text-main)] my-0.5 font-medium">
-              {renderInline(line.slice(2))}
-            </li>
-          );
-        }
+          // ── Tables ──
+          table({ children }) {
+            return (
+              <div className="my-4 overflow-x-auto rounded-xl border border-[var(--border-color)]">
+                <table className="min-w-full text-xs md:text-sm border-collapse">{children}</table>
+              </div>
+            );
+          },
+          thead({ children }) {
+            return (
+              <thead className="bg-[var(--bg-surface)] border-b-2 border-[var(--border-color)]">{children}</thead>
+            );
+          },
+          tbody({ children }) {
+            return <tbody className="divide-y divide-[var(--border-color)]">{children}</tbody>;
+          },
+          tr({ children }) {
+            return <tr className="hover:bg-[var(--bg-surface)]/50 transition-colors">{children}</tr>;
+          },
+          th({ children, style }) {
+            return (
+              <th style={style} className="px-3 py-2 text-left text-[11px] font-extrabold uppercase tracking-wider text-[var(--text-muted)] border-r border-[var(--border-color)] last:border-r-0">
+                {children}
+              </th>
+            );
+          },
+          td({ children, style }) {
+            return (
+              <td style={style} className="px-3 py-2 border-r border-t border-[var(--border-color)] last:border-r-0 text-[var(--text-main)]">
+                {children}
+              </td>
+            );
+          },
 
-        // Code block single lines / Indented code
-        if (line.startsWith("```") || line.endsWith("```")) {
-          const codeText = line.replace(/```/g, "");
-          return codeText ? (
-            <pre key={idx} className="p-2.5 rounded-xl bg-[var(--input-bg)] border border-[var(--border-color)] font-mono text-xs text-[var(--accent-indigo)] overflow-x-auto my-2 font-bold">
-              <code>{codeText}</code>
-            </pre>
-          ) : null;
-        }
+          // ── Blockquotes ──
+          blockquote({ children }) {
+            return (
+              <blockquote className="my-3 pl-4 border-l-4 border-[var(--accent-primary)] text-[var(--text-muted)] italic bg-[var(--badge-bg)] rounded-r-lg py-2 pr-3 font-medium">
+                {children}
+              </blockquote>
+            );
+          },
 
-        // Empty line
-        if (!line.trim()) {
-          return <div key={idx} className="h-2" />;
-        }
+          // ── Links ──
+          a({ href, children }) {
+            return (
+              <a
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[var(--accent-sky)] underline underline-offset-2 decoration-[var(--accent-sky)]/40 hover:decoration-[var(--accent-sky)] transition-colors font-medium"
+              >
+                {children}
+              </a>
+            );
+          },
 
-        // Regular Paragraph
-        return (
-          <p key={idx} className="my-1 leading-relaxed font-medium">
-            {renderInline(line)}
-          </p>
-        );
-      })}
+          // ── Images ──
+          img({ src, alt }) {
+            if (!src) return null;
+            return (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={src}
+                alt={alt || ""}
+                className="my-3 rounded-xl max-w-full h-auto border border-[var(--border-color)] shadow-md"
+                loading="lazy"
+              />
+            );
+          },
+
+          // ── Horizontal Rule ──
+          hr() {
+            return <hr className="my-6 border-t-2 border-[var(--border-color)]" />;
+          },
+
+          // ── Headings ──
+          h1({ children, id }) {
+            return (
+              <h1 id={id} className="text-xl md:text-2xl font-extrabold tracking-tight text-[var(--text-main)] pb-1 border-b border-[var(--border-color)] mt-6 mb-3">
+                {children}
+              </h1>
+            );
+          },
+          h2({ children, id }) {
+            return (
+              <h2 id={id} className="text-lg md:text-xl font-bold tracking-tight text-[var(--text-main)] pb-0.5 border-b border-[var(--border-color)]/60 mt-5 mb-2">
+                {children}
+              </h2>
+            );
+          },
+          h3({ children, id }) {
+            return (
+              <h3 id={id} className="text-base md:text-lg font-bold text-[var(--accent-indigo)] mt-4 mb-1">
+                {children}
+              </h3>
+            );
+          },
+          h4({ children, id }) {
+            return (
+              <h4 id={id} className="text-sm md:text-base font-bold text-[var(--text-main)] mt-3 mb-1">
+                {children}
+              </h4>
+            );
+          },
+
+          // ── Lists ──
+          ul({ children }) {
+            return <ul className="my-2 pl-6 space-y-0.5 list-disc marker:text-[var(--accent-primary)]">{children}</ul>;
+          },
+          ol({ children }) {
+            return <ol className="my-2 pl-6 space-y-0.5 list-decimal marker:text-[var(--text-muted)] marker:font-bold">{children}</ol>;
+          },
+          li({ children }) {
+            // Check if this li contains a task checkbox
+            const hasTask = hasTaskCheckbox(children);
+            if (hasTask) {
+              return <li className="my-1 list-none -ml-6">{children}</li>;
+            }
+            return <li className="my-0.5 pl-1">{children}</li>;
+          },
+
+          // ── Task checkbox rendering ──
+          input({ type, checked, disabled, id }) {
+            if (type === "checkbox") {
+              return (
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  readOnly
+                  id={id}
+                  className="rounded accent-[var(--accent-primary)] mr-2 align-middle"
+                />
+              );
+            }
+            return <input type={type} checked={checked} disabled={disabled} id={id} />;
+          },
+
+          // ── Paragraphs ──
+          p({ children }) {
+            // Don't wrap images in p margins
+            if (isValidElement(children) && children.type === "img") {
+              return <>{children}</>;
+            }
+            return <p className="my-2 leading-relaxed">{children}</p>;
+          },
+
+          // ── Strong / Bold ──
+          strong({ children }) {
+            return <strong className="font-extrabold text-[var(--accent-indigo)]">{children}</strong>;
+          },
+
+          // ── Emphasis / Italic ──
+          em({ children }) {
+            return <em className="italic font-semibold">{children}</em>;
+          },
+
+          // ── Deleted / Strikethrough ──
+          del({ children }) {
+            return <del className="line-through text-[var(--text-subtle)]">{children}</del>;
+          },
+        }}
+      >
+        {content}
+      </ReactMarkdown>
     </div>
   );
 }
 
-// Inline formatting helper for Bold (**), Italic (*), Strikethrough (~~), and Inline Code (`)
-function renderInline(text: string): React.ReactNode {
-  const parts: React.ReactNode[] = [];
-  let remaining = text;
-  let keyIdx = 0;
+// ── Helpers ──
 
-  while (remaining.length > 0) {
-    // Bold
-    const boldMatch = remaining.match(/^(\*\*|__)(.*?)\1/);
-    if (boldMatch) {
-      parts.push(<strong key={keyIdx++} className="font-extrabold text-[var(--accent-indigo)]">{boldMatch[2]}</strong>);
-      remaining = remaining.slice(boldMatch[0].length);
-      continue;
+/**
+ * Recursively checks if React children contain a task checkbox input.
+ */
+function hasTaskCheckbox(children: React.ReactNode): boolean {
+  if (!children) return false;
+  if (isValidElement(children)) {
+    const props = children.props as Record<string, unknown>;
+    if (children.type === "input" && props.type === "checkbox") {
+      return true;
     }
-
-    // Inline Code
-    const codeMatch = remaining.match(/^`(.*?)`/);
-    if (codeMatch) {
-      parts.push(
-        <code key={keyIdx++} className="px-1.5 py-0.5 rounded bg-[var(--input-bg)] border border-[var(--border-color)] font-mono text-[11px] text-[var(--accent-cyan)] font-bold">
-          {codeMatch[1]}
-        </code>
-      );
-      remaining = remaining.slice(codeMatch[0].length);
-      continue;
-    }
-
-    // Italic
-    const italicMatch = remaining.match(/^(\*|_)(.*?)\1/);
-    if (italicMatch) {
-      parts.push(<em key={keyIdx++} className="italic text-[var(--text-main)] font-semibold">{italicMatch[2]}</em>);
-      remaining = remaining.slice(italicMatch[0].length);
-      continue;
-    }
-
-    // Strikethrough
-    const strikeMatch = remaining.match(/^~~(.*?)~~/);
-    if (strikeMatch) {
-      parts.push(<span key={keyIdx++} className="line-through text-[var(--text-subtle)]">{strikeMatch[1]}</span>);
-      remaining = remaining.slice(strikeMatch[0].length);
-      continue;
-    }
-
-    // Regular char
-    const nextSpecial = remaining.search(/[\*_`~]/);
-    if (nextSpecial === -1) {
-      parts.push(remaining);
-      break;
-    } else if (nextSpecial === 0) {
-      parts.push(remaining[0]);
-      remaining = remaining.slice(1);
-    } else {
-      parts.push(remaining.slice(0, nextSpecial));
-      remaining = remaining.slice(nextSpecial);
+    if (props.children) {
+      return hasTaskCheckbox(props.children as React.ReactNode);
     }
   }
+  if (Array.isArray(children)) {
+    return children.some((c) => hasTaskCheckbox(c));
+  }
+  return false;
+}
 
-  return <>{parts}</>;
+// ── Copy-to-clipboard button for code blocks ──
+function CopyCodeButton({ code }: { code: string }) {
+  const [copied, setCopied] = React.useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Fallback for older browsers / non-HTTPS
+      const textarea = document.createElement("textarea");
+      textarea.value = code;
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand("copy");
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } catch { /* ignore */ }
+      document.body.removeChild(textarea);
+    }
+  };
+
+  return (
+    <button
+      onClick={handleCopy}
+      className="text-[10px] font-bold uppercase tracking-wide text-[var(--text-muted)] hover:text-[var(--accent-indigo)] transition-colors cursor-pointer px-2 py-0.5 rounded-md hover:bg-[var(--badge-bg)]"
+      title="Copy code"
+    >
+      {copied ? "Copied!" : "Copy"}
+    </button>
+  );
 }
