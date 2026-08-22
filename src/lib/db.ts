@@ -15,6 +15,7 @@ if (!fs.existsSync(uploadsDir)) {
 
 interface PgPoolClient {
   query: (sql: string, params?: unknown[]) => Promise<{ rows: Record<string, unknown>[]; rowCount: number | null }>;
+  on?: (event: string, listener: (err: Error) => void) => void;
 }
 
 interface SqlitePrepared {
@@ -44,16 +45,38 @@ if (hasPg) {
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { Pool } = require("pg");
-    let connectionString = process.env.DATABASE_URL;
-    if (connectionString && !connectionString.includes(".render.com")) {
-      connectionString = connectionString
-        .replace("@dpg-da3dpqtg1s2s73ddgnd0-a-a/", "@dpg-da3dpqtg1s2s73ddgnd0-a-a.oregon-postgres.render.com/")
-        .replace("@dpg-da3dpqtg1s2s73ddgnd0-a/", "@dpg-da3dpqtg1s2s73ddgnd0-a-a.oregon-postgres.render.com/");
+    let connectionString = process.env.DATABASE_URL || "";
+    
+    // Auto-detect Render container runtime environment vs local development machine
+    const isRenderRuntime = Boolean(process.env.RENDER || process.env.RENDER_SERVICE_ID || process.env.PORT);
+
+    if (connectionString.includes("dpg-da3dpqtg1s2s73ddgnd0-a")) {
+      if (isRenderRuntime && !connectionString.includes("localhost") && !connectionString.includes("127.0.0.1")) {
+        // Internal Render Network: connect to internal host dpg-da3dpqtg1s2s73ddgnd0-a
+        connectionString = connectionString.replace(
+          /@dpg-da3dpqtg1s2s73ddgnd0-a[a-z0-9.-]*/,
+          "@dpg-da3dpqtg1s2s73ddgnd0-a"
+        );
+      } else {
+        // External machine: connect to external FQDN dpg-da3dpqtg1s2s73ddgnd0-a-a.oregon-postgres.render.com
+        connectionString = connectionString.replace(
+          /@dpg-da3dpqtg1s2s73ddgnd0-a[a-z0-9.-]*/,
+          "@dpg-da3dpqtg1s2s73ddgnd0-a-a.oregon-postgres.render.com"
+        );
+      }
     }
+
     const isLocal = connectionString?.includes("localhost") || connectionString?.includes("127.0.0.1");
     pgPool = new Pool({
       connectionString,
       ssl: isLocal ? false : { rejectUnauthorized: false },
+      max: 10,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 10000,
+    });
+
+    pgPool?.on?.("error", (err: Error) => {
+      console.warn("PostgreSQL pool background error caught:", err.message);
     });
 
     // Provision PostgreSQL tables and migrate any existing unquoted columns
@@ -312,13 +335,29 @@ function memoryAll(sql: string, params: unknown[]) {
   return [];
 }
 
+async function queryPgWithRetry(sql: string, params: unknown[]) {
+  if (!pgPool) throw new Error("pgPool unavailable");
+  const pgSql = convertSqlForPg(sql);
+  const flattenedParams = params.flat();
+
+  try {
+    return await pgPool.query(pgSql, flattenedParams);
+  } catch (err: unknown) {
+    const msg = String(err);
+    if (msg.includes("terminated unexpectedly") || msg.includes("closed") || msg.includes("ECONNRESET") || msg.includes("socket")) {
+      await new Promise((r) => setTimeout(r, 200));
+      return await pgPool.query(pgSql, flattenedParams);
+    }
+    throw err;
+  }
+}
+
 const db = {
   prepare: (sql: string) => {
     return {
       get: async (...params: unknown[]) => {
         if (pgPool) {
-          const pgSql = convertSqlForPg(sql);
-          const res = await pgPool.query(pgSql, params.flat());
+          const res = await queryPgWithRetry(sql, params);
           return res.rows.length > 0 ? normalizeRow(res.rows[0]) : undefined;
         }
         if (sqliteDb) {
@@ -328,8 +367,7 @@ const db = {
       },
       run: async (...params: unknown[]) => {
         if (pgPool) {
-          const pgSql = convertSqlForPg(sql);
-          const res = await pgPool.query(pgSql, params.flat());
+          const res = await queryPgWithRetry(sql, params);
           return { changes: res.rowCount ?? 0 };
         }
         if (sqliteDb) {
@@ -339,8 +377,7 @@ const db = {
       },
       all: async (...params: unknown[]) => {
         if (pgPool) {
-          const pgSql = convertSqlForPg(sql);
-          const res = await pgPool.query(pgSql, params.flat());
+          const res = await queryPgWithRetry(sql, params);
           return res.rows.map(normalizeRow);
         }
         if (sqliteDb) {
