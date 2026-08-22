@@ -17,6 +17,16 @@ interface SharePageProps {
 
 const emptySubscribe = () => () => {};
 
+const subscribeDesktop = (callback: () => void) => {
+  if (typeof window === "undefined") return () => {};
+  const media = window.matchMedia("(min-width: 640px)");
+  media.addEventListener("change", callback);
+  return () => media.removeEventListener("change", callback);
+};
+
+const getIsDesktop = () => (typeof window !== "undefined" ? window.innerWidth >= 640 : true);
+const getServerIsDesktop = () => true;
+
 export function SharePage({ pageData }: SharePageProps) {
   const { slug, isProtected: initialProtected } = pageData;
 
@@ -26,22 +36,20 @@ export function SharePage({ pageData }: SharePageProps) {
     () => null
   );
 
+  const isDesktop = useSyncExternalStore(subscribeDesktop, getIsDesktop, getServerIsDesktop);
+  const [userPanelToggle, setUserPanelToggle] = useState<boolean | null>(null);
+  const showFilePanel = userPanelToggle ?? isDesktop;
+
   const [tokenState, setTokenState]           = useState<string | null>(null);
   const [isProtected, setIsProtected]         = useState(initialProtected);
   const [isUnlockedState, setIsUnlockedState] = useState(false);
   const [showPwModal, setShowPwModal]         = useState(false);
-  const [showFilePanel, setShowFilePanel]     = useState(() => {
-    if (typeof window !== "undefined") {
-      return window.innerWidth >= 640;
-    }
-    return true;
-  });
 
   // Close on Escape key on mobile
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape" && showFilePanel && typeof window !== "undefined" && window.innerWidth < 640) {
-        setShowFilePanel(false);
+        setUserPanelToggle(false);
       }
     }
     window.addEventListener("keydown", handleKeyDown);
@@ -77,7 +85,7 @@ export function SharePage({ pageData }: SharePageProps) {
           isProtected={isProtected}
           token={effectiveToken}
           onLockClick={handleLockClick}
-          onToggleFilePanel={() => setShowFilePanel((v) => !v)}
+          onToggleFilePanel={() => setUserPanelToggle(!showFilePanel)}
           filePanelOpen={showFilePanel}
         />
       </header>
@@ -109,7 +117,7 @@ export function SharePage({ pageData }: SharePageProps) {
               <span className="text-xs uppercase tracking-wider font-mono">Explorer</span>
             </div>
             <button
-              onClick={() => setShowFilePanel(false)}
+              onClick={() => setUserPanelToggle(false)}
               className="p-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer transition-colors"
               aria-label="Close file explorer"
             >
@@ -123,7 +131,7 @@ export function SharePage({ pageData }: SharePageProps) {
         {showFilePanel && (
           <div
             className="sm:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-30"
-            onClick={() => setShowFilePanel(false)}
+            onClick={() => setUserPanelToggle(false)}
           />
         )}
       </main>

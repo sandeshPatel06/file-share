@@ -10,7 +10,7 @@ export function ThemeToggle() {
   const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
 
   if (!mounted) {
-    return <div className="w-8 h-8 rounded-xl bg-[var(--badge-bg)] border border-[var(--border-color)]" />;
+    return <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl bg-[var(--badge-bg)] border border-[var(--border-color)] shrink-0" />;
   }
 
   const isDark = resolvedTheme === "dark" || theme === "dark";
@@ -18,7 +18,7 @@ export function ThemeToggle() {
   return (
     <button
       onClick={() => setTheme(isDark ? "light" : "dark")}
-      className="p-2 rounded-xl bg-[var(--badge-bg)] border border-[var(--border-color)] text-[var(--text-main)] hover:opacity-80 transition-all duration-200 shadow-sm cursor-pointer"
+      className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center shrink-0 rounded-xl bg-[var(--badge-bg)] border border-[var(--border-color)] text-[var(--text-main)] hover:opacity-80 transition-all duration-200 shadow-sm cursor-pointer"
       title={`Switch to ${isDark ? "light" : "dark"} mode`}
       aria-label="Toggle theme"
     >
