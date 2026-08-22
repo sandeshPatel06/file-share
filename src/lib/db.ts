@@ -44,7 +44,12 @@ if (hasPg) {
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { Pool } = require("pg");
-    const connectionString = process.env.DATABASE_URL;
+    let connectionString = process.env.DATABASE_URL;
+    if (connectionString && !connectionString.includes(".render.com")) {
+      connectionString = connectionString
+        .replace("@dpg-da3dpqtg1s2s73ddgnd0-a-a/", "@dpg-da3dpqtg1s2s73ddgnd0-a-a.oregon-postgres.render.com/")
+        .replace("@dpg-da3dpqtg1s2s73ddgnd0-a/", "@dpg-da3dpqtg1s2s73ddgnd0-a-a.oregon-postgres.render.com/");
+    }
     const isLocal = connectionString?.includes("localhost") || connectionString?.includes("127.0.0.1");
     pgPool = new Pool({
       connectionString,
