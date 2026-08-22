@@ -13,6 +13,16 @@ services:
         fromDatabase:
           name: jarvis-db
           property: connectionString
+      # Backblaze B2 Object Storage (S3-Compatible)
+      # - key: B2_ENDPOINT
+      #   sync: false
+      # - key: B2_KEY_ID
+      #   sync: false
+      # - key: B2_APPLICATION_KEY
+      #   sync: false
+      # - key: B2_BUCKET_NAME
+      #   sync: false
+
 
 
 

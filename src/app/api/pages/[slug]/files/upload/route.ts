@@ -3,6 +3,7 @@ import db from "@/lib/db";
 import { verifyPageToken } from "@/lib/jwt";
 import { rateLimit } from "@/lib/rateLimiter";
 import { pageEvents } from "@/lib/events";
+import { hasB2Storage, uploadToB2 } from "@/lib/b2";
 import { randomUUID } from "crypto";
 import path from "path";
 import fs from "fs";
@@ -139,6 +140,12 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
 
     const uploadedInfo = await parsePromise;
     const downloadURL = `/api/uploads/${uploadedInfo.storedName}`;
+
+    // Upload to Backblaze B2 Object Storage if B2 credentials are set
+    if (hasB2Storage() && filePath && fs.existsSync(filePath)) {
+      const fileBuffer = fs.readFileSync(filePath);
+      await uploadToB2(uploadedInfo.storedName, fileBuffer, uploadedInfo.mimetype);
+    }
 
     await db.prepare(`
       INSERT INTO files (fileId, slug, originalName, storedName, mimetype, size, downloadURL)

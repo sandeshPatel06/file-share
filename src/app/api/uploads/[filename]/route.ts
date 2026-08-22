@@ -5,6 +5,7 @@ import fs from "fs";
 import { Readable } from "stream";
 import { verifyPageToken } from "@/lib/jwt";
 import { rateLimit } from "@/lib/rateLimiter";
+import { getFromB2, hasB2Storage } from "@/lib/b2";
 
 interface RouteContext {
   params: Promise<{ filename: string }>;
@@ -64,9 +65,40 @@ export async function GET(req: NextRequest, ctx: RouteContext) {
     }
   }
 
+  const rangeHeader = req.headers.get("range");
+
+  // Stream from Backblaze B2 if local file does not exist or B2 is active
+  if (!fs.existsSync(filePath) && hasB2Storage()) {
+    const b2Data = await getFromB2(safeFilename, rangeHeader);
+    if (b2Data) {
+      const b2Headers: Record<string, string> = {
+        "Accept-Ranges": "bytes",
+        "Content-Type": contentType,
+        "Content-Disposition": `inline; filename="${encodeURIComponent(fileRecord?.originalName || safeFilename)}"`,
+        "X-Frame-Options": "SAMEORIGIN",
+        "Content-Security-Policy": "frame-ancestors 'self'",
+        "Cache-Control": "public, max-age=31536000, immutable",
+      };
+      if (b2Data.contentLength) b2Headers["Content-Length"] = b2Data.contentLength.toString();
+      if (b2Data.contentRange) b2Headers["Content-Range"] = b2Data.contentRange;
+
+      const webStream = b2Data.stream instanceof Readable
+        ? Readable.toWeb(b2Data.stream) as ReadableStream<Uint8Array>
+        : (b2Data.stream as unknown as ReadableStream<Uint8Array>);
+
+      return new NextResponse(webStream, {
+        status: b2Data.statusCode,
+        headers: b2Headers,
+      });
+    }
+  }
+
+  if (!fs.existsSync(filePath)) {
+    return NextResponse.json({ error: "File not found" }, { status: 404 });
+  }
+
   const stat = fs.statSync(filePath);
   const fileSize = stat.size;
-  const rangeHeader = req.headers.get("range");
 
   const commonHeaders = {
     "Accept-Ranges": "bytes",

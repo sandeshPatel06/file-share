@@ -3,6 +3,7 @@ import db from "@/lib/db";
 import { verifyPageToken } from "@/lib/jwt";
 import { rateLimit } from "@/lib/rateLimiter";
 import { pageEvents } from "@/lib/events";
+import { deleteFromB2, hasB2Storage } from "@/lib/b2";
 import path from "path";
 import fs from "fs";
 
@@ -44,14 +45,17 @@ export async function DELETE(req: NextRequest, ctx: RouteContext) {
     return NextResponse.json({ error: "File not found" }, { status: 404 });
   }
 
-  // Remove file from disk
+  // Remove file from disk or Backblaze B2
   try {
     const filePath = path.join(process.cwd(), "uploads", fileRecord.storedName);
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
     }
+    if (hasB2Storage()) {
+      await deleteFromB2(fileRecord.storedName);
+    }
   } catch (err) {
-    console.error("Failed to delete local file:", err);
+    console.error("Failed to delete file asset:", err);
   }
 
   // Delete metadata record from SQLite / Postgres
