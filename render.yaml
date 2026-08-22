@@ -9,5 +9,11 @@ services:
     envVars:
       - key: NEXT_PUBLIC_APP_URL
         value: https://file-share-dev.onrender.com
+      - key: DATABASE_URL
+        fromDatabase:
+          name: jarvis-db
+          property: connectionString
+
+
 
 
