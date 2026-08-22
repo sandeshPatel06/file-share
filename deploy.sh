@@ -5,17 +5,17 @@
 
 set -e
 
-echo "🚀 [Deploy] Starting ultra-fast deployment sequence on Render..."
+echo "🚀 [Deploy] Starting fast deployment sequence on Render..."
 
 # 1. Ensure storage directories exist
 mkdir -p data uploads
 
-# 2. Install dependencies only if missing (Render caches node_modules)
-if [ ! -d "node_modules" ]; then
-  echo "📦 [Deploy] Installing dependencies..."
-  npm ci --prefer-offline || npm install
+# 2. Ensure all dependencies are present and synced with package-lock.json
+echo "📦 [Deploy] Verifying & installing dependencies..."
+if [ -f "package-lock.json" ]; then
+  npm ci --prefer-offline
 else
-  echo "⚡ [Deploy] node_modules cached, skipping re-installation!"
+  npm install --prefer-offline
 fi
 
 # 3. Build Next.js production application
