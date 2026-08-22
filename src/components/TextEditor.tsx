@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useSyncExternalStore } from "react";
 import {
   Heading1, Heading2, Heading3, Bold, Italic, Strikethrough,
   List, ListOrdered, CheckSquare, Quote, Code, Table, Sparkles,
@@ -48,11 +48,25 @@ const TEMPLATES = [
   },
 ];
 
+const subscribeDesktop = (callback: () => void) => {
+  if (typeof window === "undefined") return () => {};
+  const media = window.matchMedia("(min-width: 640px)");
+  media.addEventListener("change", callback);
+  return () => media.removeEventListener("change", callback);
+};
+
+const getIsDesktop = () => (typeof window !== "undefined" ? window.innerWidth >= 640 : true);
+const getServerIsDesktop = () => true;
+
 export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
   const { content: serverContent, loading, touchLocalEdit } = usePageContent(slug, initialContent);
 
+  const isDesktop = useSyncExternalStore(subscribeDesktop, getIsDesktop, getServerIsDesktop);
+  const [userViewMode, setUserViewMode] = useState<ViewMode | null>(null);
+  const viewMode = userViewMode ?? (isDesktop ? "split" : "write");
+  const setViewMode = (mode: ViewMode) => setUserViewMode(mode);
+
   const [displayContent, setDisplayContent] = useState(initialContent);
-  const [viewMode, setViewMode]             = useState<ViewMode>("split");
   const [uploading, setUploading]           = useState(false);
   const [zenMode, setZenMode]               = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
@@ -387,6 +401,13 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
     URL.revokeObjectURL(url);
   };
 
+  const getExportHTML = (): string => {
+    if (previewRef.current && previewRef.current.innerHTML.trim()) {
+      return previewRef.current.innerHTML;
+    }
+    return formatMarkdownToHTML(displayContent);
+  };
+
   const handleExportMarkdown = () => {
     downloadFile(displayContent, `${slug}.md`, "text/markdown");
     setShowExportMenu(false);
@@ -413,77 +434,257 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
   };
 
   const handleExportHTML = () => {
+    const renderedBody = getExportHTML();
     const htmlDoc = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document Export</title>
+  <title>${slug}</title>
   <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; color: #0f172a; background: #ffffff; line-height: 1.6; }
-    h1, h2, h3 { color: #0f172a; font-weight: 800; }
-    pre { background: #0d1117; color: #e6edf3; padding: 16px; border-radius: 12px; overflow-x: auto; }
-    code { font-family: monospace; background: rgba(0,0,0,0.06); padding: 2px 6px; border-radius: 4px; color: #0969da; }
-    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-    th, td { border: 1px solid #cbd5e1; padding: 8px 12px; text-align: left; }
-    th { background: #f8fafc; }
-    blockquote { border-left: 4px solid #10b981; margin: 0; padding-left: 16px; color: #64748b; font-style: italic; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; max-width: 850px; margin: 40px auto; padding: 32px; color: #0f172a; background: #ffffff; line-height: 1.6; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border-radius: 16px; border: 1px solid #e2e8f0; }
+    h1 { font-size: 24px; font-weight: 800; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; margin-top: 24px; color: #0f172a; }
+    h2 { font-size: 20px; font-weight: 700; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; margin-top: 20px; color: #0f172a; }
+    h3 { font-size: 16px; font-weight: 700; margin-top: 16px; color: #6366f1; }
+    table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+    th, td { border: 1px solid #cbd5e1; padding: 10px 14px; text-align: left; }
+    th { background: #f8fafc; font-weight: 700; text-transform: uppercase; font-size: 12px; color: #475569; }
+    tr:nth-child(even) { background: #f8fafc; }
+    blockquote { border-left: 4px solid #6366f1; background: #f1f5f9; margin: 16px 0; padding: 12px 16px; border-radius: 0 12px 12px 0; font-style: italic; color: #334155; }
+    pre { background: #0d1117; color: #e6edf3; padding: 16px; border-radius: 12px; overflow-x: auto; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 13px; line-height: 1.5; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; background: rgba(99, 102, 241, 0.1); padding: 2px 6px; border-radius: 4px; color: #4338ca; font-weight: 600; font-size: 0.9em; }
+    pre code { background: transparent; padding: 0; color: inherit; }
+    ul, ol { padding-left: 24px; margin: 12px 0; }
+    li { margin: 4px 0; }
+    input[type="checkbox"] { margin-right: 8px; transform: scale(1.15); accent-color: #6366f1; }
+    hr { border: 0; border-top: 2px solid #e2e8f0; margin: 24px 0; }
+    a { color: #0284c7; text-decoration: underline; }
+    strong { color: #4338ca; font-weight: 800; }
+    img { max-width: 100%; height: auto; border-radius: 12px; border: 1px solid #cbd5e1; margin: 16px 0; }
   </style>
 </head>
 <body>
-  <div style="font-size: 14px; white-space: pre-wrap; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">${displayContent.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+  <div class="markdown-body">
+    ${renderedBody}
+  </div>
 </body>
 </html>`;
     downloadFile(htmlDoc, `${slug}.html`, "text/html");
     setShowExportMenu(false);
-    showToast("Exported HTML document!", "success");
+    showToast("Exported formatted HTML document!", "success");
   };
 
   const handleExportImage = () => {
-    const svgData = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="1000">
-      <foreignObject width="100%" height="100%">
-        <div xmlns="http://www.w3.org/1999/xhtml" style="font-family: -apple-system, BlinkMacSystemFont, sans-serif; padding: 32px; background: #0d1117; color: #e6edf3; min-height: 1000px; box-sizing: border-box;">
-          <div style="font-size: 14px; line-height: 1.6; white-space: pre-wrap; font-family: monospace; opacity: 0.9;">${displayContent.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
-        </div>
-      </foreignObject>
-    </svg>`;
-
-    const img = new Image();
-    const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
-    const url = URL.createObjectURL(svgBlob);
-
-    img.onload = () => {
-      const canvas = document.createElement("canvas");
-      canvas.width = 800;
-      canvas.height = 1000;
-      const ctx = canvas.getContext("2d");
-      if (ctx) {
-        ctx.drawImage(img, 0, 0);
-        canvas.toBlob((blob) => {
-          if (blob) {
-            const pngUrl = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = pngUrl;
-            a.download = `${slug}.png`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(pngUrl);
-          }
-        }, "image/png");
-      }
-      URL.revokeObjectURL(url);
-    };
-    img.src = url;
-
     setShowExportMenu(false);
-    showToast("Exported Image (.png) snapshot!", "success");
+
+    const lines = displayContent.split("\n");
+    const padding = 32;
+    const canvasWidth = 900;
+    const contentWidth = canvasWidth - padding * 2;
+
+    // 1. Calculate required canvas height dynamically
+    let estimatedHeight = padding * 2;
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (line.startsWith("# ")) estimatedHeight += 44;
+      else if (line.startsWith("## ")) estimatedHeight += 38;
+      else if (line.startsWith("### ")) estimatedHeight += 32;
+      else if (line.startsWith("```")) estimatedHeight += 24;
+      else if (line.startsWith(">")) estimatedHeight += 30;
+      else if (line.startsWith("|")) estimatedHeight += 34;
+      else estimatedHeight += 26;
+    }
+    estimatedHeight = Math.max(400, estimatedHeight);
+
+    // 2. Create Native HTML5 Canvas
+    const canvas = document.createElement("canvas");
+    canvas.width = canvasWidth;
+    canvas.height = estimatedHeight;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      showToast("Could not initialize canvas context", "error");
+      return;
+    }
+
+    // Background fill (Clean document canvas background)
+    ctx.fillStyle = "#0d1117";
+    ctx.fillRect(0, 0, canvasWidth, estimatedHeight);
+
+    let y = padding;
+    let inCodeBlock = false;
+    let inTable = false;
+
+    const drawText = (text: string, x: number, currY: number, font: string, color: string) => {
+      ctx.font = font;
+      ctx.fillStyle = color;
+      ctx.fillText(text, x, currY);
+    };
+
+    for (let i = 0; i < lines.length; i++) {
+      const rawLine = lines[i];
+      const line = rawLine.trim();
+
+      // Code blocks ```
+      if (line.startsWith("```")) {
+        if (!inCodeBlock) {
+          inCodeBlock = true;
+          const lang = line.replace("```", "").trim().toUpperCase() || "CODE";
+          ctx.fillStyle = "#1e293b";
+          ctx.fillRect(padding, y, contentWidth, 24);
+          ctx.font = "bold 11px ui-monospace, SFMono-Regular, monospace";
+          ctx.fillStyle = "#94a3b8";
+          ctx.fillText(lang, padding + 12, y + 16);
+          y += 24;
+        } else {
+          inCodeBlock = false;
+          y += 12;
+        }
+        continue;
+      }
+
+      if (inCodeBlock) {
+        ctx.fillStyle = "#0f172a";
+        ctx.fillRect(padding, y, contentWidth, 24);
+        drawText(rawLine, padding + 16, y + 16, "13px ui-monospace, SFMono-Regular, monospace", "#e6edf3");
+        y += 24;
+        continue;
+      }
+
+      // Markdown Tables | ... |
+      if (line.startsWith("|") && line.endsWith("|")) {
+        if (/^\|[\s\-:|]+\|$/.test(line)) {
+          continue;
+        }
+        const cells = line.slice(1, -1).split("|").map(c => c.trim());
+        if (!inTable) {
+          inTable = true;
+          const colWidth = contentWidth / Math.max(1, cells.length);
+          ctx.fillStyle = "#161b22";
+          ctx.fillRect(padding, y, contentWidth, 32);
+          ctx.strokeStyle = "#30363d";
+          ctx.strokeRect(padding, y, contentWidth, 32);
+
+          cells.forEach((cell, idx) => {
+            ctx.strokeStyle = "#30363d";
+            ctx.strokeRect(padding + idx * colWidth, y, colWidth, 32);
+            drawText(cell.toUpperCase(), padding + idx * colWidth + 10, y + 21, "bold 11px sans-serif", "#8b949e");
+          });
+          y += 32;
+        } else {
+          const colWidth = contentWidth / Math.max(1, cells.length);
+          ctx.fillStyle = (i % 2 === 0) ? "#0d1117" : "#161b22";
+          ctx.fillRect(padding, y, contentWidth, 30);
+          ctx.strokeStyle = "#30363d";
+          ctx.strokeRect(padding, y, contentWidth, 30);
+
+          cells.forEach((cell, idx) => {
+            ctx.strokeStyle = "#30363d";
+            ctx.strokeRect(padding + idx * colWidth, y, colWidth, 30);
+            drawText(cell, padding + idx * colWidth + 10, y + 20, "13px sans-serif", "#e6edf3");
+          });
+          y += 30;
+        }
+        continue;
+      } else {
+        if (inTable) {
+          inTable = false;
+          y += 10;
+        }
+      }
+
+      // Empty lines
+      if (!line) {
+        y += 14;
+        continue;
+      }
+
+      // Headings
+      if (line.startsWith("# ")) {
+        drawText(line.replace("# ", ""), padding, y + 24, "bold 22px sans-serif", "#f0f6fc");
+        ctx.strokeStyle = "#30363d";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(padding, y + 32);
+        ctx.lineTo(padding + contentWidth, y + 32);
+        ctx.stroke();
+        y += 42;
+      } else if (line.startsWith("## ")) {
+        drawText(line.replace("## ", ""), padding, y + 20, "bold 18px sans-serif", "#f0f6fc");
+        ctx.strokeStyle = "#30363d";
+        ctx.beginPath();
+        ctx.moveTo(padding, y + 28);
+        ctx.lineTo(padding + contentWidth, y + 28);
+        ctx.stroke();
+        y += 36;
+      } else if (line.startsWith("### ")) {
+        drawText(line.replace("### ", ""), padding, y + 18, "bold 15px sans-serif", "#818cf8");
+        y += 30;
+      } else if (line.startsWith("> ")) {
+        // Blockquote
+        ctx.fillStyle = "#161b22";
+        ctx.fillRect(padding, y, contentWidth, 28);
+        ctx.fillStyle = "#6366f1";
+        ctx.fillRect(padding, y, 4, 28);
+        drawText(line.replace("> ", ""), padding + 14, y + 19, "italic 13px sans-serif", "#c9d1d9");
+        y += 32;
+      } else if (line.startsWith("- [x]") || line.startsWith("- [X]")) {
+        // Completed Task
+        ctx.fillStyle = "#10b981";
+        ctx.fillRect(padding, y + 4, 14, 14);
+        drawText("✓", padding + 3, y + 15, "bold 11px sans-serif", "#ffffff");
+        drawText(line.replace(/^-\s*\[[xX]\]\s*/, ""), padding + 22, y + 16, "13px sans-serif", "#8b949e");
+        y += 24;
+      } else if (line.startsWith("- [ ]")) {
+        // Pending Task
+        ctx.strokeStyle = "#64748b";
+        ctx.strokeRect(padding, y + 4, 14, 14);
+        drawText(line.replace(/^-\s*\[\s*\]\s*/, ""), padding + 22, y + 16, "13px sans-serif", "#e6edf3");
+        y += 24;
+      } else if (line.startsWith("- ")) {
+        // Bullet list
+        ctx.fillStyle = "#6366f1";
+        ctx.beginPath();
+        ctx.arc(padding + 6, y + 10, 3, 0, Math.PI * 2);
+        ctx.fill();
+        drawText(line.replace("- ", ""), padding + 18, y + 15, "13px sans-serif", "#e6edf3");
+        y += 24;
+      } else if (line.startsWith("---")) {
+        // HR
+        ctx.strokeStyle = "#30363d";
+        ctx.beginPath();
+        ctx.moveTo(padding, y + 10);
+        ctx.lineTo(padding + contentWidth, y + 10);
+        ctx.stroke();
+        y += 20;
+      } else {
+        // Normal paragraph text
+        drawText(line, padding, y + 15, "13px sans-serif", "#e6edf3");
+        y += 24;
+      }
+    }
+
+    // Export Native Canvas directly to PNG blob
+    canvas.toBlob((blob) => {
+      if (blob) {
+        const pngUrl = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = pngUrl;
+        a.download = `${slug}.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(pngUrl), 1000);
+        showToast("Exported PNG (.png) document image!", "success");
+      } else {
+        showToast("Could not generate PNG image", "error");
+      }
+    }, "image/png");
   };
 
   const handlePrintPDF = () => {
     setShowExportMenu(false);
+    const renderedBody = getExportHTML();
 
-    // Create an isolated iframe for clean document print export
     const iframe = document.createElement("iframe");
     iframe.style.position = "fixed";
     iframe.style.right = "0";
@@ -505,21 +706,34 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Document Export</title>
+  <title>${slug}</title>
   <style>
-    @page { margin: 15mm; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #0f172a; background: #ffffff; line-height: 1.6; padding: 0; margin: 0; }
-    h1, h2, h3 { color: #0f172a; font-weight: 800; }
-    pre { background: #0d1117; color: #e6edf3; padding: 16px; border-radius: 12px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; }
-    code { font-family: monospace; background: rgba(0,0,0,0.06); padding: 2px 6px; border-radius: 4px; color: #0969da; }
-    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
-    th, td { border: 1px solid #cbd5e1; padding: 8px 12px; text-align: left; }
-    th { background: #f8fafc; font-weight: 700; }
-    blockquote { border-left: 4px solid #10b981; margin: 0; padding-left: 16px; color: #64748b; font-style: italic; }
+    @page { margin: 15mm; size: auto; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #0f172a; background: #ffffff; line-height: 1.6; padding: 0; margin: 0; }
+    h1 { font-size: 24px; font-weight: 800; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; margin-top: 24px; color: #0f172a; }
+    h2 { font-size: 20px; font-weight: 700; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; margin-top: 20px; color: #0f172a; }
+    h3 { font-size: 16px; font-weight: 700; margin-top: 16px; color: #6366f1; }
+    table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; page-break-inside: avoid; }
+    th, td { border: 1px solid #cbd5e1; padding: 10px 14px; text-align: left; }
+    th { background: #f8fafc; font-weight: 700; text-transform: uppercase; font-size: 12px; color: #475569; }
+    tr:nth-child(even) { background: #f8fafc; }
+    blockquote { border-left: 4px solid #6366f1; background: #f1f5f9; margin: 16px 0; padding: 12px 16px; border-radius: 0 12px 12px 0; font-style: italic; color: #334155; }
+    pre { background: #0d1117; color: #e6edf3; padding: 16px; border-radius: 12px; overflow-x: auto; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 13px; line-height: 1.5; page-break-inside: avoid; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; background: rgba(99, 102, 241, 0.1); padding: 2px 6px; border-radius: 4px; color: #4338ca; font-weight: 600; font-size: 0.9em; }
+    pre code { background: transparent; padding: 0; color: inherit; }
+    ul, ol { padding-left: 24px; margin: 12px 0; }
+    li { margin: 4px 0; }
+    input[type="checkbox"] { margin-right: 8px; transform: scale(1.15); accent-color: #6366f1; }
+    hr { border: 0; border-top: 2px solid #e2e8f0; margin: 24px 0; }
+    a { color: #0284c7; text-decoration: underline; }
+    strong { color: #4338ca; font-weight: 800; }
+    img { max-width: 100%; height: auto; border-radius: 12px; border: 1px solid #cbd5e1; margin: 16px 0; page-break-inside: avoid; }
   </style>
 </head>
 <body>
-  <div style="font-size: 14px; white-space: pre-wrap; font-family: monospace;">${displayContent.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+  <div>
+    ${renderedBody}
+  </div>
 </body>
 </html>`);
     doc.close();
@@ -572,9 +786,9 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
       />
 
       {/* Sleek IDE Top Toolbar (100% Width) */}
-      <div className="relative z-20 flex items-center justify-between px-2.5 py-1 border-b border-[var(--border-color)] bg-[var(--bg-surface)] shrink-0 gap-2 select-none min-h-[38px]">
+      <div className="relative z-30 flex items-center justify-between px-2 py-1 border-b border-[var(--border-color)] bg-[var(--bg-surface)] shrink-0 gap-1.5 select-none min-h-[38px] w-full">
         {/* Left: Markdown Format Icons Toolbar */}
-        <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap shrink-0">
+        <div className="flex items-center gap-1 flex-nowrap shrink overflow-x-auto no-scrollbar py-0.5 min-w-0">
           <div className="flex items-center gap-0.5 bg-[var(--bg-card)] p-0.5 rounded-lg border border-[var(--border-color)]">
             <button
               onClick={() => applyFormat("# ")}
@@ -691,7 +905,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
         </div>
 
         {/* Right: AI Assistant, Templates, Export, Zen, & View Controls */}
-        <div className="flex items-center gap-1.5 shrink-0 ml-auto">
+        <div className="flex items-center gap-1 sm:gap-1.5 flex-nowrap shrink-0 ml-auto">
           {/* Starter Templates Button */}
           <button
             onClick={() => setShowTemplateModal(true)}
@@ -739,7 +953,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
           <div className="relative" ref={exportMenuRef}>
             <button
               onClick={() => setShowExportMenu((v) => !v)}
-              className="px-2.5 py-1 rounded-lg bg-[var(--badge-bg)] border border-[var(--border-color)] text-[var(--text-main)] hover:bg-[var(--border-color)] transition-all cursor-pointer flex items-center gap-1.5 text-xs font-extrabold shadow-sm"
+              className="px-2 sm:px-2.5 py-1 rounded-lg bg-[var(--badge-bg)] border border-[var(--border-color)] text-[var(--text-main)] hover:bg-[var(--border-color)] transition-all cursor-pointer flex items-center gap-1 text-xs font-extrabold shadow-sm"
               title="Export Document Options"
             >
               <Download size={13} className="text-[var(--accent-indigo)]" />
@@ -1031,4 +1245,87 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
       </Modal>
     </div>
   );
+}
+
+function formatMarkdownToHTML(md: string): string {
+  if (!md.trim()) return "<p><em>Empty document</em></p>";
+  
+  let html = md
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+  // Code blocks: ```lang ... ```
+  html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
+    return `<div style="margin: 12px 0; border-radius: 10px; overflow: hidden; border: 1px solid #cbd5e1;"><div style="background: #1e293b; color: #94a3b8; padding: 4px 12px; font-size: 11px; font-weight: bold; font-family: monospace; text-transform: uppercase;">${lang || 'code'}</div><pre style="background: #0f172a; color: #f8fafc; padding: 14px; margin: 0; font-family: monospace; font-size: 13px; overflow-x: auto; line-height: 1.5;"><code>${code}</code></pre></div>`;
+  });
+
+  // Inline code: `code`
+  html = html.replace(/`([^`]+)`/g, '<code style="background: #f1f5f9; color: #4338ca; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 0.9em; font-weight: 600;">$1</code>');
+
+  // Headings
+  html = html.replace(/^### (.*$)/gim, '<h3 style="font-size: 16px; font-weight: 700; color: #6366f1; margin-top: 18px; margin-bottom: 8px;">$1</h3>');
+  html = html.replace(/^## (.*$)/gim, '<h2 style="font-size: 20px; font-weight: 700; color: #0f172a; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; margin-top: 22px; margin-bottom: 10px;">$1</h2>');
+  html = html.replace(/^# (.*$)/gim, '<h1 style="font-size: 24px; font-weight: 800; color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; margin-top: 24px; margin-bottom: 12px;">$1</h1>');
+
+  // Markdown Tables: parse lines starting with |
+  const lines = html.split("\n");
+  const resultLines: string[] = [];
+  let inTable = false;
+  let tableRows: string[] = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (line.startsWith("|") && line.endsWith("|")) {
+      if (/^\|[\s\-:|]+\|$/.test(line)) {
+        continue;
+      }
+      const cells = line.slice(1, -1).split("|").map(c => c.trim());
+      if (!inTable) {
+        inTable = true;
+        tableRows = [];
+        const headerCols = cells.map(c => `<th style="border: 1px solid #cbd5e1; padding: 8px 12px; background: #f8fafc; font-weight: 700; text-align: left; font-size: 12px; text-transform: uppercase; color: #475569;">${c}</th>`).join("");
+        tableRows.push(`<thead><tr>${headerCols}</tr></thead><tbody>`);
+      } else {
+        const bodyCols = cells.map(c => `<td style="border: 1px solid #cbd5e1; padding: 8px 12px; text-align: left;">${c}</td>`).join("");
+        tableRows.push(`<tr>${bodyCols}</tr>`);
+      }
+    } else {
+      if (inTable) {
+        inTable = false;
+        tableRows.push("</tbody>");
+        resultLines.push(`<table style="width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; font-family: sans-serif;">${tableRows.join("")}</table>`);
+      }
+      resultLines.push(lines[i]);
+    }
+  }
+  if (inTable) {
+    tableRows.push("</tbody>");
+    resultLines.push(`<table style="width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; font-family: sans-serif;">${tableRows.join("")}</table>`);
+  }
+
+  html = resultLines.join("\n");
+
+  // Blockquotes: > text
+  html = html.replace(/^>\s?(.*$)/gim, '<blockquote style="border-left: 4px solid #6366f1; background: #f1f5f9; margin: 12px 0; padding: 10px 14px; border-radius: 0 8px 8px 0; font-style: italic; color: #334155;">$1</blockquote>');
+
+  // Horizontal rules
+  html = html.replace(/^---$/gim, '<hr style="border: 0; border-top: 2px solid #e2e8f0; margin: 20px 0;" />');
+
+  // Task list checkboxes: - [x] task or - [ ] task
+  html = html.replace(/^-\s*\[x\]\s*(.*$)/gim, '<div style="margin: 4px 0;"><input type="checkbox" checked disabled style="margin-right: 8px; accent-color: #6366f1;" /> <span style="text-decoration: line-through; color: #64748b;">$1</span></div>');
+  html = html.replace(/^-\s*\[\s*\]\s*(.*$)/gim, '<div style="margin: 4px 0;"><input type="checkbox" disabled style="margin-right: 8px; accent-color: #6366f1;" /> <span>$1</span></div>');
+
+  // Unordered list items: - item
+  html = html.replace(/^-\s+(.*$)/gim, '<li style="margin: 4px 0; list-style-type: disc;">$1</li>');
+
+  // Numbered list items: 1. item
+  html = html.replace(/^\d+\.\s+(.*$)/gim, '<li style="margin: 4px 0; list-style-type: decimal;">$1</li>');
+
+  // Bold, Italic, Strikethrough
+  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong style="color: #4338ca; font-weight: 800;">$1</strong>');
+  html = html.replace(/\*([^*]+)\*/g, '<em style="font-style: italic; font-weight: 600;">$1</em>');
+  html = html.replace(/~~([^~]+)~~/g, '<del style="text-decoration: line-through; color: #94a3b8;">$1</del>');
+
+  return html;
 }

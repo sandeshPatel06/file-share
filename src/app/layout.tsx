@@ -145,7 +145,8 @@ export default function RootLayout({
         <meta name="twitter:title" content="FileShare — Instant Real-Time Notes & Secure File Sharing Vault" />
         <meta name="twitter:description" content="Share notes & files instantly in real-time. No sign-up required." />
         <meta name="twitter:image" content={`${appUrl}/logo.png`} />
-        <script
+        <Script
+          id="json-ld"
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
