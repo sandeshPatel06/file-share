@@ -51,7 +51,7 @@ if (hasPg) {
       ssl: isLocal ? false : { rejectUnauthorized: false },
     });
 
-    // Provision PostgreSQL tables
+    // Provision PostgreSQL tables and ensure all camelCase columns exist
     pgPool
       ?.query(`
         CREATE TABLE IF NOT EXISTS pages (
@@ -62,6 +62,11 @@ if (hasPg) {
           "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         );
+
+        ALTER TABLE pages ADD COLUMN IF NOT EXISTS "isProtected" INTEGER DEFAULT 0;
+        ALTER TABLE pages ADD COLUMN IF NOT EXISTS "passwordHash" TEXT DEFAULT NULL;
+        ALTER TABLE pages ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+        ALTER TABLE pages ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
 
         CREATE TABLE IF NOT EXISTS files (
           "fileId" VARCHAR(255) PRIMARY KEY,
@@ -74,6 +79,11 @@ if (hasPg) {
           "uploadedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (slug) REFERENCES pages(slug) ON DELETE CASCADE ON UPDATE CASCADE
         );
+
+        ALTER TABLE files ADD COLUMN IF NOT EXISTS "originalName" TEXT;
+        ALTER TABLE files ADD COLUMN IF NOT EXISTS "storedName" TEXT;
+        ALTER TABLE files ADD COLUMN IF NOT EXISTS "downloadURL" TEXT;
+        ALTER TABLE files ADD COLUMN IF NOT EXISTS "uploadedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
       `)
       .catch((err: unknown) => console.error("PostgreSQL table provisioning error:", err));
   } catch (err) {
@@ -140,6 +150,18 @@ function convertSqlForPg(sql: string): string {
       pgSql += " ON CONFLICT (slug) DO NOTHING";
     }
   }
+
+  // Quote camelCase identifiers for PostgreSQL case sensitivity
+  pgSql = pgSql
+    .replace(/(?<!")\bisProtected\b(?!")/gi, '"isProtected"')
+    .replace(/(?<!")\bpasswordHash\b(?!")/gi, '"passwordHash"')
+    .replace(/(?<!")\bcreatedAt\b(?!")/gi, '"createdAt"')
+    .replace(/(?<!")\bupdatedAt\b(?!")/gi, '"updatedAt"')
+    .replace(/(?<!")\bfileId\b(?!")/gi, '"fileId"')
+    .replace(/(?<!")\boriginalName\b(?!")/gi, '"originalName"')
+    .replace(/(?<!")\bstoredName\b(?!")/gi, '"storedName"')
+    .replace(/(?<!")\bdownloadURL\b(?!")/gi, '"downloadURL"')
+    .replace(/(?<!")\buploadedAt\b(?!")/gi, '"uploadedAt"');
 
   return pgSql;
 }
