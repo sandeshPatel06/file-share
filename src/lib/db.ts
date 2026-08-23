@@ -79,76 +79,46 @@ if (hasPg) {
       console.warn("PostgreSQL pool background error caught:", err.message);
     });
 
-    // Provision PostgreSQL tables and migrate any existing unquoted columns
-    pgPool
-      ?.query(`
-        CREATE TABLE IF NOT EXISTS pages (
-          slug VARCHAR(255) PRIMARY KEY,
-          content TEXT DEFAULT '',
-          "isProtected" INTEGER DEFAULT 0,
-          "passwordHash" TEXT DEFAULT NULL,
-          "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
+    // Provision PostgreSQL tables sequentially
+    (async () => {
+      if (!pgPool) return;
+      try {
+        await pgPool.query(`
+          CREATE TABLE IF NOT EXISTS pages (
+            slug VARCHAR(255) PRIMARY KEY,
+            content TEXT DEFAULT '',
+            "isProtected" INTEGER DEFAULT 0,
+            "passwordHash" TEXT DEFAULT NULL,
+            "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          );
+        `);
+        await pgPool.query(`ALTER TABLE pages ADD COLUMN IF NOT EXISTS "isProtected" INTEGER DEFAULT 0;`);
+        await pgPool.query(`ALTER TABLE pages ADD COLUMN IF NOT EXISTS "passwordHash" TEXT DEFAULT NULL;`);
+        await pgPool.query(`ALTER TABLE pages ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP;`);
+        await pgPool.query(`ALTER TABLE pages ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP;`);
 
-        DO $$
-        BEGIN
-          IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'pages' AND column_name = 'isprotected') THEN
-            ALTER TABLE pages RENAME COLUMN isprotected TO "isProtected";
-          END IF;
-          IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'pages' AND column_name = 'passwordhash') THEN
-            ALTER TABLE pages RENAME COLUMN passwordhash TO "passwordHash";
-          END IF;
-          IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'pages' AND column_name = 'createdat') THEN
-            ALTER TABLE pages RENAME COLUMN createdat TO "createdAt";
-          END IF;
-          IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'pages' AND column_name = 'updatedat') THEN
-            ALTER TABLE pages RENAME COLUMN updatedat TO "updatedAt";
-          END IF;
-        END $$;
-
-        ALTER TABLE pages ADD COLUMN IF NOT EXISTS "isProtected" INTEGER DEFAULT 0;
-        ALTER TABLE pages ADD COLUMN IF NOT EXISTS "passwordHash" TEXT DEFAULT NULL;
-        ALTER TABLE pages ADD COLUMN IF NOT EXISTS "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
-        ALTER TABLE pages ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
-
-        CREATE TABLE IF NOT EXISTS files (
-          "fileId" VARCHAR(255) PRIMARY KEY,
-          slug VARCHAR(255) NOT NULL,
-          "originalName" TEXT NOT NULL,
-          "storedName" TEXT NOT NULL,
-          mimetype TEXT NOT NULL,
-          size BIGINT NOT NULL,
-          "downloadURL" TEXT NOT NULL,
-          "uploadedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (slug) REFERENCES pages(slug) ON DELETE CASCADE ON UPDATE CASCADE
-        );
-
-        DO $$
-        BEGIN
-          IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'files' AND column_name = 'fileid') THEN
-            ALTER TABLE files RENAME COLUMN fileid TO "fileId";
-          END IF;
-          IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'files' AND column_name = 'originalname') THEN
-            ALTER TABLE files RENAME COLUMN originalname TO "originalName";
-          END IF;
-          IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'files' AND column_name = 'storedname') THEN
-            ALTER TABLE files RENAME COLUMN storedname TO "storedName";
-          END IF;
-          IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'files' AND column_name = 'downloadurl') THEN
-            ALTER TABLE files RENAME COLUMN downloadurl TO "downloadURL";
-          END IF;
-          IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'files' AND column_name = 'uploadedat') THEN
-            ALTER TABLE files RENAME COLUMN uploadedat TO "uploadedAt";
-          END IF;
-        END $$;
-
-        ALTER TABLE files ADD COLUMN IF NOT EXISTS "originalName" TEXT;
-        ALTER TABLE files ADD COLUMN IF NOT EXISTS "storedName" TEXT;
-        ALTER TABLE files ADD COLUMN IF NOT EXISTS "downloadURL" TEXT;
-        ALTER TABLE files ADD COLUMN IF NOT EXISTS "uploadedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
-      `)
-      .catch((err: unknown) => console.error("PostgreSQL table provisioning error:", err));
+        await pgPool.query(`
+          CREATE TABLE IF NOT EXISTS files (
+            "fileId" VARCHAR(255) PRIMARY KEY,
+            slug VARCHAR(255) NOT NULL,
+            "originalName" TEXT NOT NULL,
+            "storedName" TEXT NOT NULL,
+            mimetype TEXT NOT NULL,
+            size BIGINT NOT NULL,
+            "downloadURL" TEXT NOT NULL,
+            "uploadedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (slug) REFERENCES pages(slug) ON DELETE CASCADE ON UPDATE CASCADE
+          );
+        `);
+        await pgPool.query(`ALTER TABLE files ADD COLUMN IF NOT EXISTS "originalName" TEXT;`);
+        await pgPool.query(`ALTER TABLE files ADD COLUMN IF NOT EXISTS "storedName" TEXT;`);
+        await pgPool.query(`ALTER TABLE files ADD COLUMN IF NOT EXISTS "downloadURL" TEXT;`);
+        await pgPool.query(`ALTER TABLE files ADD COLUMN IF NOT EXISTS "uploadedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP;`);
+      } catch (err) {
+        console.error("PostgreSQL table provisioning error:", err);
+      }
+    })();
   } catch (err) {
     console.error("Failed to initialize PostgreSQL pool:", err);
   }
@@ -243,6 +213,7 @@ function normalizeRow(row: Record<string, unknown> | null | undefined): Record<s
     else if (lower === "fileid") normalized.fileId = val;
     else if (lower === "createdat") normalized.createdAt = val;
     else if (lower === "updatedat") normalized.updatedAt = val;
+    else if (lower === "uploadedat") normalized.uploadedAt = val;
     else if (lower === "size") normalized.size = Number(val);
     else normalized[key] = val;
   }

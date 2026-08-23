@@ -21,11 +21,24 @@ interface PageRow {
   isProtected: number;
 }
 
-function parseUtcSeconds(uploadedAt: string): number {
-  const iso = uploadedAt.includes("T")
-    ? (uploadedAt.endsWith("Z") ? uploadedAt : `${uploadedAt}Z`)
-    : `${uploadedAt.replace(" ", "T")}Z`;
-  return Math.floor(new Date(iso).getTime() / 1000);
+function parseUtcSeconds(uploadedAt: unknown): number {
+  if (!uploadedAt) return Math.floor(Date.now() / 1000);
+  if (uploadedAt instanceof Date) {
+    return Math.floor(uploadedAt.getTime() / 1000);
+  }
+  if (typeof uploadedAt === "number") {
+    return uploadedAt > 1e11 ? Math.floor(uploadedAt / 1000) : Math.floor(uploadedAt);
+  }
+  const str = String(uploadedAt).trim();
+  const directDate = new Date(str);
+  if (!isNaN(directDate.getTime())) {
+    return Math.floor(directDate.getTime() / 1000);
+  }
+  const iso = str.includes("T")
+    ? (str.endsWith("Z") ? str : `${str}Z`)
+    : `${str.replace(" ", "T")}Z`;
+  const d = new Date(iso);
+  return isNaN(d.getTime()) ? Math.floor(Date.now() / 1000) : Math.floor(d.getTime() / 1000);
 }
 
 // GET /api/pages/[slug]/files — list all files for a page (verifies auth if protected)
