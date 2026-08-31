@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     default: "FileShare — Instant Real-Time Notes & Secure File Sharing Vault",
     template: "%s | FileShare",
   },
-  description: "Create instant, anonymous workspaces to collaborate, edit live Markdown notes, and share files in real-time. Zero registration required.",
+  description: "Create instant, anonymous workspaces to collaborate, edit live Markdown notes, and share files up to 500MB in real-time. Zero registration required.",
   keywords: [
     "file share",
     "real-time notes",
