@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://file-share-dev.onrender.com";
 
 export default function robots(): MetadataRoute.Robots {
   return {
