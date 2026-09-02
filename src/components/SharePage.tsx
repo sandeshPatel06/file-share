@@ -6,6 +6,7 @@ import { FilePanel } from "@/components/FilePanel";
 import { PasswordGate } from "@/components/PasswordGate";
 import { PasswordModal } from "@/components/PasswordModal";
 import { PanelRightClose, FolderOpen } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 
 interface SharePageProps {
   pageData: {
@@ -79,7 +80,7 @@ export function SharePage({ pageData }: SharePageProps) {
   return (
     <div className="flex flex-col h-screen w-full overflow-hidden bg-[var(--bg-main)] text-[var(--text-main)] transition-colors duration-200 relative">
       {/* Top Header Navigation */}
-      <header className="h-12 sm:h-13 px-2.5 sm:px-4 bg-[var(--header-bg)] backdrop-blur-xl border-b border-[var(--border-color)] flex items-center shrink-0 z-30 transition-colors duration-200">
+      <header className="h-10 sm:h-11 px-2 sm:px-3 bg-[var(--header-bg)] backdrop-blur-xl border-b border-[var(--border-color)] flex items-center shrink-0 z-30 transition-colors duration-200">
         <SlugBar
           slug={slug}
           isProtected={isProtected}
@@ -116,13 +117,14 @@ export function SharePage({ pageData }: SharePageProps) {
               <FolderOpen size={16} className="text-[var(--accent-indigo)]" />
               <span className="text-xs uppercase tracking-wider font-mono">Explorer</span>
             </div>
-            <button
+            <Button
+              size="xs"
+              variant="ghost"
               onClick={() => setUserPanelToggle(false)}
-              className="p-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer transition-colors"
+              className="!p-1.5 !rounded-lg hover:bg-black/5 dark:hover:bg-white/10 text-[var(--text-muted)] hover:text-[var(--text-main)]"
               aria-label="Close file explorer"
-            >
-              <PanelRightClose size={16} />
-            </button>
+              icon={<PanelRightClose size={16} />}
+            />
           </div>
           <FilePanel slug={slug} token={effectiveToken} />
         </aside>
@@ -144,6 +146,19 @@ export function SharePage({ pageData }: SharePageProps) {
         onClose={() => setShowPwModal(false)}
         onSuccess={(protectedState) => setIsProtected(protectedState)}
       />
+
+      <footer className="border-t border-[var(--border-color)] bg-[var(--header-bg)] py-2 px-4 shrink-0 text-[11px] text-[var(--text-muted)] flex items-center justify-between">
+        <div>Workspace: <code className="font-mono text-[var(--text-main)]">/s/{slug}</code></div>
+        <div className="flex items-center gap-3">
+          <a href="/about" target="_blank" className="hover:text-[var(--text-main)]">About</a>
+          <span>•</span>
+          <a href="/guide" target="_blank" className="hover:text-[var(--text-main)]">Guide</a>
+          <span>•</span>
+          <a href="/privacy" target="_blank" className="hover:text-[var(--text-main)]">Privacy</a>
+          <span>•</span>
+          <a href="/terms" target="_blank" className="hover:text-[var(--text-main)]">Terms</a>
+        </div>
+      </footer>
     </div>
   );
 }

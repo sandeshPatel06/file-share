@@ -18,6 +18,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
+import { Button } from "@/components/ui/Button";
 
 interface LandingPageProps {
   defaultSlug: string;
@@ -64,18 +65,14 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
 
           <div className="flex items-center gap-2.5">
             <ThemeToggle />
-            <button
+            <Button
               onClick={() => handleCreateSpace()}
               disabled={Boolean(activeSlug)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white transition-colors cursor-pointer disabled:opacity-60"
+              className="!px-3 !py-1.5 !rounded-md text-xs !font-semibold bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white disabled:opacity-60"
+              icon={activeSlug && !customSlug ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
             >
-              {activeSlug && !customSlug ? (
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <Plus className="w-3.5 h-3.5" />
-              )}
-              <span>{activeSlug && !customSlug ? "Opening..." : "New Space"}</span>
-            </button>
+              {activeSlug && !customSlug ? "Opening..." : "New Space"}
+            </Button>
           </div>
         </div>
       </header>
@@ -83,7 +80,7 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
       {/* Main Content */}
       <main className="flex-1">
         {/* Hero Section - Minimalist */}
-        <section className="pt-12 pb-16 sm:pt-20 sm:pb-24 border-b border-[var(--border-color)]">
+        <section className="pt-10 pb-12 sm:pt-14 sm:pb-16 border-b border-[var(--border-color)]">
           <div className="max-w-3xl mx-auto px-4 text-center">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-mono bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-muted)] mb-6">
               <span>Instant Real-Time Workspaces</span>
@@ -112,39 +109,29 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
                     className="w-full pl-8 pr-3 py-2 text-xs sm:text-sm rounded-md bg-[var(--input-bg)] border border-[var(--border-color)] text-[var(--text-main)] placeholder-[var(--text-subtle)] focus:outline-none focus:border-[var(--accent-primary)] font-mono"
                   />
                 </div>
-                <button
+                <Button
                   type="submit"
                   disabled={Boolean(activeSlug)}
-                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-md font-semibold text-xs sm:text-sm bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white transition-colors cursor-pointer disabled:opacity-60"
+                  className="!px-4 !py-2 !rounded-md !font-semibold text-xs sm:text-sm bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white disabled:opacity-60"
+                  icon={activeSlug ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : undefined}
+                  iconRight={!activeSlug ? <ArrowRight className="w-3.5 h-3.5" /> : undefined}
                 >
-                  {activeSlug ? (
-                    <>
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      <span>Opening Workspace...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Open Space</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </>
-                  )}
-                </button>
+                  {activeSlug ? "Opening Workspace..." : "Open Space"}
+                </Button>
               </form>
 
               <div className="mt-3 pt-3 border-t border-[var(--border-color)] flex items-center justify-between text-xs text-[var(--text-subtle)]">
-                <button
+                <Button
                   type="button"
+                  size="xs"
+                  variant="ghost"
                   disabled={Boolean(activeSlug)}
                   onClick={() => handleCreateSpace(defaultSlug)}
-                  className="inline-flex items-center gap-1 hover:text-[var(--text-main)] transition-colors cursor-pointer disabled:opacity-50"
+                  className="!p-0 !rounded-lg inline-flex items-center gap-1 text-[var(--text-subtle)] hover:text-[var(--text-main)] disabled:opacity-50"
+                  icon={activeSlug === defaultSlug ? <Loader2 className="w-3.5 h-3.5 animate-spin text-[var(--accent-primary)]" /> : <Compass className="w-3.5 h-3.5" />}
                 >
-                  {activeSlug === defaultSlug ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin text-[var(--accent-primary)]" />
-                  ) : (
-                    <Compass className="w-3.5 h-3.5" />
-                  )}
-                  <span>Random Space (/s/{defaultSlug})</span>
-                </button>
+                  Random Space (/s/{defaultSlug})
+                </Button>
                 <span>500MB Limit</span>
               </div>
             </div>
@@ -152,51 +139,51 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
         </section>
 
         {/* Feature Grid - Minimal Github Style */}
-        <section className="py-14 sm:py-20 max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-            <div className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-5 hover:border-[var(--border-glow)] transition-colors">
-              <Zap className="w-5 h-5 text-[var(--accent-primary)] mb-3" />
-              <h3 className="text-sm font-bold mb-1.5">Real-Time SSE Sync</h3>
+        <section className="py-10 sm:py-14 max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            <div className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 hover:border-[var(--border-glow)] transition-colors">
+              <Zap className="w-5 h-5 text-[var(--accent-primary)] mb-2.5" />
+              <h3 className="text-sm font-bold mb-1">Real-Time SSE Sync</h3>
               <p className="text-xs text-[var(--text-muted)] leading-relaxed">
                 Live Markdown edits and file uploads sync across devices in real-time.
               </p>
             </div>
 
-            <div className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-5 hover:border-[var(--border-glow)] transition-colors">
-              <Lock className="w-5 h-5 text-[var(--accent-primary)] mb-3" />
-              <h3 className="text-sm font-bold mb-1.5">Password Protection</h3>
+            <div className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 hover:border-[var(--border-glow)] transition-colors">
+              <Lock className="w-5 h-5 text-[var(--accent-primary)] mb-2.5" />
+              <h3 className="text-sm font-bold mb-1">Password Protection</h3>
               <p className="text-xs text-[var(--text-muted)] leading-relaxed">
                 Lock sensitive spaces with bcrypt password hashing and token auth.
               </p>
             </div>
 
-            <div className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-5 hover:border-[var(--border-glow)] transition-colors">
-              <FolderUp className="w-5 h-5 text-[var(--accent-primary)] mb-3" />
-              <h3 className="text-sm font-bold mb-1.5">500MB File Vault</h3>
+            <div className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 hover:border-[var(--border-glow)] transition-colors">
+              <FolderUp className="w-5 h-5 text-[var(--accent-primary)] mb-2.5" />
+              <h3 className="text-sm font-bold mb-1">500MB File Vault</h3>
               <p className="text-xs text-[var(--text-muted)] leading-relaxed">
                 Upload images, video, audio, and documents with instant preview modals.
               </p>
             </div>
 
-            <div className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-5 hover:border-[var(--border-glow)] transition-colors">
-              <Wand2 className="w-5 h-5 text-[var(--accent-primary)] mb-3" />
-              <h3 className="text-sm font-bold mb-1.5">AI Copilot Formatter</h3>
+            <div className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 hover:border-[var(--border-glow)] transition-colors">
+              <Wand2 className="w-5 h-5 text-[var(--accent-primary)] mb-2.5" />
+              <h3 className="text-sm font-bold mb-1">AI Copilot Formatter</h3>
               <p className="text-xs text-[var(--text-muted)] leading-relaxed">
                 Standardize markdown formatting, headings, lists, and spacing in 1 click.
               </p>
             </div>
 
-            <div className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-5 hover:border-[var(--border-glow)] transition-colors">
-              <QrCode className="w-5 h-5 text-[var(--accent-primary)] mb-3" />
-              <h3 className="text-sm font-bold mb-1.5">Instant QR Code</h3>
+            <div className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 hover:border-[var(--border-glow)] transition-colors">
+              <QrCode className="w-5 h-5 text-[var(--accent-primary)] mb-2.5" />
+              <h3 className="text-sm font-bold mb-1">Instant QR Code</h3>
               <p className="text-xs text-[var(--text-muted)] leading-relaxed">
                 Generate high-resolution QR codes to open notes instantly on mobile.
               </p>
             </div>
 
-            <div className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-5 hover:border-[var(--border-glow)] transition-colors">
-              <Globe className="w-5 h-5 text-[var(--accent-primary)] mb-3" />
-              <h3 className="text-sm font-bold mb-1.5">Zero Registration</h3>
+            <div className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 hover:border-[var(--border-glow)] transition-colors">
+              <Globe className="w-5 h-5 text-[var(--accent-primary)] mb-2.5" />
+              <h3 className="text-sm font-bold mb-1">Zero Registration</h3>
               <p className="text-xs text-[var(--text-muted)] leading-relaxed">
                 No email or password needed. Open a custom URL slug and start sharing.
               </p>
@@ -205,32 +192,29 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
         </section>
 
         {/* Featured Workspaces */}
-        <section className="py-12 bg-[var(--bg-surface)] border-t border-b border-[var(--border-color)]">
+        <section className="py-8 bg-[var(--bg-surface)] border-t border-b border-[var(--border-color)]">
           <div className="max-w-4xl mx-auto px-4 sm:px-6">
-            <h3 className="text-sm font-bold text-[var(--text-subtle)] uppercase tracking-wider text-center mb-6">Popular Public Workspaces</h3>
+            <h3 className="text-sm font-bold text-[var(--text-subtle)] uppercase tracking-wider text-center mb-4">Popular Public Workspaces</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {featuredWorkspaces.map((item) => {
                 const isItemActive = activeSlug === item.slug;
                 return (
-                  <button
+                  <Button
                     key={item.slug}
+                    size="md"
                     disabled={Boolean(activeSlug)}
                     onClick={() => handleCreateSpace(item.slug)}
-                    className="flex items-center gap-2.5 p-3 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] transition-colors text-left cursor-pointer disabled:opacity-50"
+                    className="!justify-start !items-center gap-2.5 !p-3 !rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] !text-left !font-semibold disabled:opacity-50"
+                    icon={<span className="text-lg">{item.icon}</span>}
+                    iconRight={isItemActive ? <Loader2 className="w-3.5 h-3.5 animate-spin text-[var(--accent-primary)]" /> : <ArrowRight className="w-3.5 h-3.5 text-[var(--text-subtle)]" />}
                   >
-                    <span className="text-lg">{item.icon}</span>
                     <div className="flex-1 min-w-0">
                       <div className="font-semibold text-xs truncate text-[var(--text-main)]">
                         {item.title}
                       </div>
                       <div className="text-[11px] font-mono text-[var(--text-subtle)]">/s/{item.slug}</div>
                     </div>
-                    {isItemActive ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin text-[var(--accent-primary)]" />
-                    ) : (
-                      <ArrowRight className="w-3.5 h-3.5 text-[var(--text-subtle)]" />
-                    )}
-                  </button>
+                  </Button>
                 );
               })}
             </div>
@@ -240,12 +224,20 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
 
       {/* Footer */}
       <footer className="bg-[var(--header-bg)] border-t border-[var(--border-color)] py-6">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[var(--text-muted)]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--text-muted)]">
           <div className="flex items-center gap-1.5">
             <Shield className="w-3.5 h-3.5 text-[var(--accent-primary)]" />
             <span>FileShare — Real-Time Notes & Secure File Vault</span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <Link href="/about" className="hover:text-[var(--text-main)] transition-colors">About</Link>
+            <span>•</span>
+            <Link href="/guide" className="hover:text-[var(--text-main)] transition-colors">Guide</Link>
+            <span>•</span>
+            <Link href="/privacy" className="hover:text-[var(--text-main)] transition-colors">Privacy Policy</Link>
+            <span>•</span>
+            <Link href="/terms" className="hover:text-[var(--text-main)] transition-colors">Terms</Link>
+            <span>•</span>
             <a
               href="https://github.com/sandeshPatel06/file-share"
               target="_blank"
@@ -257,8 +249,6 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
               </svg>
               <span>GitHub</span>
             </a>
-            <span>•</span>
-            <span>© {new Date().getFullYear()} FileShare</span>
           </div>
         </div>
       </footer>
