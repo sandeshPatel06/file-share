@@ -1,9 +1,11 @@
+export const runtime = 'edge';
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ToastProvider } from "@/components/ui/Toast";
+import { AuthProvider } from "@/components/AuthProvider";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -173,14 +175,16 @@ export default function RootLayout({
         <meta name="google-adsense-account" content="ca-pub-4947821599815451" />
       </head>
       <body className="antialiased bg-[var(--bg-main)] text-[var(--text-main)] min-h-dvh font-sans transition-colors duration-200">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme={process.env.NEXT_PUBLIC_DEFAULT_THEME || "dark"}
-          enableSystem={false}
-        >
-          {children}
-          <ToastProvider />
-        </ThemeProvider>
+        <AuthProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme={process.env.NEXT_PUBLIC_DEFAULT_THEME || "dark"}
+            enableSystem={false}
+          >
+            {children}
+            <ToastProvider />
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   );

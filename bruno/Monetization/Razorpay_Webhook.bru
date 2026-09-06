@@ -1,0 +1,32 @@
+meta {
+  name: Razorpay Webhook
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/webhooks/razorpay
+  body: json
+  auth: none
+}
+
+headers {
+  x-razorpay-signature: test_signature_here
+}
+
+body:json {
+  {
+    "event": "payment.captured",
+    "payload": {
+      "payment": {
+        "entity": {
+          "id": "pay_test_123",
+          "amount": 19900,
+          "notes": {
+            "userId": "test-user-id"
+          }
+        }
+      }
+    }
+  }
+}

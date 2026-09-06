@@ -1,3 +1,4 @@
+export const runtime = 'edge';
 import { NextRequest } from "next/server";
 import { pageEvents } from "@/lib/events";
 import db from "@/lib/db";
@@ -39,13 +40,19 @@ export async function GET(req: NextRequest, ctx: RouteContext) {
     start(controller) {
       // Send initial connection confirmation
       controller.enqueue(
-        encoder.encode(`event: connected\ndata: ${JSON.stringify({ slug, timestamp: Date.now() })}\n\n`)
+        encoder.encode(`event: connected
+data: ${JSON.stringify({ slug, timestamp: Date.now() })}
+
+`)
       );
 
       const onPageEvent = (eventData: unknown) => {
         try {
           controller.enqueue(
-            encoder.encode(`event: message\ndata: ${JSON.stringify(eventData)}\n\n`)
+            encoder.encode(`event: message
+data: ${JSON.stringify(eventData)}
+
+`)
           );
         } catch {
           // Stream closed
@@ -57,7 +64,9 @@ export async function GET(req: NextRequest, ctx: RouteContext) {
       // Keepalive ping every 10s to keep connection open without dev server timeout
       const pingInterval = setInterval(() => {
         try {
-          controller.enqueue(encoder.encode(`: ping\n\n`));
+          controller.enqueue(encoder.encode(`: ping
+
+`));
         } catch {
           clearInterval(pingInterval);
         }

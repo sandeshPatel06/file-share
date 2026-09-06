@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { Button } from "@/components/ui/Button";
+import { AuthButton } from "@/components/AuthButton";
 
 interface LandingPageProps {
   defaultSlug: string;
@@ -65,6 +66,7 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
 
           <div className="flex items-center gap-2.5">
             <ThemeToggle />
+            <AuthButton />
             <Button
               onClick={() => handleCreateSpace()}
               disabled={Boolean(activeSlug)}

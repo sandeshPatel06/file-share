@@ -7,6 +7,7 @@ import { PasswordGate } from "@/components/PasswordGate";
 import { PasswordModal } from "@/components/PasswordModal";
 import { PanelRightClose, FolderOpen } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { AdUnit } from "@/components/AdUnit";
 
 interface SharePageProps {
   pageData: {
@@ -95,6 +96,7 @@ export function SharePage({ pageData }: SharePageProps) {
       <main className="flex-1 flex min-h-0 relative overflow-hidden">
         {/* Left Editor Pane */}
         <div className="flex-1 min-w-0 h-full flex flex-col">
+          <AdUnit />
           <TextEditor slug={slug} initialContent={pageData.content} token={effectiveToken} />
         </div>
 

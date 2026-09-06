@@ -1,0 +1,13 @@
+meta {
+  name: Razorpay Checkout
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/checkout
+  body: none
+  auth: none
+}
+
+# Note: This route requires an active NextAuth session cookie to work properly.

@@ -7,6 +7,7 @@ import { QRCodeModal } from "@/components/QRCodeModal";
 import { RenameSlugModal } from "@/components/RenameSlugModal";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { copyToClipboard } from "@/lib/clipboard";
+import { AuthButton } from "@/components/AuthButton";
 
 interface SlugBarProps {
   slug:        string;
@@ -129,6 +130,8 @@ export function SlugBar({ slug, isProtected, token, onLockClick, onToggleFilePan
         </a>
 
         <ThemeToggle />
+        
+        <AuthButton />
 
         {onToggleFilePanel && (
           <button

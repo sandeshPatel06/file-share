@@ -1,3 +1,4 @@
+export const runtime = 'edge';
 import { notFound } from "next/navigation";
 import db from "@/lib/db";
 import { SharePage } from "@/components/SharePage";

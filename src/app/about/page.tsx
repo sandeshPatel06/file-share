@@ -1,3 +1,4 @@
+export const runtime = 'edge';
 import type { Metadata } from "next";
 import Link from "next/link";
 import { FileText, Zap, Shield, Globe, Users, HardDrive, Code2 } from "lucide-react";

@@ -1,3 +1,4 @@
+export const runtime = 'edge';
 import { generateSlug } from "@/lib/slugGenerator";
 import { LandingPage } from "@/components/LandingPage";
 import type { Metadata } from "next";

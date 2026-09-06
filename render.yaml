@@ -8,7 +8,7 @@ services:
     autoDeploy: true
     envVars:
       - key: NEXT_PUBLIC_APP_URL
-        value: https://file-share-dev.onrender.com
+        value: https://file-share-dev-tgli.onrender.com
       # Backblaze B2 Object Storage (S3-Compatible)
       # - key: B2_ENDPOINT
       #   sync: false

@@ -1,9 +1,12 @@
+export const runtime = 'edge';
 import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
 import { setPasswordSchema } from "@/lib/validators";
 import { verifyPageToken } from "@/lib/jwt";
 import { rateLimit } from "@/lib/rateLimiter";
 import bcrypt from "bcryptjs";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
 
 interface RouteContext {
   params: Promise<{ slug: string }>;
@@ -23,6 +26,14 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
   const page = (await db.prepare("SELECT isProtected FROM pages WHERE slug = ?").get(slug)) as PageRow | undefined;
   if (!page) {
     return NextResponse.json({ error: "Page not found" }, { status: 404 });
+  }
+
+  // Premium feature gate: only Pro users can set a password
+  const session = await getServerSession(authOptions);
+  const isPro = session && (session as any).isPro;
+  
+  if (!isPro && !page.isProtected) {
+    return NextResponse.json({ error: "Password protection is a Pro feature. Please upgrade." }, { status: 403 });
   }
 
   // If currently protected, require valid token
