@@ -43,7 +43,7 @@ export async function GET(req: NextRequest, ctx: RouteContext) {
   }
 
   const rangeHeader = req.headers.get("range");
-  let getObjectCommandInput: any = {
+  const getObjectCommandInput: any = {
     Bucket: b2BucketName,
     Key: filename,
   };

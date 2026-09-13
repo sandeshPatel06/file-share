@@ -1,5 +1,10 @@
 import type { NextConfig } from "next";
 
+if (process.env.NODE_ENV === "development") {
+  const { setupDevPlatform } = require("@cloudflare/next-on-pages/next-dev");
+  setupDevPlatform();
+}
+
 const envOrigins = process.env.ALLOWED_DEV_ORIGINS
   ? process.env.ALLOWED_DEV_ORIGINS.split(",").map((item) => item.trim()).filter(Boolean)
   : [];
@@ -16,7 +21,19 @@ const defaultOrigins = [
 const nextConfig: NextConfig = {
   // Allow all dev origins from environment variable & default LAN subnets to prevent HMR cross-origin reloads
   allowedDevOrigins: Array.from(new Set([...defaultOrigins, ...envOrigins])),
-  serverExternalPackages: ["async_hooks"],
+
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      "async_hooks": "node:async_hooks",
+    };
+    return config;
+  },
+  turbopack: {
+    resolveAlias: {
+      "async_hooks": "node:async_hooks",
+    },
+  },
   async headers() {
     return [
       {
