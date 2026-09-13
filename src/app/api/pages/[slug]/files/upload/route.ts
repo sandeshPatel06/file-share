@@ -5,9 +5,7 @@ import { verifyPageToken } from "@/lib/jwt";
 import { rateLimit } from "@/lib/rateLimiter";
 import { pageEvents } from "@/lib/events";
 import { getRequestContext } from "@cloudflare/next-on-pages";
-// @ts-ignore - Ignore type error if next-auth edge is flaky
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +28,7 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
   
   let isPro = false;
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     isPro = session && (session as any).isPro;
   } catch (e) {
     console.warn("getServerSession edge warning:", e);

@@ -5,8 +5,7 @@ import { setPasswordSchema } from "@/lib/validators";
 import { verifyPageToken } from "@/lib/jwt";
 import { rateLimit } from "@/lib/rateLimiter";
 import bcrypt from "bcryptjs";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 
 interface RouteContext {
   params: Promise<{ slug: string }>;
@@ -29,7 +28,7 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
   }
 
   // Premium feature gate: only Pro users can set a password
-  const session = await getServerSession(authOptions);
+  const session = await auth();
   const isPro = session && (session as any).isPro;
   
   if (!isPro && !page.isProtected) {
