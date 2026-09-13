@@ -11,7 +11,7 @@ export function AuthButton() {
   const handleCheckout = async () => {
     try {
       const res = await fetch("/api/checkout", { method: "POST" });
-      const order = await res.json();
+      const order = await res.json() as any;
       
       if (order.error) {
         alert(order.error);
