@@ -1,5 +1,6 @@
 interface CloudflareEnv {
-  UPLOADS_BUCKET: any;
+
+  DB: any;
 }
 
 interface Response {

@@ -5,6 +5,8 @@ import { verifyPageToken } from "@/lib/jwt";
 import { rateLimit } from "@/lib/rateLimiter";
 import { pageEvents } from "@/lib/events";
 import { getRequestContext } from "@cloudflare/next-on-pages";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { b2Client, b2BucketName } from "@/lib/b2";
 import { auth } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
@@ -68,17 +70,17 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
     const safeName = originalName.replace(/[^a-zA-Z0-9._-]/g, "_");
     const storedName = `${fileId}-${safeName}`;
 
-    const envCtx = getRequestContext();
-    const bucket = envCtx.env.UPLOADS_BUCKET as any; // R2Bucket
-    
-    if (!bucket) {
-      throw new Error("R2 Bucket UPLOADS_BUCKET not configured");
+    if (!b2BucketName) {
+      throw new Error("B2 Bucket not configured");
     }
 
     const arrayBuffer = await file.arrayBuffer();
-    await bucket.put(storedName, arrayBuffer, {
-      httpMetadata: { contentType: mimetype }
-    });
+    await b2Client.send(new PutObjectCommand({
+      Bucket: b2BucketName,
+      Key: storedName,
+      Body: new Uint8Array(arrayBuffer),
+      ContentType: mimetype,
+    }));
 
     const downloadURL = `/api/uploads/${storedName}`;
 

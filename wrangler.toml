@@ -6,8 +6,6 @@ pages_build_output_dir = ".vercel/output/static"
 [[d1_databases]]
 binding = "DB"
 database_name = "file-share-db"
-database_id = "your-d1-id" # You'll need to update this after creating the D1 database
+database_id = "0df66010-19eb-4409-9733-0f89c8a7c0d2"
 
-[[r2_buckets]]
-binding = "UPLOADS_BUCKET"
-bucket_name = "file-share-uploads" # You'll need to create this R2 bucket in your Cloudflare dashboard
+

@@ -4,6 +4,8 @@ import db from "@/lib/db";
 import { verifyPageToken } from "@/lib/jwt";
 import { rateLimit } from "@/lib/rateLimiter";
 import { getRequestContext } from "@cloudflare/next-on-pages";
+import { GetObjectCommand } from "@aws-sdk/client-s3";
+import { b2Client, b2BucketName } from "@/lib/b2";
 
 interface RouteContext {
   params: Promise<{ filename: string }>;
@@ -36,36 +38,33 @@ export async function GET(req: NextRequest, ctx: RouteContext) {
     }
   }
 
-  const envCtx = getRequestContext();
-  const bucket = envCtx.env.UPLOADS_BUCKET as any;
-  
-  if (!bucket) {
-    return NextResponse.json({ error: "R2 Bucket not configured" }, { status: 500 });
+  if (!b2BucketName) {
+    return NextResponse.json({ error: "B2 Bucket not configured" }, { status: 500 });
   }
 
   const rangeHeader = req.headers.get("range");
-  let r2Object;
+  let getObjectCommandInput: any = {
+    Bucket: b2BucketName,
+    Key: filename,
+  };
   
   if (rangeHeader) {
-    // Pass standard headers for range resolution
-    const headers = new Headers();
-    headers.set("Range", rangeHeader);
-    r2Object = await bucket.get(filename, {
-      range: headers,
-    });
-  } else {
-    r2Object = await bucket.get(filename);
+    getObjectCommandInput.Range = rangeHeader;
   }
 
-  if (!r2Object) {
+  let s3Object;
+  try {
+    s3Object = await b2Client.send(new GetObjectCommand(getObjectCommandInput));
+  } catch (err: any) {
     return NextResponse.json({ error: "File not found in storage" }, { status: 404 });
   }
   
-  const hasBody = "body" in r2Object && r2Object.body;
+  const hasBody = !!s3Object.Body;
 
   const headers = new Headers();
-  r2Object.writeHttpMetadata(headers);
-  headers.set("etag", r2Object.httpEtag);
+  if (s3Object.ETag) headers.set("etag", s3Object.ETag);
+  if (s3Object.ContentLength) headers.set("Content-Length", s3Object.ContentLength.toString());
+  if (s3Object.ContentRange) headers.set("Content-Range", s3Object.ContentRange);
   
   const commonHeaders = {
     "Accept-Ranges": "bytes",
@@ -81,7 +80,7 @@ export async function GET(req: NextRequest, ctx: RouteContext) {
   }
 
   if (hasBody) {
-    return new NextResponse(r2Object.body, {
+    return new NextResponse(s3Object.Body?.transformToWebStream() as any, {
       status: rangeHeader ? 206 : 200,
       headers,
     });

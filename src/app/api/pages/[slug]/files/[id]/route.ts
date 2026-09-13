@@ -5,6 +5,8 @@ import { verifyPageToken } from "@/lib/jwt";
 import { rateLimit } from "@/lib/rateLimiter";
 import { pageEvents } from "@/lib/events";
 import { getRequestContext } from "@cloudflare/next-on-pages";
+import { DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { b2Client, b2BucketName } from "@/lib/b2";
 
 interface RouteContext {
   params: Promise<{ slug: string; id: string }>;
@@ -35,10 +37,11 @@ export async function DELETE(req: NextRequest, ctx: RouteContext) {
   }
 
   try {
-    const envCtx = getRequestContext();
-    const bucket = envCtx.env.UPLOADS_BUCKET as any;
-    if (bucket) {
-      await bucket.delete(fileRecord.storedName);
+    if (b2BucketName) {
+      await b2Client.send(new DeleteObjectCommand({
+        Bucket: b2BucketName,
+        Key: fileRecord.storedName,
+      }));
     }
   } catch (err) {
     console.error("Failed to delete file from R2:", err);
