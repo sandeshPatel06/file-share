@@ -13,8 +13,6 @@ interface PageRow {
 }
 
 export const dynamic = "force-dynamic";
-export const runtime = "nodejs";
-
 // GET /api/pages/[slug]/events — Server-Sent Events stream for instant real-time updates
 export async function GET(req: NextRequest, ctx: RouteContext) {
   const { slug } = await ctx.params;
