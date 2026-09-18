@@ -22,11 +22,13 @@ const nextConfig: NextConfig = {
   // Allow all dev origins from environment variable & default LAN subnets to prevent HMR cross-origin reloads
   allowedDevOrigins: Array.from(new Set([...defaultOrigins, ...envOrigins])),
 
-  webpack: (config) => {
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      "async_hooks": "node:async_hooks",
-    };
+  webpack: (config, { webpack }) => {
+    config.plugins.push(
+      new webpack.NormalModuleReplacementPlugin(
+        /^async_hooks$/,
+        "node:async_hooks"
+      )
+    );
     return config;
   },
   turbopack: {
