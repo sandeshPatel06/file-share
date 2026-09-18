@@ -24,7 +24,12 @@ function getB2Config() {
 }
 
 export function hasB2Storage(): boolean {
-  return Boolean(getB2Config());
+  const config = getB2Config();
+  if (!config) {
+    console.warn(`[Storage] hasB2Storage: false (endpoint=${Boolean(process.env.B2_ENDPOINT)}, keyId=${Boolean(process.env.B2_KEY_ID)}, applicationKey=${Boolean(process.env.B2_APPLICATION_KEY)}, bucketName=${Boolean(process.env.B2_BUCKET_NAME)})`);
+    return false;
+  }
+  return true;
 }
 
 let s3ClientInstance: S3Client | null = null;

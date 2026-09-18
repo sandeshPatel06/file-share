@@ -74,6 +74,8 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
     let limitExceeded = false;
     let fileFound = false;
 
+    let pendingWriteStream: fs.WriteStream | null = null;
+
     const parsePromise = new Promise<{
       fileId: string;
       originalName: string;
@@ -90,6 +92,7 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
         filePath = path.join(uploadsDir, storedName);
 
         const writeStream = fs.createWriteStream(filePath);
+        pendingWriteStream = writeStream;
 
         fileStream.on("data", (chunk: Buffer) => {
           fileSize += chunk.length;
@@ -112,20 +115,29 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
           reject(new Error("No file provided"));
           return;
         }
-        if (limitExceeded || fileSize > MAX_FILE_SIZE) {
-          if (filePath && fs.existsSync(filePath)) {
-            try { fs.unlinkSync(filePath); } catch {}
+
+        const finalize = () => {
+          if (limitExceeded || fileSize > MAX_FILE_SIZE) {
+            if (filePath && fs.existsSync(filePath)) {
+              try { fs.unlinkSync(filePath); } catch {}
+            }
+            reject(new Error("File size exceeds the 500 MB limit"));
+            return;
           }
-          reject(new Error("File size exceeds the 500 MB limit"));
-          return;
+          resolve({
+            fileId,
+            originalName,
+            storedName,
+            mimetype,
+            size: fileSize,
+          });
+        };
+
+        if (pendingWriteStream && !pendingWriteStream.closed && !pendingWriteStream.writableFinished) {
+          pendingWriteStream.on("finish", finalize);
+        } else {
+          finalize();
         }
-        resolve({
-          fileId,
-          originalName,
-          storedName,
-          mimetype,
-          size: fileSize,
-        });
       });
 
       bb.on("error", (err) => reject(err));
@@ -142,11 +154,14 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
     const downloadURL = `/api/uploads/${uploadedInfo.storedName}`;
 
     // Upload to Backblaze B2 Object Storage if B2 credentials are set
-    if (hasB2Storage() && filePath && fs.existsSync(filePath)) {
-      const fileStream = fs.createReadStream(filePath);
+    const b2Active = hasB2Storage();
+    if (b2Active && filePath && fs.existsSync(filePath)) {
+      // Use direct buffer for small files (<=10MB) for highest reliability; stream for large files to conserve RAM
+      const isLarge = uploadedInfo.size > 10 * 1024 * 1024;
+      const b2Payload = isLarge ? fs.createReadStream(filePath) : fs.readFileSync(filePath);
       const b2Uploaded = await uploadToB2(
         uploadedInfo.storedName,
-        fileStream,
+        b2Payload,
         uploadedInfo.mimetype,
         uploadedInfo.size
       );
