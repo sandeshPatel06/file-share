@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { FileText, FileCode, CheckCircle2, AlertTriangle, HelpCircle } from "lucide-react";
 
-const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://shptechnology.online";
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://fileshare-live.onrender.com";
 
 export const metadata: Metadata = {
   title: "Terms of Service — FileShare",
@@ -88,7 +88,7 @@ export default function TermsPage() {
               5. Governing Law & Abuse Reports
             </h2>
             <p className="text-[var(--text-muted)]">
-              To report abuse, copyright infringement, or terms violations, please contact abuse@shptechnology.online.
+              To report abuse, copyright infringement, or terms violations, please contact abuse@fileshare-live.onrender.com.
             </p>
           </section>
         </div>

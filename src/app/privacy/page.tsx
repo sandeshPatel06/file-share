@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Shield, FileText, Lock, Globe, Database, Eye } from "lucide-react";
 
-const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://shptechnology.online";
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://fileshare-live.onrender.com";
 
 export const metadata: Metadata = {
   title: "Privacy Policy — FileShare",
@@ -92,7 +92,7 @@ export default function PrivacyPage() {
           <section className="bg-[var(--bg-surface)] p-5 rounded-xl border border-[var(--border-color)]">
             <h2 className="text-lg font-semibold mb-3 text-[var(--text-main)]">5. Contact Us</h2>
             <p className="text-[var(--text-muted)]">
-              If you have any questions or concerns regarding this Privacy Policy or data processing practices, please contact us at support@shptechnology.online.
+              If you have any questions or concerns regarding this Privacy Policy or data processing practices, please contact us at support@fileshare-live.onrender.com.
             </p>
           </section>
         </div>

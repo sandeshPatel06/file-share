@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { FileText, BookOpen, Code, Sparkles } from "lucide-react";
 
-const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://shptechnology.online";
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://fileshare-live.onrender.com";
 
 export const metadata: Metadata = {
   title: "User Guide & Documentation — FileShare",
@@ -54,7 +54,7 @@ export default function GuidePage() {
               Workspaces on FileShare are identified by unique URL slugs. You can create a space instantly:
             </p>
             <ul className="list-disc pl-5 space-y-1.5 text-[var(--text-muted)]">
-              <li>Visit <code className="px-1.5 py-0.5 rounded bg-[var(--bg-main)] font-mono text-xs text-[var(--accent-primary)]">https://shptechnology.online/s/your-slug</code> in any browser.</li>
+              <li>Visit <code className="px-1.5 py-0.5 rounded bg-[var(--bg-main)] font-mono text-xs text-[var(--accent-primary)]">https://fileshare-live.onrender.com/s/your-slug</code> in any browser.</li>
               <li>Or click &quot;New Space&quot; on the home page to auto-generate a secure random workspace ID.</li>
               <li>Share the URL or use the built-in <strong>QR Code Generator</strong> to quickly transfer links to mobile devices.</li>
             </ul>

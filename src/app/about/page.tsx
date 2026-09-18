@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { FileText, Zap, Shield, Globe, Users, HardDrive, Code2 } from "lucide-react";
 
-const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://shptechnology.online";
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://fileshare-live.onrender.com";
 
 export const metadata: Metadata = {
   title: "About FileShare — Real-Time Collaborative Workspace",
