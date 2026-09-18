@@ -53,23 +53,30 @@ function getS3Client(): { client: S3Client; bucketName: string } | null {
 export async function uploadToB2(
   storedName: string,
   body: Buffer | Readable | Uint8Array,
-  mimetype: string
+  mimetype: string,
+  contentLength?: number
 ): Promise<boolean> {
   const b2 = getS3Client();
-  if (!b2) return false;
+  if (!b2) {
+    console.warn(`[Storage] Cannot upload ${storedName} to B2: B2 credentials not configured.`);
+    return false;
+  }
 
   try {
+    console.log(`[Storage] Uploading ${storedName} (${contentLength ?? "unknown"} bytes) to Backblaze B2 bucket: ${b2.bucketName}...`);
     const command = new PutObjectCommand({
       Bucket: b2.bucketName,
       Key: storedName,
       Body: body,
       ContentType: mimetype,
+      ContentLength: contentLength,
     });
 
     await b2.client.send(command);
+    console.log(`[Storage] Successfully uploaded ${storedName} to Backblaze B2!`);
     return true;
   } catch (err) {
-    console.error("Backblaze B2 Upload Error:", err);
+    console.error("[Storage] Backblaze B2 Upload Error:", err);
     return false;
   }
 }
@@ -91,6 +98,7 @@ export async function getFromB2(
   if (!b2) return null;
 
   try {
+    console.log(`[Storage] Fetching/streaming ${storedName} from Backblaze B2...`);
     const command = new GetObjectCommand({
       Bucket: b2.bucketName,
       Key: storedName,

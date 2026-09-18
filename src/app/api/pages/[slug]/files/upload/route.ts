@@ -143,8 +143,16 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
 
     // Upload to Backblaze B2 Object Storage if B2 credentials are set
     if (hasB2Storage() && filePath && fs.existsSync(filePath)) {
-      const fileBuffer = fs.readFileSync(filePath);
-      await uploadToB2(uploadedInfo.storedName, fileBuffer, uploadedInfo.mimetype);
+      const fileStream = fs.createReadStream(filePath);
+      const b2Uploaded = await uploadToB2(
+        uploadedInfo.storedName,
+        fileStream,
+        uploadedInfo.mimetype,
+        uploadedInfo.size
+      );
+      if (!b2Uploaded) {
+        console.warn(`[Storage] Warning: Backblaze B2 upload failed for ${uploadedInfo.storedName}; file remains on local disk.`);
+      }
     }
 
     await db.prepare(`

@@ -37,10 +37,6 @@ export async function GET(req: NextRequest, ctx: RouteContext) {
     return NextResponse.json({ error: "Invalid file path" }, { status: 400 });
   }
 
-  if (!fs.existsSync(filePath)) {
-    return NextResponse.json({ error: "File not found" }, { status: 404 });
-  }
-
   const fileRecord = (await db.prepare("SELECT slug, mimetype, originalName, size FROM files WHERE storedName = ?").get(safeFilename)) as FileRow | undefined;
   
   // Detect PDF or fallback MIME types
