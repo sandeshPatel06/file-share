@@ -16,6 +16,11 @@ import {
   Globe,
   Compass,
   Loader2,
+  CheckCircle2,
+  HelpCircle,
+  Users,
+  Code2,
+  Share2,
 } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { Button } from "@/components/ui/Button";
@@ -217,6 +222,161 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
                   </Button>
                 );
               })}
+            </div>
+          </div>
+        </section>
+
+        {/* How FileShare Works */}
+        <section className="py-12 sm:py-16 max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="text-center max-w-2xl mx-auto mb-10">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-main)] mb-3">
+              How FileShare Works
+            </h2>
+            <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed">
+              Experience seamless, instant collaboration without logins, verifications, or installation steps.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-6 relative">
+              <div className="w-9 h-9 rounded-lg bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] flex items-center justify-center font-mono font-bold text-sm mb-4">
+                01
+              </div>
+              <h3 className="text-base font-bold mb-2 text-[var(--text-main)]">Pick or Create a Slug</h3>
+              <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                Type any workspace identifier like <code className="px-1.5 py-0.5 rounded bg-[var(--bg-main)] font-mono text-[var(--accent-primary)]">/s/project-sync</code> or let the generator create a secure random link.
+              </p>
+            </div>
+
+            <div className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-6 relative">
+              <div className="w-9 h-9 rounded-lg bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] flex items-center justify-center font-mono font-bold text-sm mb-4">
+                02
+              </div>
+              <h3 className="text-base font-bold mb-2 text-[var(--text-main)]">Type & Upload Live</h3>
+              <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                Write Markdown notes, render Mermaid diagrams, and drag-and-drop files up to 500MB. All participants sync live via Server-Sent Events.
+              </p>
+            </div>
+
+            <div className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-6 relative">
+              <div className="w-9 h-9 rounded-lg bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] flex items-center justify-center font-mono font-bold text-sm mb-4">
+                03
+              </div>
+              <h3 className="text-base font-bold mb-2 text-[var(--text-main)]">Share or Protect</h3>
+              <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                Share via URL or instant QR code. Need privacy? Set an encrypted password lock to secure your notes and vault from unauthorized guests.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Use Cases Section */}
+        <section className="py-12 sm:py-16 bg-[var(--bg-surface)] border-t border-b border-[var(--border-color)]">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
+            <div className="text-center max-w-2xl mx-auto mb-10">
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-main)] mb-3">
+                Built for Fast Real-Time Collaboration
+              </h2>
+              <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed">
+                Designed for engineers, students, and remote teams who value speed and privacy.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="p-5 rounded-xl border border-[var(--border-color)] bg-[var(--bg-main)]">
+                <Code2 className="w-5 h-5 text-indigo-400 mb-2.5" />
+                <h3 className="text-sm font-bold mb-1.5 text-[var(--text-main)]">Pair Programming</h3>
+                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                  Share code snippets, terminal traces, and architecture diagrams during live debugging sessions.
+                </p>
+              </div>
+
+              <div className="p-5 rounded-xl border border-[var(--border-color)] bg-[var(--bg-main)]">
+                <Users className="w-5 h-5 text-emerald-400 mb-2.5" />
+                <h3 className="text-sm font-bold mb-1.5 text-[var(--text-main)]">Meeting Notes</h3>
+                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                  Keep synchronized agendas and action items without forcing teammates to create third-party accounts.
+                </p>
+              </div>
+
+              <div className="p-5 rounded-xl border border-[var(--border-color)] bg-[var(--bg-main)]">
+                <Share2 className="w-5 h-5 text-blue-400 mb-2.5" />
+                <h3 className="text-sm font-bold mb-1.5 text-[var(--text-main)]">Cross-Device Transfer</h3>
+                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                  Move files, screenshots, and text links between your phone, tablet, and PC in seconds using QR codes.
+                </p>
+              </div>
+
+              <div className="p-5 rounded-xl border border-[var(--border-color)] bg-[var(--bg-main)]">
+                <CheckCircle2 className="w-5 h-5 text-amber-400 mb-2.5" />
+                <h3 className="text-sm font-bold mb-1.5 text-[var(--text-main)]">Classrooms & Workshops</h3>
+                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                  Distribute exercise files and live scratchpads to students effortlessly with a single memorable URL.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Frequently Asked Questions (FAQ) */}
+        <section className="py-12 sm:py-16 max-w-4xl mx-auto px-4 sm:px-6">
+          <div className="text-center max-w-2xl mx-auto mb-10">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-mono bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-muted)] mb-3">
+              <HelpCircle className="w-3.5 h-3.5 text-[var(--accent-primary)]" />
+              <span>Questions & Answers</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-main)] mb-3">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed">
+              Everything you need to know about FileShare, storage policies, and security.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <div className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-5">
+              <h3 className="text-sm font-bold text-[var(--text-main)] mb-2">
+                Is FileShare free to use, and do I need to register?
+              </h3>
+              <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                Yes, FileShare is 100% free with zero registration required. There are no forms to fill out, no email confirmations, and no subscriptions. You can start typing or uploading immediately.
+              </p>
+            </div>
+
+            <div className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-5">
+              <h3 className="text-sm font-bold text-[var(--text-main)] mb-2">
+                What is the file size upload limit?
+              </h3>
+              <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                You can upload files up to 500 MB each. FileShare supports multi-file uploads including videos, zip archives, images, PDFs, and code repositories with streaming cloud storage backing.
+              </p>
+            </div>
+
+            <div className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-5">
+              <h3 className="text-sm font-bold text-[var(--text-main)] mb-2">
+                How does real-time synchronization work?
+              </h3>
+              <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                FileShare utilizes Server-Sent Events (SSE) to broadcast changes across all connected clients in milliseconds. Edits and file uploads show up automatically without any page refresh needed.
+              </p>
+            </div>
+
+            <div className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-5">
+              <h3 className="text-sm font-bold text-[var(--text-main)] mb-2">
+                Can I protect my workspace with a password?
+              </h3>
+              <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                Yes! Click the &quot;Lock Space&quot; button inside any workspace to set a password. Passwords are securely hashed with bcrypt (10 rounds) and access is verified via JWT tokens.
+              </p>
+            </div>
+
+            <div className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-5">
+              <h3 className="text-sm font-bold text-[var(--text-main)] mb-2">
+                How do I open my workspace on mobile devices?
+              </h3>
+              <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                Click the QR code button in the top navigation bar of your workspace to generate a high-resolution QR code. Scan it with your phone&apos;s camera to immediately continue editing on mobile.
+              </p>
             </div>
           </div>
         </section>

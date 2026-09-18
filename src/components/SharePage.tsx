@@ -5,6 +5,7 @@ import { TextEditor } from "@/components/TextEditor";
 import { FilePanel } from "@/components/FilePanel";
 import { PasswordGate } from "@/components/PasswordGate";
 import { PasswordModal } from "@/components/PasswordModal";
+import Link from "next/link";
 import { PanelRightClose, FolderOpen } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
@@ -150,13 +151,13 @@ export function SharePage({ pageData }: SharePageProps) {
       <footer className="border-t border-[var(--border-color)] bg-[var(--header-bg)] py-2 px-4 shrink-0 text-[11px] text-[var(--text-muted)] flex items-center justify-between">
         <div>Workspace: <code className="font-mono text-[var(--text-main)]">/s/{slug}</code></div>
         <div className="flex items-center gap-3">
-          <a href="/about" target="_blank" className="hover:text-[var(--text-main)]">About</a>
+          <Link href="/about" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-main)]">About</Link>
           <span>•</span>
-          <a href="/guide" target="_blank" className="hover:text-[var(--text-main)]">Guide</a>
+          <Link href="/guide" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-main)]">Guide</Link>
           <span>•</span>
-          <a href="/privacy" target="_blank" className="hover:text-[var(--text-main)]">Privacy</a>
+          <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-main)]">Privacy</Link>
           <span>•</span>
-          <a href="/terms" target="_blank" className="hover:text-[var(--text-main)]">Terms</a>
+          <Link href="/terms" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-main)]">Terms</Link>
         </div>
       </footer>
     </div>
