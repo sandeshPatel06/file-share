@@ -45,27 +45,7 @@ if (hasPg) {
   try {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { Pool } = require("pg");
-    let connectionString = process.env.DATABASE_URL || "";
-    
-    // Auto-detect Render container runtime environment vs local development machine
-    const isRenderRuntime = Boolean(process.env.RENDER || process.env.RENDER_SERVICE_ID || process.env.PORT);
-
-    if (connectionString.includes("dpg-da3dpqtg1s2s73ddgnd0-a")) {
-      if (isRenderRuntime && !connectionString.includes("localhost") && !connectionString.includes("127.0.0.1")) {
-        // Internal Render Network: connect to internal host dpg-da3dpqtg1s2s73ddgnd0-a
-        connectionString = connectionString.replace(
-          /@dpg-da3dpqtg1s2s73ddgnd0-a[a-z0-9.-]*/,
-          "@dpg-da3dpqtg1s2s73ddgnd0-a"
-        );
-      } else {
-        // External machine: connect to external FQDN dpg-da3dpqtg1s2s73ddgnd0-a-a.oregon-postgres.render.com
-        connectionString = connectionString.replace(
-          /@dpg-da3dpqtg1s2s73ddgnd0-a[a-z0-9.-]*/,
-          "@dpg-da3dpqtg1s2s73ddgnd0-a-a.oregon-postgres.render.com"
-        );
-      }
-    }
-
+    const connectionString = process.env.DATABASE_URL || "";
     const isLocal = connectionString?.includes("localhost") || connectionString?.includes("127.0.0.1");
     pgPool = new Pool({
       connectionString,

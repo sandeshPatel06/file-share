@@ -2,7 +2,7 @@ import { generateSlug } from "@/lib/slugGenerator";
 import { LandingPage } from "@/components/LandingPage";
 import type { Metadata } from "next";
 
-const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://file-share-dev.onrender.com";
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://fileshare-live.onrender.com";
 
 export const metadata: Metadata = {
   title: "FileShare — Instant Real-Time Notes & Secure File Sharing Vault",

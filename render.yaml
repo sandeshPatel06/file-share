@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: file0share-dev
+    name: fileshare-live
     env: node
     plan: free
     buildCommand: ./deploy.sh
@@ -8,10 +8,10 @@ services:
     autoDeploy: true
     envVars:
       - key: NEXT_PUBLIC_APP_URL
-        value: https://file-share-dev.onrender.com
+        value: https://fileshare-live.onrender.com
       - key: DATABASE_URL
         fromDatabase:
-          name: jarvis-db
+          name: filesharedb
           property: connectionString
       # Backblaze B2 Object Storage (S3-Compatible)
       # - key: B2_ENDPOINT
