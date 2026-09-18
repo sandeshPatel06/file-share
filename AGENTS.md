@@ -15,8 +15,8 @@ This version has breaking changes — APIs, conventions, and file structure may 
 ## 🏗️ System Architecture Summary
 
 ### 1. Database & Persistence (`src/lib/db.ts`)
-- **Engine**: Embedded SQLite using `better-sqlite3`.
-- **Database Path**: `data/fileshare.db` (auto-created on startup if non-existent).
+- **Engine**: Hybrid database engine supporting PostgreSQL (`pg`) via `DATABASE_URL` or embedded SQLite (`better-sqlite3`).
+- **Database Path**: `data/fileshare.db` (auto-created on startup if non-existent, used as SQLite fallback).
 - **Referential Integrity**: Foreign keys are enabled with `ON UPDATE CASCADE` to allow space slug renames without referential constraint errors.
 - **Defensive Provisioning**: API routes use `INSERT OR IGNORE` or try/catch fallbacks to provision page records dynamically before file uploads or content updates.
 
@@ -26,9 +26,9 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - **Client Hook**: `usePageContent` listens to incoming SSE broadcast events to synchronize notes live across all connected clients.
 
 ### 3. File Vault & Media Handling
-- **Storage Location**: Local disk under `uploads/` directory.
-- **Upload Route**: `POST /api/pages/[slug]/files/upload` (accepts multi-part files up to 50 MB).
-- **File Serving**: `GET /api/uploads/[filename]` queries the SQLite `files` table to serve content with its exact original `mimetype` header.
+- **Storage Location**: Backblaze B2 (S3-compatible object storage via `@aws-sdk/client-s3`) with local disk fallback under `uploads/` directory.
+- **Upload Route**: `POST /api/pages/[slug]/files/upload` (accepts multi-part files up to 500 MB with memory-efficient streaming).
+- **File Serving**: `GET /api/uploads/[filename]` queries the `files` table to serve content with HTTP byte-range support and fallback streaming from Backblaze B2.
 
 ### 4. Security & Authentication
 - **Password Hashing**: `bcrypt` (10 rounds) for securing password-protected spaces.
