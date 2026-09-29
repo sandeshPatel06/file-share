@@ -87,34 +87,46 @@ export function PasswordModal({ open, onClose, slug, isProtected, token, onSucce
         )}
 
         <form onSubmit={handleSet} className="space-y-3">
-          <label className="block">
-            <span className="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider">New Password</span>
+          <div>
+            <label htmlFor="new-password-input" className="block text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider">
+              New Password
+            </label>
             <div className="relative mt-1">
               <input
                 autoFocus
+                id="new-password-input"
+                name="newPassword"
                 type={showPw ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Min. 6 characters"
                 className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] focus:border-[var(--accent-primary)] focus:ring-2 focus:ring-[var(--border-glow)] rounded-xl px-3 py-2 pr-9 text-xs sm:text-sm text-[var(--text-main)] placeholder-[var(--text-subtle)] outline-none transition-all font-mono font-bold"
               />
-              <button type="button" tabIndex={-1} onClick={() => setShowPw(!showPw)}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors cursor-pointer p-1 rounded-md">
+              <button
+                type="button"
+                onClick={() => setShowPw(!showPw)}
+                aria-label={showPw ? "Hide password" : "Show password"}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors cursor-pointer p-1 rounded-md"
+              >
                 {showPw ? <EyeOff size={14} /> : <Eye size={14} />}
               </button>
             </div>
-          </label>
+          </div>
 
-          <label className="block">
-            <span className="text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider">Confirm Password</span>
+          <div>
+            <label htmlFor="confirm-password-input" className="block text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider">
+              Confirm Password
+            </label>
             <input
+              id="confirm-password-input"
+              name="confirmPassword"
               type="password"
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
               placeholder="Re-enter password"
               className="mt-1 w-full bg-[var(--input-bg)] border border-[var(--border-color)] focus:border-[var(--accent-primary)] focus:ring-2 focus:ring-[var(--border-glow)] rounded-xl px-3 py-2 text-xs sm:text-sm text-[var(--text-main)] placeholder-[var(--text-subtle)] outline-none transition-all font-mono font-bold"
             />
-          </label>
+          </div>
 
           {error && <p className="text-xs font-bold text-[var(--status-danger-text)] flex items-center gap-1.5 pt-0.5">{error}</p>}
 

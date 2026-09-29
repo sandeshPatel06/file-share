@@ -164,6 +164,10 @@ export function SharePage({ pageData }: SharePageProps) {
           <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-main)] transition-colors">Privacy</Link>
           <span>•</span>
           <Link href="/terms" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-main)] transition-colors">Terms</Link>
+          <span>•</span>
+          <Link href="/cookies" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-main)] transition-colors">Cookies</Link>
+          <span>•</span>
+          <Link href="/refund" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-main)] transition-colors">Refund Policy</Link>
         </div>
       </footer>
     </div>

@@ -23,6 +23,7 @@ import {
 import { ThemeToggle } from "./ThemeToggle";
 import { Button } from "@/components/ui/Button";
 import { ARTICLES } from "@/lib/articles";
+import { CookieSettingsButton } from "@/components/ui/CookieConsent";
 
 interface LandingPageProps {
   defaultSlug: string;
@@ -119,20 +120,27 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
             <div className="max-w-md mx-auto bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-2xl p-4 sm:p-5 shadow-sm">
               <form onSubmit={handleCustomSlugSubmit} className="flex flex-col sm:flex-row gap-2">
                 <div className="relative flex-1">
+                  <label htmlFor="landing-custom-slug" className="sr-only">
+                    Workspace URL Slug
+                  </label>
                   <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-mono text-[var(--text-subtle)] select-none">
                     /s/
                   </span>
                   <input
+                    id="landing-custom-slug"
+                    name="slug"
                     type="text"
                     value={customSlug}
                     onChange={(e) => setCustomSlug(e.target.value)}
                     placeholder={defaultSlug}
+                    aria-label="Enter custom workspace name"
                     className="w-full pl-8 pr-3 py-2.5 text-xs sm:text-sm rounded-lg bg-[var(--input-bg)] border border-[var(--border-color)] text-[var(--text-main)] placeholder-[var(--text-subtle)] focus:outline-none focus:border-[var(--accent-primary)] font-mono"
                   />
                 </div>
                 <Button
                   type="submit"
                   disabled={Boolean(activeSlug)}
+                  aria-label="Open or create instant workspace"
                   className="!px-5 !py-2.5 !rounded-lg !font-semibold text-xs sm:text-sm bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white disabled:opacity-60"
                   icon={activeSlug ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : undefined}
                   iconRight={!activeSlug ? <ArrowRight className="w-3.5 h-3.5" /> : undefined}
@@ -155,6 +163,23 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
                 </Button>
                 <span>500MB Limit per file</span>
               </div>
+
+              {/* Form Consent Notice (GDPR & DPDP Act 2023) */}
+              <p className="mt-3 text-[11px] text-[var(--text-subtle)] text-center leading-normal">
+                By opening or joining a workspace, you agree to our{" "}
+                <Link href="/terms" className="underline hover:text-[var(--text-main)]">
+                  Terms
+                </Link>
+                ,{" "}
+                <Link href="/privacy" className="underline hover:text-[var(--text-main)]">
+                  Privacy Policy
+                </Link>
+                , and{" "}
+                <Link href="/cookies" className="underline hover:text-[var(--text-main)]">
+                  Cookie Policy
+                </Link>
+                .
+              </p>
             </div>
 
             {/* Quick Link to Knowledge Base */}
@@ -428,35 +453,49 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
 
       {/* Footer */}
       <footer className="bg-[var(--header-bg)] border-t border-[var(--border-color)] py-8">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--text-muted)]">
-          <div className="flex items-center gap-1.5">
-            <Shield className="w-3.5 h-3.5 text-[var(--accent-primary)]" />
-            <span>FileShare — Real-Time Notes & Secure File Vault</span>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col gap-4 text-xs text-[var(--text-muted)]">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-1.5">
+              <Shield className="w-3.5 h-3.5 text-[var(--accent-primary)]" />
+              <span>FileShare — Real-Time Notes & Secure File Vault</span>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <Link href="/about" className="hover:text-[var(--text-main)] transition-colors">About</Link>
+              <span>•</span>
+              <Link href="/guide" className="hover:text-[var(--text-main)] transition-colors">User Guide</Link>
+              <span>•</span>
+              <Link href="/resources" className="hover:text-[var(--text-main)] transition-colors">Resources</Link>
+              <span>•</span>
+              <Link href="/contact" className="hover:text-[var(--text-main)] transition-colors">Contact</Link>
+              <span>•</span>
+              <Link href="/privacy" className="hover:text-[var(--text-main)] transition-colors">Privacy Policy</Link>
+              <span>•</span>
+              <Link href="/terms" className="hover:text-[var(--text-main)] transition-colors">Terms &amp; Conditions</Link>
+              <span>•</span>
+              <Link href="/cookies" className="hover:text-[var(--text-main)] transition-colors">Cookie Policy</Link>
+              <span>•</span>
+              <Link href="/refund" className="hover:text-[var(--text-main)] transition-colors">Refund Policy</Link>
+              <span>•</span>
+              <CookieSettingsButton />
+              <span>•</span>
+              <a
+                href="https://github.com/sandeshPatel06/file-share"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 hover:text-[var(--text-main)] transition-colors"
+                aria-label="FileShare on GitHub (opens in new tab)"
+              >
+                <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+                </svg>
+                <span>GitHub</span>
+              </a>
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <Link href="/about" className="hover:text-[var(--text-main)] transition-colors">About</Link>
-            <span>•</span>
-            <Link href="/guide" className="hover:text-[var(--text-main)] transition-colors">User Guide</Link>
-            <span>•</span>
-            <Link href="/resources" className="hover:text-[var(--text-main)] transition-colors">Resources</Link>
-            <span>•</span>
-            <Link href="/contact" className="hover:text-[var(--text-main)] transition-colors">Contact</Link>
-            <span>•</span>
-            <Link href="/privacy" className="hover:text-[var(--text-main)] transition-colors">Privacy Policy</Link>
-            <span>•</span>
-            <Link href="/terms" className="hover:text-[var(--text-main)] transition-colors">Terms</Link>
-            <span>•</span>
-            <a
-              href="https://github.com/sandeshPatel06/file-share"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 hover:text-[var(--text-main)] transition-colors"
-            >
-              <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
-              </svg>
-              <span>GitHub</span>
-            </a>
+
+          <div className="pt-3 border-t border-[var(--border-color)] flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-[var(--text-subtle)]">
+            <p>Operated by <strong>SHP Technology</strong> • Founder: Sandesh Patel • Jabalpur, Madhya Pradesh 482001, India</p>
+            <p>GDPR &amp; India DPDP Act 2023 Compliant • Free Web Utility</p>
           </div>
         </div>
       </footer>

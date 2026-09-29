@@ -18,9 +18,9 @@
   --bg-card-hover: #21262d;  /* Interactive Hover */
   --input-bg: #0d1117;       /* Sunken Code / Editor Canvas */
 
-  --text-main: #e6edf3;      /* GitHub Dark primary text */
-  --text-muted: #8d96a0;     /* GitHub Dark secondary text */
-  --text-subtle: #6e7681;    /* GitHub Dark metadata */
+  --text-main: #e6edf3;      /* GitHub Dark primary text (14.5:1) */
+  --text-muted: #9da7b3;     /* GitHub Dark secondary text (7.2:1 - AAA) */
+  --text-subtle: #8b949e;    /* GitHub Dark subtle text (5.5:1 - AA) */
 
   --accent-primary: #238636; /* GitHub Pro Green */
   --accent-primary-hover: #2ea043;
@@ -58,9 +58,9 @@
   --bg-card-hover: #f3f4f6;  /* Light Hover */
   --input-bg: #f6f8fa;       /* Soft Sunken Input Canvas */
 
-  --text-main: #1f2328;      /* GitHub Light primary text */
-  --text-muted: #636c76;     /* Secondary text */
-  --text-subtle: #8c959f;    /* Metadata text */
+  --text-main: #1f2328;      /* GitHub Light primary text (14.2:1) */
+  --text-muted: #57606a;     /* Secondary text (5.6:1 - AA) */
+  --text-subtle: #4a545e;    /* Metadata text (7.3:1 - AAA) */
 
   --accent-primary: #1f883d; /* GitHub Light Green Accent */
   --accent-primary-hover: #1a7f37;
@@ -98,6 +98,12 @@ body {
   margin: 0;
   padding: 0;
   transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* WCAG 2.1 AA Keyboard Navigation Focus Indicators */
+:focus-visible {
+  outline: 2px solid var(--accent-primary) !important;
+  outline-offset: 2px !important;
 }
 
 .font-mono-code {

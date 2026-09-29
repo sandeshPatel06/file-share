@@ -1,18 +1,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Shield, FileText, Lock, Globe, Database, Eye, Cookie, AlertCircle } from "lucide-react";
+import { Shield, FileText, Lock, Globe, Database, Cookie, AlertCircle, Scale, UserCheck } from "lucide-react";
+import { CookieSettingsButton } from "@/components/ui/CookieConsent";
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://fileshare.shptechnology.online";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy & Cookie Disclosures — FileShare",
-  description: "Comprehensive Privacy Policy for FileShare. Details on data handling, Google AdSense disclosures, cookie management, and user privacy rights.",
+  title: "Privacy Policy — GDPR & India DPDP Act 2023 Compliant — FileShare",
+  description: "Comprehensive Privacy Policy for FileShare (SHP Technology). Fully compliant with the EU General Data Protection Regulation (GDPR) and India's Digital Personal Data Protection (DPDP) Act, 2023.",
   alternates: {
     canonical: `${appUrl}/privacy`,
   },
   openGraph: {
-    title: "Privacy Policy & Cookie Disclosures — FileShare",
-    description: "Learn how FileShare handles data, cookies, and adheres to Google AdSense privacy policies.",
+    title: "Privacy Policy — FileShare",
+    description: "Learn how FileShare protects your personal data in compliance with GDPR and India's DPDP Act 2023.",
     url: `${appUrl}/privacy`,
     siteName: "FileShare",
     type: "website",
@@ -32,9 +33,9 @@ export default function PrivacyPage() {
             <span>FileShare</span>
           </Link>
           <nav className="flex items-center gap-4 text-xs font-medium text-[var(--text-muted)]">
-            <Link href="/resources" className="hover:text-[var(--text-main)] transition-colors">Resources</Link>
-            <Link href="/guide" className="hover:text-[var(--text-main)] transition-colors">Guide</Link>
-            <Link href="/about" className="hover:text-[var(--text-main)] transition-colors">About</Link>
+            <Link href="/cookies" className="hover:text-[var(--text-main)] transition-colors">Cookie Policy</Link>
+            <Link href="/terms" className="hover:text-[var(--text-main)] transition-colors">Terms</Link>
+            <Link href="/refund" className="hover:text-[var(--text-main)] transition-colors">Refund Policy</Link>
             <Link href="/contact" className="hover:text-[var(--text-main)] transition-colors">Contact</Link>
           </nav>
         </div>
@@ -45,134 +46,209 @@ export default function PrivacyPage() {
         <div className="mb-8 border-b border-[var(--border-color)] pb-6">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-mono bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-muted)] mb-3">
             <Shield className="w-3.5 h-3.5 text-emerald-500" />
-            <span>Privacy & Compliance Standards</span>
+            <span>GDPR (EU) &amp; DPDP Act 2023 (India) Compliant</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-2">Privacy Policy & Cookie Disclosures</h1>
-          <p className="text-xs sm:text-sm text-[var(--text-muted)]">Effective Date: September 29, 2026 | Last Updated: September 29, 2026</p>
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-2">
+            Privacy Policy &amp; Data Protection Notice
+          </h1>
+          <p className="text-xs sm:text-sm text-[var(--text-muted)]">
+            Last Updated: September 29, 2026 | Effective Date: September 29, 2026
+          </p>
         </div>
 
         <div className="text-sm leading-relaxed space-y-8">
-          {/* Section 1 */}
+          {/* Section 1: Data Fiduciary Identity */}
           <section className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--border-color)] space-y-3">
-            <h2 className="text-lg font-semibold flex items-center gap-2 text-[var(--text-main)]">
-              <Globe className="w-4 h-4 text-[var(--accent-primary)]" />
-              1. Introduction & Core Privacy Philosophy
+            <h2 className="text-lg font-bold flex items-center gap-2 text-[var(--text-main)]">
+              <Globe className="w-5 h-5 text-[var(--accent-primary)]" />
+              1. Identity of the Data Fiduciary &amp; Overview
             </h2>
-            <p className="text-[var(--text-muted)] leading-relaxed">
-              FileShare (&quot;we&quot;, &quot;our&quot;, or &quot;us&quot;) operates the collaborative workspace and file sharing service located at <code className="font-mono text-xs">{appUrl}</code>. Our foundational product philosophy is built on data minimization: we require zero user registration, we do not request email addresses or telephone numbers to create workspaces, and we believe users should collaborate with full privacy and confidence.
+            <p className="text-[var(--text-muted)]">
+              This Privacy Policy is published in compliance with the <strong>European Union General Data Protection Regulation (Regulation [EU] 2016/679 - GDPR)</strong> and <strong>India&apos;s Digital Personal Data Protection Act, 2023 (DPDP Act, 2023)</strong>.
             </p>
-            <p className="text-[var(--text-muted)] leading-relaxed">
-              This Privacy Policy explains what technical information is collected, how it is used, and the third-party services—including Google AdSense and analytics providers—that operate on our public web pages.
+            <p className="text-[var(--text-muted)]">
+              The Data Fiduciary (or &quot;Data Controller&quot;) responsible for the processing of your personal data is:
+            </p>
+            <div className="p-4 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] text-xs font-mono space-y-1">
+              <div><strong>Entity:</strong> SHP Technology (Operating &quot;FileShare&quot;)</div>
+              <div><strong>Registered Address:</strong> 1st floor, SHP Technology, Near Underground Bridge, Madan Mahal Station, Jabalpur, Madhya Pradesh 482001, India</div>
+              <div><strong>Official Email:</strong> support@fileshare.shptechnology.online</div>
+              <div><strong>Grievance Officer Email:</strong> grievance@fileshare.shptechnology.online</div>
+            </div>
+            <p className="text-[var(--text-muted)]">
+              FileShare operates on a foundational commitment to <strong>data minimization</strong>. You are never required to register an account, create a username, or submit personal phone numbers or government IDs to create or participate in workspaces.
             </p>
           </section>
 
-          {/* Section 2: AdSense & Cookie Disclosures (Required by Google) */}
+          {/* Section 2: Grounds for Processing */}
+          <section className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--border-color)] space-y-3">
+            <h2 className="text-lg font-bold flex items-center gap-2 text-[var(--text-main)]">
+              <Scale className="w-5 h-5 text-blue-400" />
+              2. Lawful Grounds and Specified Purpose of Processing
+            </h2>
+            <p className="text-[var(--text-muted)]">
+              In accordance with Section 4 and Section 6 of India&apos;s DPDP Act 2023 and Article 6 of GDPR, we process digital data strictly for lawful, specified purposes:
+            </p>
+            <ul className="list-disc pl-5 space-y-2 text-xs sm:text-sm text-[var(--text-muted)]">
+              <li>
+                <strong>Provision of Real-Time Workspace Service (Performance of Contract / Consent):</strong> Processing Markdown text edits, Mermaid diagram structures, and file uploads that you voluntarily choose to sync across active collaborators via Server-Sent Events (SSE).
+              </li>
+              <li>
+                <strong>Access Control &amp; Security Verification (Legitimate Use / Specified Purpose):</strong> Processing salted bcrypt hashes of passphrases you voluntarily set to restrict unauthorized entry to protected workspaces.
+              </li>
+              <li>
+                <strong>Platform Integrity, Abuse Prevention &amp; Rate Limiting (Legitimate Interest / Legal Obligation):</strong> Processing transient server IP address logs to prevent Distributed Denial of Service (DDoS) attacks, brute-force access attempts, and malware distribution.
+              </li>
+              <li>
+                <strong>Aggregated Analytics &amp; Advertising (Affirmative Consent):</strong> Processing aggregate, anonymized website visit counts via Google Analytics 4 and serving non-intrusive ads via Google AdSense strictly upon your affirmative consent via Google Consent Mode v2.
+              </li>
+            </ul>
+          </section>
+
+          {/* Section 3: Data Categories Collected */}
+          <section className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--border-color)] space-y-3">
+            <h2 className="text-lg font-bold flex items-center gap-2 text-[var(--text-main)]">
+              <Database className="w-5 h-5 text-[var(--accent-primary)]" />
+              3. Data Collected &amp; Data Minimization Audit
+            </h2>
+            <p className="text-[var(--text-muted)]">
+              Under our strict data minimization architecture, we collect only data that is technically essential for the platform:
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <div className="p-3.5 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] space-y-1">
+                <div className="font-bold text-[var(--text-main)]">Workspace Notes &amp; Text</div>
+                <p className="text-[var(--text-muted)]">
+                  The Markdown notes and diagrams you type in workspaces (<code className="font-mono text-[var(--accent-primary)]">/s/[slug]</code>). Ephemeral and editable live by participants.
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] space-y-1">
+                <div className="font-bold text-[var(--text-main)]">Uploaded Vault Files</div>
+                <p className="text-[var(--text-muted)]">
+                  Files you drag-and-drop into workspace file panels (up to 500MB). Stored securely on encrypted Backblaze B2 cloud storage with delete handles.
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] space-y-1">
+                <div className="font-bold text-[var(--text-main)]">Workspace Passphrase Hashes</div>
+                <p className="text-[var(--text-muted)]">
+                  When you lock a space, we store a one-way, 10-round salted bcrypt cryptographic hash. Plaintext passwords are never stored or recoverable.
+                </p>
+              </div>
+
+              <div className="p-3.5 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] space-y-1">
+                <div className="font-bold text-[var(--text-main)]">Browser Local &amp; Session Storage</div>
+                <p className="text-[var(--text-muted)]">
+                  SessionStorage stores temporary JWT tokens for unlocked spaces (cleared on tab close). LocalStorage stores theme and your cookie consent settings.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* Section 4: Rights of Data Principals (DPDP & GDPR) */}
           <section className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--border-color)] space-y-4">
-            <div className="flex items-center gap-2 text-lg font-semibold text-[var(--text-main)]">
-              <Cookie className="w-5 h-5 text-amber-400" />
-              2. Google AdSense & Third-Party Advertising Policy (Mandatory Disclosure)
-            </div>
-            <p className="text-[var(--text-muted)] leading-relaxed">
-              We partner with Google AdSense to serve advertisements on select editorial and informational pages (such as our Guide, Knowledge Base articles, and About pages). To maintain compliance with Google Publisher Policies, we provide the following disclosures regarding cookies and personalized advertising:
-            </p>
-            <ul className="list-disc pl-5 space-y-2 text-[var(--text-muted)]">
-              <li>
-                <strong>Third-Party Vendors & Cookies:</strong> Third-party vendors, including Google, use cookies to serve ads based on a user&apos;s prior visits to our website or other websites across the Internet.
-              </li>
-              <li>
-                <strong>Advertising Cookies:</strong> Google&apos;s use of advertising cookies enables it and its partners to serve targeted advertisements to our users based on their browsing patterns and visits to FileShare and other digital properties.
-              </li>
-              <li>
-                <strong>Opting Out of Personalized Advertising:</strong> Users may opt out of personalized advertising at any time by visiting <a href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer" className="text-[var(--accent-primary)] underline">Google Ads Settings</a>.
-              </li>
-              <li>
-                <strong>Third-Party Vendor Opt-Out Resources:</strong> Users can also opt out of third-party vendors&apos; use of cookies for personalized advertising by visiting the <a href="https://www.aboutads.info/choices/" target="_blank" rel="noopener noreferrer" className="text-[var(--accent-primary)] underline">Digital Advertising Alliance Choice Page (aboutads.info)</a> or the <a href="https://www.networkadvertising.org/choices/" target="_blank" rel="noopener noreferrer" className="text-[var(--accent-primary)] underline">Network Advertising Initiative (networkadvertising.org)</a>.
-              </li>
-              <li>
-                <strong>No Ads in Active Workspace Tool Canvases:</strong> We strictly ensure that advertisements are never displayed inside private or interactive editing canvases (<code className="font-mono text-xs">/s/[slug]</code>) to maintain user focus and eliminate accidental clicks.
-              </li>
-            </ul>
-          </section>
-
-          {/* Section 3: Information Collected */}
-          <section className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--border-color)] space-y-3">
-            <h2 className="text-lg font-semibold flex items-center gap-2 text-[var(--text-main)]">
-              <Database className="w-4 h-4 text-[var(--accent-primary)]" />
-              3. Information We Collect and Process
+            <h2 className="text-lg font-bold flex items-center gap-2 text-[var(--text-main)]">
+              <UserCheck className="w-5 h-5 text-emerald-400" />
+              4. Your Statutory Rights as a Data Principal
             </h2>
-            <div className="space-y-3 text-[var(--text-muted)]">
-              <p>
-                <strong>A. User-Generated Notes & Workspaces:</strong> Real-time Markdown text, diagrams, and task checklists entered within workspaces (<code className="font-mono text-xs">/s/[slug]</code>) are stored in our persistence database to enable collaborative synchronization.
-              </p>
-              <p>
-                <strong>B. Uploaded Files & Vault Storage:</strong> Files uploaded to workspaces are stored in Backblaze B2 S3-compatible cloud storage with local disk fallbacks. File access requires knowledge of the unique workspace slug and valid passphrase authorization if protected.
-              </p>
-              <p>
-                <strong>C. Cryptographic Passphrase Hashes:</strong> If you lock a workspace, your passphrase is salted and hashed using bcrypt (10 rounds). Plaintext passphrases are never logged or stored.
-              </p>
-              <p>
-                <strong>D. Local Browser Storage:</strong> We use browser <code className="font-mono text-xs">sessionStorage</code> to hold short-lived JWT authorization tokens for locked spaces. This token is destroyed when the browser tab is closed. We use <code className="font-mono text-xs">localStorage</code> solely to remember your light/dark theme preference.
-              </p>
-              <p>
-                <strong>E. Standard Server Logs & Rate Limiting:</strong> For security and denial-of-service protection, our edge servers record standard IP addresses, request timestamps, and bandwidth metrics in ephemeral access logs.
-              </p>
+            <p className="text-[var(--text-muted)]">
+              Under Section 11, 12, 13, and 14 of the DPDP Act 2023 and Chapter III of GDPR, you possess the following actionable rights:
+            </p>
+            <div className="space-y-2.5 text-xs text-[var(--text-muted)]">
+              <div className="p-3 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)]">
+                <strong className="text-[var(--text-main)] block mb-1">A. Right to Access &amp; Summary (Section 11, DPDP Act / Art. 15 GDPR):</strong>
+                You have the right to request a summary of personal data being processed and the identities of any third parties with whom data has been shared.
+              </div>
+              <div className="p-3 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)]">
+                <strong className="text-[var(--text-main)] block mb-1">B. Right to Correction and Erasure (Section 12, DPDP Act / Art. 16 &amp; 17 GDPR):</strong>
+                You can delete uploaded files immediately via the File Explorer trash icon, or erase text in any unlocked workspace. You may also contact our Grievance Officer to request permanent removal of unreferenced workspace records.
+              </div>
+              <div className="p-3 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)]">
+                <strong className="text-[var(--text-main)] block mb-1">C. Right of Grievance Redressal (Section 13, DPDP Act):</strong>
+                You have the right to have your data protection grievances addressed by our designated Grievance Officer within 30 days.
+              </div>
+              <div className="p-3 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)]">
+                <strong className="text-[var(--text-main)] block mb-1">D. Right to Nominate (Section 14, DPDP Act):</strong>
+                Under Indian law, a Data Principal has the right to nominate any other individual who, in the event of death or incapacity, shall exercise your data rights.
+              </div>
+              <div className="p-3 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)]">
+                <strong className="text-[var(--text-main)] block mb-1">E. Right to Withdraw Consent (Section 6[4], DPDP Act / Art. 7 GDPR):</strong>
+                You can withdraw analytics or marketing cookie consent at any time via our Cookie Preferences controller.
+              </div>
             </div>
           </section>
 
-          {/* Section 4: Analytics */}
-          <section className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--border-color)] space-y-3">
-            <h2 className="text-lg font-semibold flex items-center gap-2 text-[var(--text-main)]">
-              <Eye className="w-4 h-4 text-[var(--accent-primary)]" />
-              4. Analytics & Measurement
+          {/* Section 5: Mandatory Grievance Officer Details */}
+          <section className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--accent-primary)] space-y-3">
+            <h2 className="text-lg font-bold flex items-center gap-2 text-[var(--text-main)]">
+              <AlertCircle className="w-5 h-5 text-[var(--accent-primary)]" />
+              5. Designated Grievance Redressal Officer (DPDP Act, 2023 Mandatory Disclosure)
             </h2>
-            <p className="text-[var(--text-muted)] leading-relaxed">
-              We use Google Analytics 4 (GA4) with IP anonymization to understand aggregate website traffic, popular guide pages, and technical device performance. Google Analytics uses first-party cookies to report on visitor interactions without personal identity linkage.
+            <p className="text-[var(--text-muted)]">
+              In accordance with Section 13 of India&apos;s Digital Personal Data Protection Act, 2023, the details of our designated Grievance Officer are published below:
+            </p>
+            <div className="p-4 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] text-xs font-mono space-y-1.5">
+              <div><strong>Name of Officer:</strong> Sandesh Patel</div>
+              <div><strong>Designation:</strong> Data Protection &amp; Grievance Redressal Officer</div>
+              <div><strong>Entity:</strong> SHP Technology</div>
+              <div><strong>Office Address:</strong> 1st floor, SHP Technology, Near Underground Bridge, Madan Mahal Station, Jabalpur, Madhya Pradesh 482001, India</div>
+              <div><strong>Dedicated Email:</strong> grievance@fileshare.shptechnology.online</div>
+              <div><strong>Acknowledgment SLA:</strong> Within 48 hours</div>
+              <div><strong>Resolution SLA:</strong> Within 30 calendar days</div>
+            </div>
+            <p className="text-xs text-[var(--text-muted)]">
+              If you are not satisfied with the resolution provided by our Grievance Officer, you have the right to register an appeal with the <strong>Data Protection Board of India (DPBI)</strong> in accordance with the DPDP Rules. European residents also maintain the right to lodge a complaint with their local supervisory Data Protection Authority (DPA).
             </p>
           </section>
 
-          {/* Section 5: Data Retention & Deletion */}
+          {/* Section 6: Children's Data */}
           <section className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--border-color)] space-y-3">
-            <h2 className="text-lg font-semibold flex items-center gap-2 text-[var(--text-main)]">
-              <Lock className="w-4 h-4 text-[var(--accent-primary)]" />
-              5. Data Retention, Ephemeral Storage & Deletion Rights
+            <h2 className="text-lg font-bold flex items-center gap-2 text-[var(--text-main)]">
+              <Lock className="w-5 h-5 text-amber-400" />
+              6. Protection of Children&apos;s Personal Data (Section 9, DPDP Act)
             </h2>
-            <p className="text-[var(--text-muted)] leading-relaxed">
-              FileShare workspaces are intended as agile, ephemeral collaboration environments. Inactive workspaces with no edits or visits over an extended period (typically 30 to 90 days) may be automatically purged during routine database hygiene.
+            <p className="text-[var(--text-muted)]">
+              In strict adherence to Section 9 of the DPDP Act 2023 and Article 8 of GDPR:
             </p>
-            <p className="text-[var(--text-muted)] leading-relaxed">
-              <strong>User Deletion:</strong> Any user with administrative access to a workspace can delete uploaded files immediately by clicking the delete icon in the File Explorer panel. To request permanent deletion of an inactive workspace, email <a href="mailto:support@fileshare.shptechnology.online" className="text-[var(--accent-primary)] underline">support@fileshare.shptechnology.online</a>.
-            </p>
-          </section>
-
-          {/* Section 6: GDPR & CCPA Rights */}
-          <section className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--border-color)] space-y-3">
-            <h2 className="text-lg font-semibold flex items-center gap-2 text-[var(--text-main)]">
-              <AlertCircle className="w-4 h-4 text-[var(--accent-primary)]" />
-              6. Your Privacy Rights (GDPR & CCPA)
-            </h2>
-            <p className="text-[var(--text-muted)] leading-relaxed">
-              Depending on your location, you may possess statutory rights regarding personal data:
-            </p>
-            <ul className="list-disc pl-5 space-y-1.5 text-[var(--text-muted)]">
-              <li><strong>Right of Access & Portability:</strong> You may export notes and download uploaded files at any time directly through the interface.</li>
-              <li><strong>Right to Erasure (&quot;Right to be Forgotten&quot;):</strong> You may request deletion of any content uploaded to FileShare.</li>
-              <li><strong>Right to Object & Opt-Out:</strong> You may opt out of personalized ad targeting using the tools described in Section 2.</li>
-              <li><strong>Non-Discrimination:</strong> We do not discriminate against users who exercise their privacy rights.</li>
+            <ul className="list-disc pl-5 space-y-1.5 text-xs text-[var(--text-muted)]">
+              <li>FileShare does not knowingly process, profile, or track children under 18 years of age.</li>
+              <li>We do not undertake behavioral tracking or targeted advertising directed at children.</li>
+              <li>We do not process personal data that is likely to cause any detrimental effect on the well-being of a child.</li>
+              <li>If a parent or legal guardian discovers that a child has uploaded personal data, they may contact <code className="font-mono text-xs">grievance@fileshare.shptechnology.online</code> for immediate expedited erasure.</li>
             </ul>
           </section>
 
-          {/* Section 7: Contact */}
-          <section className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--border-color)] space-y-2">
-            <h2 className="text-lg font-semibold text-[var(--text-main)]">7. Privacy Inquiries & Data Protection Contact</h2>
-            <p className="text-[var(--text-muted)] leading-relaxed">
-              If you have any questions, concerns, or requests regarding this Privacy Policy or our cookie practices, please contact our Data Protection representative:
+          {/* Section 7: Third-Party Data Transfers & Cross-Border Hosting */}
+          <section className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--border-color)] space-y-3">
+            <h2 className="text-lg font-bold flex items-center gap-2 text-[var(--text-main)]">
+              <Globe className="w-5 h-5 text-[var(--accent-primary)]" />
+              7. Cross-Border Data Transfers &amp; Third-Party Services
+            </h2>
+            <p className="text-[var(--text-muted)]">
+              To operate a globally synchronized, high-speed workspace platform, we utilize trusted cloud infrastructure:
             </p>
-            <p className="text-xs font-mono text-[var(--accent-primary)] pt-1">
-              Email: support@fileshare.shptechnology.online
+            <ul className="list-disc pl-5 space-y-1.5 text-xs text-[var(--text-muted)]">
+              <li><strong>Cloud Storage (Backblaze B2 / AWS S3):</strong> Encrypted object storage located in secure ISO 27001/SOC 2 certified data centers with transport-layer encryption (TLS 1.3).</li>
+              <li><strong>Hosting &amp; Edge CDN:</strong> Cloud infrastructure with automated DDoS mitigation and containerized isolation.</li>
+              <li><strong>Google AdSense &amp; Analytics:</strong> Operated by Google LLC. Analytics IP anonymization is permanently enabled and advertising storage is governed strictly by Google Consent Mode v2.</li>
+            </ul>
+          </section>
+
+          {/* Section 8: Cookies Management CTA */}
+          <section className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--border-color)] space-y-3">
+            <h2 className="text-lg font-bold flex items-center gap-2 text-[var(--text-main)]">
+              <Cookie className="w-5 h-5 text-[var(--accent-primary)]" />
+              8. Cookie Management
+            </h2>
+            <p className="text-[var(--text-muted)]">
+              For complete details regarding the exact cookies we use and how to block them, please consult our dedicated{" "}
+              <Link href="/cookies" className="text-[var(--accent-primary)] underline hover:text-[var(--text-main)]">
+                Cookie Policy
+              </Link>.
             </p>
-            <p className="text-xs text-[var(--text-subtle)]">
-              FileShare Privacy & Compliance Office
-            </p>
+            <div className="pt-2">
+              <CookieSettingsButton />
+            </div>
           </section>
         </div>
       </main>
@@ -180,19 +256,19 @@ export default function PrivacyPage() {
       {/* Footer */}
       <footer className="border-t border-[var(--border-color)] py-8 bg-[var(--header-bg)]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--text-muted)]">
-          <p>© 2026 FileShare. Engineered for speed, privacy, and frictionless collaboration.</p>
+          <p>© 2026 FileShare (SHP Technology). GDPR &amp; India DPDP Act 2023 Compliant.</p>
           <div className="flex flex-wrap items-center gap-3">
             <Link href="/" className="hover:text-[var(--text-main)] transition-colors">Home</Link>
             <span>•</span>
-            <Link href="/about" className="hover:text-[var(--text-main)] transition-colors">About</Link>
-            <span>•</span>
-            <Link href="/guide" className="hover:text-[var(--text-main)] transition-colors">Guide</Link>
-            <span>•</span>
-            <Link href="/resources" className="hover:text-[var(--text-main)] transition-colors">Resources</Link>
-            <span>•</span>
-            <Link href="/contact" className="hover:text-[var(--text-main)] transition-colors">Contact</Link>
+            <Link href="/privacy" className="hover:text-[var(--text-main)] transition-colors">Privacy</Link>
             <span>•</span>
             <Link href="/terms" className="hover:text-[var(--text-main)] transition-colors">Terms</Link>
+            <span>•</span>
+            <Link href="/cookies" className="hover:text-[var(--text-main)] transition-colors">Cookies</Link>
+            <span>•</span>
+            <Link href="/refund" className="hover:text-[var(--text-main)] transition-colors">Refund Policy</Link>
+            <span>•</span>
+            <Link href="/contact" className="hover:text-[var(--text-main)] transition-colors">Contact</Link>
           </div>
         </div>
       </footer>

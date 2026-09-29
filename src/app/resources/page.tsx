@@ -4,6 +4,7 @@ import { FileText, BookOpen, Clock, Tag, ArrowRight, ShieldCheck, Sparkles, Comp
 import { getAllArticles } from "@/lib/articles";
 import { AdSenseScript } from "@/components/ads/AdSenseScript";
 import { AdBanner } from "@/components/ads/AdBanner";
+import { CookieSettingsButton } from "@/components/ui/CookieConsent";
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://fileshare.shptechnology.online";
 
@@ -138,7 +139,7 @@ export default function ResourcesPage() {
       {/* Footer */}
       <footer className="border-t border-[var(--border-color)] py-8 bg-[var(--header-bg)]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--text-muted)]">
-          <p>© 2026 FileShare. High-velocity collaborative workspaces & secure file vaults.</p>
+          <p>© 2026 FileShare (SHP Technology). High-velocity collaborative workspaces &amp; secure file vaults.</p>
           <div className="flex flex-wrap items-center gap-3">
             <Link href="/" className="hover:text-[var(--text-main)] transition-colors">Home</Link>
             <span>•</span>
@@ -148,9 +149,15 @@ export default function ResourcesPage() {
             <span>•</span>
             <Link href="/contact" className="hover:text-[var(--text-main)] transition-colors">Contact</Link>
             <span>•</span>
-            <Link href="/privacy" className="hover:text-[var(--text-main)] transition-colors">Privacy</Link>
+            <Link href="/privacy" className="hover:text-[var(--text-main)] transition-colors">Privacy Policy</Link>
             <span>•</span>
-            <Link href="/terms" className="hover:text-[var(--text-main)] transition-colors">Terms</Link>
+            <Link href="/terms" className="hover:text-[var(--text-main)] transition-colors">Terms &amp; Conditions</Link>
+            <span>•</span>
+            <Link href="/cookies" className="hover:text-[var(--text-main)] transition-colors">Cookie Policy</Link>
+            <span>•</span>
+            <Link href="/refund" className="hover:text-[var(--text-main)] transition-colors">Refund Policy</Link>
+            <span>•</span>
+            <CookieSettingsButton />
           </div>
         </div>
       </footer>
