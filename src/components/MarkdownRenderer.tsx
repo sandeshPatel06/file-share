@@ -1,10 +1,11 @@
 "use client";
-import React, { isValidElement } from "react";
+import React, { isValidElement, cloneElement, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import rehypeHighlight from "rehype-highlight";
 import rehypeSlug from "rehype-slug";
+import { Copy, Check } from "lucide-react";
 import { MermaidRenderer } from "@/components/MermaidRenderer";
 
 interface MarkdownRendererProps {
@@ -15,13 +16,16 @@ interface MarkdownRendererProps {
 /**
  * Full-featured Markdown renderer supporting:
  * - GitHub Flavored Markdown (tables, task lists, strikethrough, autolinks)
- * - Syntax-highlighted fenced code blocks
+ * - Syntax-highlighted fenced code blocks with language badge & copy button
  * - Mermaid diagrams via ```mermaid fences
  * - Raw HTML passthrough (for embedded rich content)
  * - Heading anchor IDs (`rehype-slug`)
+ * - Bidirectional page links (`[[slug]]`)
  */
 export function MarkdownRenderer({ content, onToggleTask }: MarkdownRendererProps) {
-  if (!content.trim()) {
+  const safeContent = typeof content === "string" ? content : "";
+
+  if (!safeContent.trim()) {
     return (
       <div className="h-full flex items-center justify-center text-xs font-mono text-[var(--text-subtle)] italic select-none">
         Empty notes preview. Start typing in Write mode…
@@ -29,8 +33,7 @@ export function MarkdownRenderer({ content, onToggleTask }: MarkdownRendererProp
     );
   }
 
-  // Feature 4: Bidirectional Page Linking
-  // Convert [[slug]] to [slug](/s/slug) outside of code blocks
+  // Bidirectional Page Linking: convert [[slug]] to [slug](/s/slug) outside code fences
   const parseBidirectionalLinks = (text: string) => {
     const parts = text.split(/(```[\s\S]*?```)/g);
     for (let i = 0; i < parts.length; i++) {
@@ -38,7 +41,7 @@ export function MarkdownRenderer({ content, onToggleTask }: MarkdownRendererProp
         const inlineParts = parts[i].split(/(`[^`]+`)/g);
         for (let j = 0; j < inlineParts.length; j++) {
           if (j % 2 === 0) {
-            inlineParts[j] = inlineParts[j].replace(/\[\[(.*?)\]\]/g, (match, p1) => {
+            inlineParts[j] = inlineParts[j].replace(/\[\[(.*?)\]\]/g, (_match, p1) => {
               const cleanSlug = p1.trim();
               return `[${cleanSlug}](/s/${cleanSlug})`;
             });
@@ -50,7 +53,7 @@ export function MarkdownRenderer({ content, onToggleTask }: MarkdownRendererProp
     return parts.join("");
   };
 
-  const parsedContent = parseBidirectionalLinks(content);
+  const parsedContent = parseBidirectionalLinks(safeContent);
 
   return (
     <div className="max-w-none text-sm leading-relaxed text-[var(--text-main)] select-text markdown-body">
@@ -58,51 +61,71 @@ export function MarkdownRenderer({ content, onToggleTask }: MarkdownRendererProp
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeRaw, rehypeHighlight, rehypeSlug]}
         components={{
-          // ── Code blocks: detect mermaid fences ──
-          code({ className, children, ...props }) {
-            const match = /language-(\w+)/.exec(className || "");
+          // ── Fenced code blocks container ──
+          pre({ children }) {
+            const codeElement = isValidElement(children)
+              ? children
+              : Array.isArray(children) && isValidElement(children[0])
+              ? children[0]
+              : null;
+            const className = (codeElement?.props as { className?: string } | undefined)?.className || "";
+            const match = /language-(\w+)/.exec(className);
             const lang = match?.[1];
-            const codeStr = String(children).replace(/\n$/, "");
+            const rawCode = extractText(children).replace(/\n$/, "");
 
             // Mermaid diagram block
             if (lang === "mermaid") {
-              return <MermaidRenderer chart={codeStr} />;
+              return <MermaidRenderer chart={rawCode} />;
             }
 
-            // Inline code (no language class)
-            if (!lang) {
+            return (
+              <div className="my-3 rounded-xl border border-[var(--border-color)] overflow-hidden bg-[var(--input-bg)] shadow-sm">
+                <div className="flex items-center justify-between px-3.5 py-1.5 bg-[var(--bg-surface)] border-b border-[var(--border-color)] select-none">
+                  <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--text-muted)] font-extrabold">
+                    {lang || "code"}
+                  </span>
+                  <CopyCodeButton code={rawCode} />
+                </div>
+                <pre className="p-3.5 overflow-x-auto text-xs md:text-sm font-mono leading-relaxed m-0 bg-transparent text-[var(--text-main)]">
+                  {isValidElement(children)
+                    ? cloneElement(children as React.ReactElement<{ isBlock?: boolean }>, { isBlock: true })
+                    : children}
+                </pre>
+              </div>
+            );
+          },
+
+          // ── Code element: handles block code inside pre and inline code ──
+          code({ className, children, isBlock, node, ...props }: {
+            className?: string;
+            children?: React.ReactNode;
+            node?: unknown;
+            isBlock?: boolean;
+          } & React.HTMLAttributes<HTMLElement>) {
+            void node;
+            if (isBlock) {
               return (
-                <code
-                  className="px-1.5 py-0.5 rounded-md bg-[var(--input-bg)] border border-[var(--border-color)] font-mono text-[0.8125rem] text-[var(--accent-cyan)] font-bold"
-                  {...props}
-                >
+                <code className={`${className || ""} bg-transparent p-0 block font-mono`} {...props}>
                   {children}
                 </code>
               );
             }
 
-            // Fenced code block with syntax highlighting
+            // Inline code (not wrapped in a pre block)
             return (
-              <div className="my-2.5 rounded-xl border border-[var(--border-color)] overflow-hidden">
-                <div className="flex items-center justify-between px-3 py-1 bg-[var(--bg-surface)] border-b border-[var(--border-color)]">
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--text-muted)] font-extrabold">
-                    {lang}
-                  </span>
-                  <CopyCodeButton code={codeStr} />
-                </div>
-                <pre className="p-3 bg-[var(--input-bg)] overflow-x-auto text-xs md:text-sm font-mono leading-relaxed">
-                  <code className={`hljs language-${lang} bg-transparent`} {...props}>
-                    {codeStr}
-                  </code>
-                </pre>
-              </div>
+              <code
+                className="px-1.5 py-0.5 rounded-md bg-[var(--input-bg)] border border-[var(--border-color)] font-mono text-[0.8125rem] text-[var(--accent-cyan)] font-semibold"
+                {...props}
+              >
+                {children}
+              </code>
             );
           },
 
           // ── Tables ──
           table({ children }) {
             return (
-              <div className="my-2.5 overflow-x-auto rounded-xl border border-[var(--border-color)]">
+              <div className="my-3 overflow-x-auto rounded-xl border border-[var(--border-color)] shadow-sm">
                 <table className="min-w-full text-xs md:text-sm border-collapse">{children}</table>
               </div>
             );
@@ -120,14 +143,14 @@ export function MarkdownRenderer({ content, onToggleTask }: MarkdownRendererProp
           },
           th({ children, style }) {
             return (
-              <th style={style} className="px-2.5 py-1.5 text-left text-[11px] font-extrabold uppercase tracking-wider text-[var(--text-muted)] border-r border-[var(--border-color)] last:border-r-0">
+              <th style={style} className="px-3 py-2 text-left text-[11px] font-extrabold uppercase tracking-wider text-[var(--text-muted)] border-r border-[var(--border-color)] last:border-r-0">
                 {children}
               </th>
             );
           },
           td({ children, style }) {
             return (
-              <td style={style} className="px-2.5 py-1.5 border-r border-[var(--border-color)] last:border-r-0">
+              <td style={style} className="px-3 py-2 border-r border-[var(--border-color)] last:border-r-0">
                 {children}
               </td>
             );
@@ -136,7 +159,7 @@ export function MarkdownRenderer({ content, onToggleTask }: MarkdownRendererProp
           // ── Blockquotes ──
           blockquote({ children }) {
             return (
-              <blockquote className="my-2.5 pl-3.5 border-l-4 border-[var(--accent-indigo)] bg-[var(--badge-bg)] text-[var(--text-main)] italic rounded-r-xl py-1.5 pr-3">
+              <blockquote className="my-3 pl-4 border-l-4 border-[var(--accent-indigo)] bg-[var(--badge-bg)] text-[var(--text-main)] italic rounded-r-xl py-2 pr-4">
                 {children}
               </blockquote>
             );
@@ -164,7 +187,7 @@ export function MarkdownRenderer({ content, onToggleTask }: MarkdownRendererProp
               <img
                 src={src}
                 alt={alt || ""}
-                className="my-2.5 rounded-xl max-w-full h-auto border border-[var(--border-color)] shadow-md"
+                className="my-3 rounded-xl max-w-full h-auto border border-[var(--border-color)] shadow-md"
                 loading="lazy"
               />
             );
@@ -178,28 +201,28 @@ export function MarkdownRenderer({ content, onToggleTask }: MarkdownRendererProp
           // ── Headings ──
           h1({ children, id }) {
             return (
-              <h1 id={id} className="text-xl md:text-2xl font-extrabold tracking-tight text-[var(--text-main)] pb-1 border-b border-[var(--border-color)] mt-4 mb-2">
+              <h1 id={id} className="text-xl md:text-2xl font-extrabold tracking-tight text-[var(--text-main)] pb-1.5 border-b border-[var(--border-color)] mt-5 mb-2.5">
                 {children}
               </h1>
             );
           },
           h2({ children, id }) {
             return (
-              <h2 id={id} className="text-lg md:text-xl font-bold tracking-tight text-[var(--text-main)] pb-0.5 border-b border-[var(--border-color)]/60 mt-3.5 mb-1.5">
+              <h2 id={id} className="text-lg md:text-xl font-bold tracking-tight text-[var(--text-main)] pb-1 border-b border-[var(--border-color)]/60 mt-4 mb-2">
                 {children}
               </h2>
             );
           },
           h3({ children, id }) {
             return (
-              <h3 id={id} className="text-base md:text-lg font-bold text-[var(--accent-indigo)] mt-3 mb-1">
+              <h3 id={id} className="text-base md:text-lg font-bold text-[var(--accent-indigo)] mt-3.5 mb-1.5">
                 {children}
               </h3>
             );
           },
           h4({ children, id }) {
             return (
-              <h4 id={id} className="text-sm md:text-base font-bold text-[var(--text-main)] mt-2.5 mb-1">
+              <h4 id={id} className="text-sm md:text-base font-bold text-[var(--text-main)] mt-3 mb-1">
                 {children}
               </h4>
             );
@@ -207,15 +230,15 @@ export function MarkdownRenderer({ content, onToggleTask }: MarkdownRendererProp
 
           // ── Lists ──
           ul({ children }) {
-            return <ul className="my-1.5 pl-5 space-y-0.5 list-disc marker:text-[var(--accent-primary)]">{children}</ul>;
+            return <ul className="my-2 pl-5 space-y-1 list-disc marker:text-[var(--accent-primary)]">{children}</ul>;
           },
           ol({ children }) {
-            return <ol className="my-1.5 pl-5 space-y-0.5 list-decimal marker:text-[var(--text-muted)] marker:font-bold">{children}</ol>;
+            return <ol className="my-2 pl-5 space-y-1 list-decimal marker:text-[var(--text-muted)] marker:font-bold">{children}</ol>;
           },
           li({ children }) {
             const hasTask = hasTaskCheckbox(children);
             if (hasTask) {
-              return <li className="my-0.5 list-none -ml-5">{children}</li>;
+              return <li className="my-1 list-none -ml-5 flex items-start gap-1">{children}</li>;
             }
             return <li className="my-0.5 pl-1">{children}</li>;
           },
@@ -235,7 +258,8 @@ export function MarkdownRenderer({ content, onToggleTask }: MarkdownRendererProp
                     }
                   }}
                   id={id}
-                  className={`rounded accent-[var(--accent-primary)] mr-2 align-middle ${onToggleTask ? 'cursor-pointer' : ''}`}
+                  aria-label="Toggle task checklist item"
+                  className={`rounded accent-[var(--accent-primary)] mr-2 mt-1 align-middle ${onToggleTask ? 'cursor-pointer' : ''}`}
                 />
               );
             }
@@ -244,10 +268,10 @@ export function MarkdownRenderer({ content, onToggleTask }: MarkdownRendererProp
 
           // ── Paragraphs ──
           p({ children }) {
-            if (isValidElement(children) && children.type === "img") {
+            if (isValidElement(children) && (children.type === "img" || (children as { type?: unknown }).type === "div")) {
               return <>{children}</>;
             }
-            return <p className="my-1.5 leading-relaxed">{children}</p>;
+            return <p className="my-2 leading-relaxed">{children}</p>;
           },
 
           // ── Strong / Bold ──
@@ -274,6 +298,22 @@ export function MarkdownRenderer({ content, onToggleTask }: MarkdownRendererProp
 
 // ── Helpers ──
 
+/**
+ * Recursively extracts plain text from React nodes, strings, and elements.
+ * Critical for syntax-highlighted code blocks where children are AST span elements.
+ */
+function extractText(node: React.ReactNode): string {
+  if (typeof node === "string") return node;
+  if (typeof node === "number") return String(node);
+  if (!node) return "";
+  if (Array.isArray(node)) return node.map(extractText).join("");
+  if (isValidElement(node)) {
+    const props = node.props as { children?: React.ReactNode };
+    return extractText(props.children);
+  }
+  return "";
+}
+
 function hasTaskCheckbox(children: React.ReactNode): boolean {
   if (!children) return false;
   if (isValidElement(children)) {
@@ -292,7 +332,7 @@ function hasTaskCheckbox(children: React.ReactNode): boolean {
 }
 
 function CopyCodeButton({ code }: { code: string }) {
-  const [copied, setCopied] = React.useState(false);
+  const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
     try {
@@ -310,18 +350,32 @@ function CopyCodeButton({ code }: { code: string }) {
         document.execCommand("copy");
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
       document.body.removeChild(textarea);
     }
   };
 
   return (
     <button
+      type="button"
       onClick={handleCopy}
-      className="text-[10px] font-bold uppercase tracking-wide text-[var(--text-muted)] hover:text-[var(--accent-indigo)] transition-colors cursor-pointer px-2 py-0.5 rounded-md hover:bg-[var(--badge-bg)]"
-      title="Copy code"
+      aria-label={copied ? "Code copied to clipboard" : "Copy code to clipboard"}
+      className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors cursor-pointer px-2 py-0.5 rounded-md hover:bg-[var(--bg-main)]"
+      title={copied ? "Copied!" : "Copy code"}
     >
-      {copied ? "Copied!" : "Copy"}
+      {copied ? (
+        <>
+          <Check className="w-3 h-3 text-[var(--accent-primary)]" aria-hidden="true" />
+          <span className="text-[var(--accent-primary)]">Copied</span>
+        </>
+      ) : (
+        <>
+          <Copy className="w-3 h-3" aria-hidden="true" />
+          <span>Copy</span>
+        </>
+      )}
     </button>
   );
 }

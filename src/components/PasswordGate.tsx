@@ -62,18 +62,24 @@ export function PasswordGate({ slug, onUnlocked }: PasswordGateProps) {
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="relative">
+              <label htmlFor="password-gate-input" className="sr-only">
+                Workspace Passphrase
+              </label>
               <input
                 autoFocus
+                id="password-gate-input"
+                name="password"
                 type={showPw ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter password..."
+                aria-label="Workspace password"
                 className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] focus:border-[var(--accent-primary)] focus:ring-2 focus:ring-[var(--border-glow)] rounded-2xl px-4 py-3.5 pr-12 text-sm text-[var(--text-main)] placeholder-[var(--text-subtle)] outline-none font-mono"
               />
               <button
                 type="button"
-                tabIndex={-1}
                 onClick={() => setShowPw(!showPw)}
+                aria-label={showPw ? "Hide password" : "Show password"}
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer"
               >
                 {showPw ? <EyeOff size={18} /> : <Eye size={18} />}

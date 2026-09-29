@@ -4,6 +4,7 @@ import Script from "next/script";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ToastProvider } from "@/components/ui/Toast";
+import { CookieConsent } from "@/components/ui/CookieConsent";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -126,6 +127,18 @@ export default function RootLayout({
       "Custom workspace URL slugs",
       "Zero registration required"
     ],
+    "publisher": {
+      "@type": "Organization",
+      "name": "SHP Technology",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "1st floor, SHP Technology, Near Underground Bridge, Madan Mahal Station",
+        "addressLocality": "Jabalpur",
+        "addressRegion": "Madhya Pradesh",
+        "postalCode": "482001",
+        "addressCountry": "IN"
+      }
+    }
   };
 
   return (
@@ -150,6 +163,19 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
+        {/* Google Consent Mode v2 Initialization (GDPR & DPDP Act 2023 Default Denied) */}
+        <Script id="google-consent-mode" strategy="beforeInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('consent', 'default', {
+              'analytics_storage': 'denied',
+              'ad_storage': 'denied',
+              'ad_user_data': 'denied',
+              'ad_personalization': 'denied'
+            });
+          `}
+        </Script>
         {/* Google Analytics (gtag.js) */}
         <Script
           src="https://www.googletagmanager.com/gtag/js?id=G-QJ7L4HP72G"
@@ -161,25 +187,31 @@ export default function RootLayout({
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
 
-            gtag('config', 'G-QJ7L4HP72G');
+            gtag('config', 'G-QJ7L4HP72G', {
+              anonymize_ip: true
+            });
           `}
         </Script>
-        {/* Google AdSense */}
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4947821599815451"
-          crossOrigin="anonymous"
-        />
+        {/* Google AdSense Site Verification (Script loaded conditionally on content-rich pages) */}
         <meta name="google-adsense-account" content="ca-pub-4947821599815451" />
       </head>
       <body className="antialiased bg-[var(--bg-main)] text-[var(--text-main)] min-h-dvh font-sans transition-colors duration-200">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-[var(--accent-primary)] focus:text-white focus:rounded-md focus:shadow-lg focus:outline-none"
+        >
+          Skip to main content
+        </a>
         <ThemeProvider
           attribute="class"
           defaultTheme={process.env.NEXT_PUBLIC_DEFAULT_THEME || "dark"}
           enableSystem={false}
         >
-          {children}
+          <div id="main-content" tabIndex={-1} className="outline-none min-h-dvh flex flex-col">
+            {children}
+          </div>
           <ToastProvider />
+          <CookieConsent />
         </ThemeProvider>
       </body>
     </html>

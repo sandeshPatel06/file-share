@@ -1,24 +1,11 @@
 import type { MetadataRoute } from "next";
-import db from "@/lib/db";
-
-interface PageRow {
-  slug: string;
-  updatedAt: string | null;
-}
+import { getAllArticles } from "@/lib/articles";
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://fileshare.shptechnology.online";
 
-const DEFAULT_FEATURED_SLUGS = [
-  "general",
-  "notes",
-  "welcome",
-  "sandbox",
-  "code",
-  "workspace",
-  "scratchpad",
-];
+export default function sitemap(): MetadataRoute.Sitemap {
+  const articles = getAllArticles();
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const routes: MetadataRoute.Sitemap = [
     {
       url: appUrl,
@@ -39,6 +26,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     },
     {
+      url: `${appUrl}/resources`,
+      lastModified: new Date(),
+      changeFrequency: "daily",
+      priority: 0.9,
+    },
+    {
+      url: `${appUrl}/contact`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
       url: `${appUrl}/privacy`,
       lastModified: new Date(),
       changeFrequency: "monthly",
@@ -50,49 +49,28 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly",
       priority: 0.7,
     },
+    {
+      url: `${appUrl}/cookies`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
+    {
+      url: `${appUrl}/refund`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
   ];
 
-  try {
-    // Fetch public non-password-protected pages
-    const pages = (await db
-      .prepare("SELECT slug, updatedAt FROM pages WHERE isProtected = 0 ORDER BY updatedAt DESC LIMIT 500")
-      .all()) as PageRow[];
-
-    const addedSlugs = new Set<string>();
-
-    // Add public database pages
-    for (const page of pages) {
-      if (!page.slug) continue;
-      addedSlugs.add(page.slug);
-      routes.push({
-        url: `${appUrl}/s/${encodeURIComponent(page.slug)}`,
-        lastModified: page.updatedAt ? new Date(page.updatedAt) : new Date(),
-        changeFrequency: "hourly",
-        priority: 0.8,
-      });
-    }
-
-    // Add featured default starter workspaces if not already in DB
-    for (const featured of DEFAULT_FEATURED_SLUGS) {
-      if (!addedSlugs.has(featured)) {
-        routes.push({
-          url: `${appUrl}/s/${featured}`,
-          lastModified: new Date(),
-          changeFrequency: "daily",
-          priority: 0.7,
-        });
-      }
-    }
-  } catch {
-    // Fallback if database query fails during build
-    for (const featured of DEFAULT_FEATURED_SLUGS) {
-      routes.push({
-        url: `${appUrl}/s/${featured}`,
-        lastModified: new Date(),
-        changeFrequency: "daily",
-        priority: 0.7,
-      });
-    }
+  // Add all comprehensive high-value engineering resources and articles
+  for (const article of articles) {
+    routes.push({
+      url: `${appUrl}/resources/${article.slug}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.85,
+    });
   }
 
   return routes;

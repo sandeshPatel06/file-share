@@ -8,10 +8,14 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/api/"],
+        disallow: ["/api/", "/s/"],
       },
       {
         userAgent: "Mediapartners-Google",
+        allow: "/",
+      },
+      {
+        userAgent: "Google-Display-Ads-Bot",
         allow: "/",
       },
     ],

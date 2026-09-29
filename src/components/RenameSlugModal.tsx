@@ -99,7 +99,7 @@ export function RenameSlugModal({ open, onClose, slug, token }: RenameSlugModalP
 
         {/* New Slug Input */}
         <div>
-          <label className="block text-xs font-bold text-[var(--text-muted)] mb-1 font-mono">
+          <label htmlFor="new-slug-input" className="block text-xs font-bold text-[var(--text-muted)] mb-1 font-mono">
             New Workspace URL
           </label>
           <div className="relative flex items-center">
@@ -108,6 +108,9 @@ export function RenameSlugModal({ open, onClose, slug, token }: RenameSlugModalP
             </span>
             <input
               autoFocus
+              id="new-slug-input"
+              name="newSlug"
+              aria-label="Enter new workspace URL slug"
               value={newSlug}
               onChange={(e) => handleSlugChange(e.target.value.toLowerCase())}
               onKeyDown={(e) => {

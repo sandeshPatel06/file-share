@@ -12,6 +12,9 @@ import { showToast } from "@/components/ui/Toast";
 import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
+import { createPortal } from "react-dom";
+import { computePosition, flip, shift, offset } from "@floating-ui/dom";
+import { getCaretCoordinates } from "@/lib/caret";
 
 interface TextEditorProps {
   slug: string;
@@ -74,12 +77,18 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
   const [showOutline, setShowOutline]       = useState(false);
   
   // Slash Commands state
-  const [slashMenu, setSlashMenu] = useState<{ open: boolean; filter: string; activeIndex: number }>({ 
-    open: false, filter: "", activeIndex: 0 
+  const [slashMenu, setSlashMenu] = useState<{
+    open: boolean;
+    filter: string;
+    activeIndex: number;
+    slashIndex: number;
+  }>({ 
+    open: false, filter: "", activeIndex: 0, slashIndex: 0 
   });
 
   const fileInputRef    = useRef<HTMLInputElement>(null);
   const textareaRef     = useRef<HTMLTextAreaElement>(null);
+  const slashMenuRef    = useRef<HTMLDivElement>(null);
   const lineNumbersRef  = useRef<HTMLDivElement>(null);
   const previewRef      = useRef<HTMLDivElement>(null);
   const statusEl        = useRef<HTMLDivElement>(null);
@@ -163,14 +172,21 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
     const lastLine = textBeforeCursor.split('\n').pop() || "";
     
     // If the line starts with an optional whitespace and a slash, followed by alphabetical chars
-    if (lastLine.match(/^\s*\/[a-zA-Z]*$/)) {
+    const match = lastLine.match(/^(\s*)\/([a-zA-Z]*)$/);
+    if (match) {
+      const leadingSpaces = match[1];
+      const filter = match[2].toLowerCase();
+      const lineStart = cursor - lastLine.length;
+      const slashIndex = lineStart + leadingSpaces.length;
+
       setSlashMenu(prev => ({ 
         open: true, 
-        filter: lastLine.replace(/^\s*\//, "").toLowerCase(), 
-        activeIndex: prev.open ? prev.activeIndex : 0 
+        filter, 
+        activeIndex: prev.open ? prev.activeIndex : 0,
+        slashIndex,
       }));
     } else {
-      setSlashMenu({ open: false, filter: "", activeIndex: 0 });
+      setSlashMenu({ open: false, filter: "", activeIndex: 0, slashIndex: 0 });
     }
   };
 
@@ -181,10 +197,105 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
     { id: "h3", icon: <Heading3 size={14} />, label: "Heading 3", insert: "### " },
     { id: "todo", icon: <CheckSquare size={14} />, label: "To-do list", insert: "- [ ] " },
     { id: "ul", icon: <List size={14} />, label: "Bulleted list", insert: "- " },
+    { id: "ol", icon: <ListOrdered size={14} />, label: "Numbered list", insert: "1. " },
+    { id: "quote", icon: <Quote size={14} />, label: "Blockquote", insert: "> " },
     { id: "code", icon: <Code size={14} />, label: "Code block", insert: "```\n\n```" },
     { id: "table", icon: <Table size={14} />, label: "Table", insert: "| Header 1 | Header 2 |\n| :--- | :--- |\n| Cell 1 | Cell 2 |\n" }
   ];
   const filteredSlashOptions = slashOptions.filter(o => o.label.toLowerCase().includes(slashMenu.filter));
+
+  const updateSlashMenuPosition = useCallback(() => {
+    const textarea = textareaRef.current;
+    const menuEl = slashMenuRef.current;
+    if (!textarea || !menuEl || !slashMenu.open) return;
+
+    const coords = getCaretCoordinates(textarea, slashMenu.slashIndex);
+    const rect = textarea.getBoundingClientRect();
+
+    const caretX = rect.left + coords.left - textarea.scrollLeft;
+    const caretY = rect.top + coords.top - textarea.scrollTop;
+
+    // If caret is scrolled outside visible textarea boundary, close
+    if (
+      caretY < rect.top - coords.height ||
+      caretY > rect.bottom ||
+      caretX < rect.left ||
+      caretX > rect.right
+    ) {
+      setSlashMenu({ open: false, filter: "", activeIndex: 0, slashIndex: 0 });
+      return;
+    }
+
+    const virtualElement = {
+      getBoundingClientRect() {
+        return {
+          x: caretX,
+          y: caretY,
+          top: caretY,
+          bottom: caretY + coords.height,
+          left: caretX,
+          right: caretX,
+          width: 0,
+          height: coords.height,
+        };
+      },
+    };
+
+    computePosition(virtualElement, menuEl, {
+      placement: "bottom-start",
+      strategy: "fixed",
+      middleware: [
+        offset(6),
+        flip({ padding: 12 }),
+        shift({ padding: 12 }),
+      ],
+    }).then(({ x, y }) => {
+      Object.assign(menuEl.style, {
+        left: `${Math.round(x)}px`,
+        top: `${Math.round(y)}px`,
+      });
+    });
+  }, [slashMenu.open, slashMenu.slashIndex]);
+
+  useEffect(() => {
+    if (!slashMenu.open) return;
+    updateSlashMenuPosition();
+
+    const handleScrollOrResize = () => {
+      updateSlashMenuPosition();
+    };
+
+    window.addEventListener("resize", handleScrollOrResize);
+    window.addEventListener("scroll", handleScrollOrResize, true);
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        slashMenuRef.current &&
+        !slashMenuRef.current.contains(e.target as Node) &&
+        textareaRef.current &&
+        !textareaRef.current.contains(e.target as Node)
+      ) {
+        setSlashMenu({ open: false, filter: "", activeIndex: 0, slashIndex: 0 });
+      }
+    };
+
+    window.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      window.removeEventListener("resize", handleScrollOrResize);
+      window.removeEventListener("scroll", handleScrollOrResize, true);
+      window.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [slashMenu.open, updateSlashMenuPosition]);
+
+  useEffect(() => {
+    if (slashMenu.open && slashMenuRef.current) {
+      const activeEl = slashMenuRef.current.querySelector('[aria-selected="true"]');
+      if (activeEl) {
+        activeEl.scrollIntoView({ block: "nearest" });
+      }
+    }
+  }, [slashMenu.activeIndex, slashMenu.open]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (slashMenu.open) {
@@ -194,14 +305,14 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
         setSlashMenu(prev => ({ ...prev, activeIndex: (prev.activeIndex - 1 + filteredSlashOptions.length) % filteredSlashOptions.length }));
-      } else if (e.key === "Enter") {
+      } else if (e.key === "Enter" || e.key === "Tab") {
         e.preventDefault();
         if (filteredSlashOptions.length > 0) {
           executeSlashCommand(filteredSlashOptions[slashMenu.activeIndex]);
         }
       } else if (e.key === "Escape") {
         e.preventDefault();
-        setSlashMenu({ open: false, filter: "", activeIndex: 0 });
+        setSlashMenu({ open: false, filter: "", activeIndex: 0, slashIndex: 0 });
       }
     }
   };
@@ -227,7 +338,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
     const newContent = textBeforeLine + replacement + textAfterCursor;
     setDisplayContent(newContent);
     pushUpdate(newContent);
-    setSlashMenu({ open: false, filter: "", activeIndex: 0 });
+    setSlashMenu({ open: false, filter: "", activeIndex: 0, slashIndex: 0 });
     
     setTimeout(() => {
       textarea.focus();
@@ -239,6 +350,9 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
 
   // Sync line numbers and preview scrolling with editor textarea
   const handleScroll = () => {
+    if (slashMenu.open) {
+      updateSlashMenuPosition();
+    }
     if (textareaRef.current) {
       if (lineNumbersRef.current) {
         lineNumbersRef.current.scrollTop = textareaRef.current.scrollTop;
@@ -1129,37 +1243,49 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
                     spellCheck="false"
                   />
 
-                  {/* Floating Slash Commands Menu */}
-                  {slashMenu.open && filteredSlashOptions.length > 0 && (
-                    <div 
-                      className="absolute bottom-4 left-1/2 -translate-x-1/2 w-64 bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl shadow-2xl overflow-hidden z-50 animate-scale-in"
-                    >
-                      <div className="px-3 py-2 border-b border-[var(--border-color)] bg-[var(--bg-card)]">
-                        <span className="text-[10px] font-extrabold uppercase text-[var(--text-muted)] tracking-wider">
-                          Basic Blocks
-                        </span>
-                      </div>
-                      <div className="max-h-64 overflow-y-auto p-1.5 space-y-0.5">
-                        {filteredSlashOptions.map((opt, i) => (
-                          <div
-                            key={opt.id}
-                            onClick={() => executeSlashCommand(opt)}
-                            onMouseEnter={() => setSlashMenu(prev => ({ ...prev, activeIndex: i }))}
-                            className={`flex items-center gap-2.5 px-3 py-2 rounded-lg cursor-pointer transition-colors ${
-                              i === slashMenu.activeIndex 
-                                ? "bg-[var(--accent-primary)] text-white" 
-                                : "text-[var(--text-main)] hover:bg-[var(--bg-card)]"
-                            }`}
-                          >
-                            <div className={i === slashMenu.activeIndex ? "text-white" : "text-[var(--text-muted)]"}>
-                              {opt.icon}
+                  {/* Floating Slash Commands Menu (Anchored directly to caret position) */}
+                  {typeof document !== "undefined" && slashMenu.open && filteredSlashOptions.length > 0 &&
+                    createPortal(
+                      <div 
+                        ref={slashMenuRef}
+                        role="listbox"
+                        aria-label="Slash commands suggestions"
+                        className="fixed w-64 bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl shadow-2xl overflow-hidden z-50 animate-scale-in"
+                        style={{ top: "-9999px", left: "-9999px" }}
+                      >
+                        <div className="px-3 py-1.5 border-b border-[var(--border-color)] bg-[var(--bg-card)] flex items-center justify-between select-none">
+                          <span className="text-[10px] font-extrabold uppercase text-[var(--text-muted)] tracking-wider">
+                            Basic Blocks
+                          </span>
+                          <span className="text-[9px] font-mono text-[var(--text-subtle)]">
+                            ↑↓ · ↵ to insert
+                          </span>
+                        </div>
+                        <div className="max-h-60 overflow-y-auto p-1.5 space-y-0.5">
+                          {filteredSlashOptions.map((opt, i) => (
+                            <div
+                              key={opt.id}
+                              role="option"
+                              aria-selected={i === slashMenu.activeIndex}
+                              onClick={() => executeSlashCommand(opt)}
+                              onMouseEnter={() => setSlashMenu(prev => ({ ...prev, activeIndex: i }))}
+                              className={`flex items-center gap-2.5 px-3 py-2 rounded-lg cursor-pointer transition-colors ${
+                                i === slashMenu.activeIndex 
+                                  ? "bg-[var(--accent-primary)] text-white" 
+                                  : "text-[var(--text-main)] hover:bg-[var(--bg-card)]"
+                              }`}
+                            >
+                              <div className={i === slashMenu.activeIndex ? "text-white" : "text-[var(--text-muted)]"}>
+                                {opt.icon}
+                              </div>
+                              <span className="text-xs font-bold">{opt.label}</span>
                             </div>
-                            <span className="text-xs font-bold">{opt.label}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                          ))}
+                        </div>
+                      </div>,
+                      document.body
+                    )
+                  }
                 </div>
               </div>
             )}

@@ -18,12 +18,12 @@ import {
   Loader2,
   CheckCircle2,
   HelpCircle,
-  Users,
-  Code2,
-  Share2,
+  BookOpen,
 } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { Button } from "@/components/ui/Button";
+import { ARTICLES } from "@/lib/articles";
+import { CookieSettingsButton } from "@/components/ui/CookieConsent";
 
 interface LandingPageProps {
   defaultSlug: string;
@@ -54,19 +54,31 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
     { slug: "welcome", title: "Sandbox & Docs", icon: "🚀" },
   ];
 
+  const featuredArticles = ARTICLES.slice(0, 4);
+
   return (
     <div className="min-h-screen flex flex-col bg-[var(--bg-main)] text-[var(--text-main)] transition-colors duration-200">
       {/* Header / Navbar */}
       <header className="sticky top-0 z-40 bg-[var(--header-bg)] border-b border-[var(--border-color)]">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-13 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-md bg-[var(--accent-primary)] flex items-center justify-center">
-              <FileText className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-bold text-base tracking-tight text-[var(--text-main)]">
-              FileShare
-            </span>
-          </Link>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-6">
+            <Link href="/" className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-md bg-[var(--accent-primary)] flex items-center justify-center">
+                <FileText className="w-4 h-4 text-white" />
+              </div>
+              <span className="font-bold text-base tracking-tight text-[var(--text-main)]">
+                FileShare
+              </span>
+            </Link>
+
+            {/* Navigation links */}
+            <nav className="hidden md:flex items-center gap-5 text-xs font-medium text-[var(--text-muted)]">
+              <Link href="/resources" className="hover:text-[var(--text-main)] transition-colors">Resources</Link>
+              <Link href="/guide" className="hover:text-[var(--text-main)] transition-colors">User Guide</Link>
+              <Link href="/about" className="hover:text-[var(--text-main)] transition-colors">About</Link>
+              <Link href="/contact" className="hover:text-[var(--text-main)] transition-colors">Contact</Link>
+            </nav>
+          </div>
 
           <div className="flex items-center gap-2.5">
             <ThemeToggle />
@@ -84,44 +96,56 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
 
       {/* Main Content */}
       <main className="flex-1">
-        {/* Hero Section - Minimalist */}
-        <section className="pt-10 pb-12 sm:pt-14 sm:pb-16 border-b border-[var(--border-color)]">
-          <div className="max-w-3xl mx-auto px-4 text-center">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-mono bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-muted)] mb-6">
-              <span>Instant Real-Time Workspaces</span>
+        {/* Hero Section */}
+        <section className="pt-12 pb-14 sm:pt-16 sm:pb-20 border-b border-[var(--border-color)]">
+          <div className="max-w-4xl mx-auto px-4 text-center">
+            {/* Value Proposition Badges */}
+            <div className="inline-flex flex-wrap items-center justify-center gap-2 px-3 py-1.5 rounded-full text-xs font-mono bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-muted)] mb-6">
+              <span className="text-emerald-500 flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5" /> Zero Registration</span>
+              <span>•</span>
+              <span className="text-[var(--accent-primary)] flex items-center gap-1"><Zap className="w-3.5 h-3.5" /> Real-Time SSE Sync</span>
+              <span>•</span>
+              <span className="text-blue-400 flex items-center gap-1"><Shield className="w-3.5 h-3.5" /> 500MB Encrypted Vault</span>
             </div>
 
-            <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-[var(--text-main)] mb-5">
-              Live Notes & Secure File Vault
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-[var(--text-main)] mb-6 leading-tight">
+              Live Markdown Notes & Secure Ephemeral File Vault
             </h1>
 
-            <p className="max-w-xl mx-auto text-sm sm:text-base text-[var(--text-muted)] mb-8 leading-relaxed">
-              Create instant workspaces for real-time Markdown notes and file storage up to 500MB. Zero registration needed.
+            <p className="max-w-2xl mx-auto text-sm sm:text-base text-[var(--text-muted)] mb-8 leading-relaxed">
+              Create instant, anonymous workspaces for live Markdown editing, Mermaid diagrams, and high-speed file sharing up to 500MB. Zero logins, zero corporate gatekeeping.
             </p>
 
-            {/* Clean Minimal Action Form */}
-            <div className="max-w-md mx-auto bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 shadow-sm">
+            {/* Workspace Launcher Action Form */}
+            <div className="max-w-md mx-auto bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-2xl p-4 sm:p-5 shadow-sm">
               <form onSubmit={handleCustomSlugSubmit} className="flex flex-col sm:flex-row gap-2">
                 <div className="relative flex-1">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-mono text-[var(--text-subtle)] select-none">
+                  <label htmlFor="landing-custom-slug" className="sr-only">
+                    Workspace URL Slug
+                  </label>
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-mono text-[var(--text-subtle)] select-none">
                     /s/
                   </span>
                   <input
+                    id="landing-custom-slug"
+                    name="slug"
                     type="text"
                     value={customSlug}
                     onChange={(e) => setCustomSlug(e.target.value)}
                     placeholder={defaultSlug}
-                    className="w-full pl-8 pr-3 py-2 text-xs sm:text-sm rounded-md bg-[var(--input-bg)] border border-[var(--border-color)] text-[var(--text-main)] placeholder-[var(--text-subtle)] focus:outline-none focus:border-[var(--accent-primary)] font-mono"
+                    aria-label="Enter custom workspace name"
+                    className="w-full pl-8 pr-3 py-2.5 text-xs sm:text-sm rounded-lg bg-[var(--input-bg)] border border-[var(--border-color)] text-[var(--text-main)] placeholder-[var(--text-subtle)] focus:outline-none focus:border-[var(--accent-primary)] font-mono"
                   />
                 </div>
                 <Button
                   type="submit"
                   disabled={Boolean(activeSlug)}
-                  className="!px-4 !py-2 !rounded-md !font-semibold text-xs sm:text-sm bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white disabled:opacity-60"
+                  aria-label="Open or create instant workspace"
+                  className="!px-5 !py-2.5 !rounded-lg !font-semibold text-xs sm:text-sm bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white disabled:opacity-60"
                   icon={activeSlug ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : undefined}
                   iconRight={!activeSlug ? <ArrowRight className="w-3.5 h-3.5" /> : undefined}
                 >
-                  {activeSlug ? "Opening Workspace..." : "Open Space"}
+                  {activeSlug ? "Opening..." : "Open Space"}
                 </Button>
               </form>
 
@@ -137,100 +161,42 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
                 >
                   Random Space (/s/{defaultSlug})
                 </Button>
-                <span>500MB Limit</span>
+                <span>500MB Limit per file</span>
               </div>
+
+              {/* Form Consent Notice (GDPR & DPDP Act 2023) */}
+              <p className="mt-3 text-[11px] text-[var(--text-subtle)] text-center leading-normal">
+                By opening or joining a workspace, you agree to our{" "}
+                <Link href="/terms" className="underline hover:text-[var(--text-main)]">
+                  Terms
+                </Link>
+                ,{" "}
+                <Link href="/privacy" className="underline hover:text-[var(--text-main)]">
+                  Privacy Policy
+                </Link>
+                , and{" "}
+                <Link href="/cookies" className="underline hover:text-[var(--text-main)]">
+                  Cookie Policy
+                </Link>
+                .
+              </p>
+            </div>
+
+            {/* Quick Link to Knowledge Base */}
+            <div className="mt-6 text-xs text-[var(--text-muted)] flex items-center justify-center gap-3">
+              <span>New to FileShare?</span>
+              <Link href="/guide" className="text-[var(--accent-primary)] hover:underline inline-flex items-center gap-1 font-medium">
+                Read the Complete User Guide <ArrowRight className="w-3 h-3" />
+              </Link>
             </div>
           </div>
         </section>
 
-        {/* Feature Grid - Minimal Github Style */}
-        <section className="py-10 sm:py-14 max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-            <div className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 hover:border-[var(--border-glow)] transition-colors">
-              <Zap className="w-5 h-5 text-[var(--accent-primary)] mb-2.5" />
-              <h3 className="text-sm font-bold mb-1">Real-Time SSE Sync</h3>
-              <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                Live Markdown edits and file uploads sync across devices in real-time.
-              </p>
-            </div>
-
-            <div className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 hover:border-[var(--border-glow)] transition-colors">
-              <Lock className="w-5 h-5 text-[var(--accent-primary)] mb-2.5" />
-              <h3 className="text-sm font-bold mb-1">Password Protection</h3>
-              <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                Lock sensitive spaces with bcrypt password hashing and token auth.
-              </p>
-            </div>
-
-            <div className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 hover:border-[var(--border-glow)] transition-colors">
-              <FolderUp className="w-5 h-5 text-[var(--accent-primary)] mb-2.5" />
-              <h3 className="text-sm font-bold mb-1">500MB File Vault</h3>
-              <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                Upload images, video, audio, and documents with instant preview modals.
-              </p>
-            </div>
-
-            <div className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 hover:border-[var(--border-glow)] transition-colors">
-              <Wand2 className="w-5 h-5 text-[var(--accent-primary)] mb-2.5" />
-              <h3 className="text-sm font-bold mb-1">AI Copilot Formatter</h3>
-              <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                Standardize markdown formatting, headings, lists, and spacing in 1 click.
-              </p>
-            </div>
-
-            <div className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 hover:border-[var(--border-glow)] transition-colors">
-              <QrCode className="w-5 h-5 text-[var(--accent-primary)] mb-2.5" />
-              <h3 className="text-sm font-bold mb-1">Instant QR Code</h3>
-              <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                Generate high-resolution QR codes to open notes instantly on mobile.
-              </p>
-            </div>
-
-            <div className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-4 hover:border-[var(--border-glow)] transition-colors">
-              <Globe className="w-5 h-5 text-[var(--accent-primary)] mb-2.5" />
-              <h3 className="text-sm font-bold mb-1">Zero Registration</h3>
-              <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                No email or password needed. Open a custom URL slug and start sharing.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* Featured Workspaces */}
-        <section className="py-8 bg-[var(--bg-surface)] border-t border-b border-[var(--border-color)]">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6">
-            <h3 className="text-sm font-bold text-[var(--text-subtle)] uppercase tracking-wider text-center mb-4">Popular Public Workspaces</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              {featuredWorkspaces.map((item) => {
-                const isItemActive = activeSlug === item.slug;
-                return (
-                  <Button
-                    key={item.slug}
-                    size="md"
-                    disabled={Boolean(activeSlug)}
-                    onClick={() => handleCreateSpace(item.slug)}
-                    className="!justify-start !items-center gap-2.5 !p-3 !rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] !text-left !font-semibold disabled:opacity-50"
-                    icon={<span className="text-lg">{item.icon}</span>}
-                    iconRight={isItemActive ? <Loader2 className="w-3.5 h-3.5 animate-spin text-[var(--accent-primary)]" /> : <ArrowRight className="w-3.5 h-3.5 text-[var(--text-subtle)]" />}
-                  >
-                    <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-xs truncate text-[var(--text-main)]">
-                        {item.title}
-                      </div>
-                      <div className="text-[11px] font-mono text-[var(--text-subtle)]">/s/{item.slug}</div>
-                    </div>
-                  </Button>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-        {/* How FileShare Works */}
+        {/* 3-Step Educational Workflow Overview */}
         <section className="py-12 sm:py-16 max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto mb-10">
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-main)] mb-3">
-              How FileShare Works
+              How Instant Workspaces Work
             </h2>
             <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed">
               Experience seamless, instant collaboration without logins, verifications, or installation steps.
@@ -242,9 +208,9 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
               <div className="w-9 h-9 rounded-lg bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] flex items-center justify-center font-mono font-bold text-sm mb-4">
                 01
               </div>
-              <h3 className="text-base font-bold mb-2 text-[var(--text-main)]">Pick or Create a Slug</h3>
+              <h3 className="text-base font-bold mb-2 text-[var(--text-main)]">Pick Any Workspace URL</h3>
               <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                Type any workspace identifier like <code className="px-1.5 py-0.5 rounded bg-[var(--bg-main)] font-mono text-[var(--accent-primary)]">/s/project-sync</code> or let the generator create a secure random link.
+                Type any custom name like <code className="px-1.5 py-0.5 rounded bg-[var(--bg-main)] font-mono text-[var(--accent-primary)]">/s/sprint-notes</code> or generate a random link. The space is auto-created instantly.
               </p>
             </div>
 
@@ -270,50 +236,153 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
           </div>
         </section>
 
-        {/* Use Cases Section */}
+        {/* Feature Grid */}
         <section className="py-12 sm:py-16 bg-[var(--bg-surface)] border-t border-b border-[var(--border-color)]">
           <div className="max-w-6xl mx-auto px-4 sm:px-6">
             <div className="text-center max-w-2xl mx-auto mb-10">
               <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-main)] mb-3">
-                Built for Fast Real-Time Collaboration
+                Engineered for High-Velocity Teams
               </h2>
               <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed">
-                Designed for engineers, students, and remote teams who value speed and privacy.
+                Modern primitives combining rich technical Markdown and high-capacity cloud storage.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="p-5 rounded-xl border border-[var(--border-color)] bg-[var(--bg-main)]">
-                <Code2 className="w-5 h-5 text-indigo-400 mb-2.5" />
-                <h3 className="text-sm font-bold mb-1.5 text-[var(--text-main)]">Pair Programming</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="bg-[var(--bg-main)] border border-[var(--border-color)] rounded-xl p-5 hover:border-[var(--border-glow)] transition-colors">
+                <Zap className="w-5 h-5 text-[var(--accent-primary)] mb-2.5" />
+                <h3 className="text-sm font-bold mb-1">Live Synchronization</h3>
                 <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                  Share code snippets, terminal traces, and architecture diagrams during live debugging sessions.
+                  Real-time updates pushed across all connected windows in milliseconds using native Server-Sent Events.
                 </p>
               </div>
 
-              <div className="p-5 rounded-xl border border-[var(--border-color)] bg-[var(--bg-main)]">
-                <Users className="w-5 h-5 text-emerald-400 mb-2.5" />
-                <h3 className="text-sm font-bold mb-1.5 text-[var(--text-main)]">Meeting Notes</h3>
+              <div className="bg-[var(--bg-main)] border border-[var(--border-color)] rounded-xl p-5 hover:border-[var(--border-glow)] transition-colors">
+                <FolderUp className="w-5 h-5 text-[var(--accent-primary)] mb-2.5" />
+                <h3 className="text-sm font-bold mb-1">500MB File Vault</h3>
                 <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                  Keep synchronized agendas and action items without forcing teammates to create third-party accounts.
+                  Direct drag-and-drop storage for multi-file archives, video media, PDFs, and code repositories.
                 </p>
               </div>
 
-              <div className="p-5 rounded-xl border border-[var(--border-color)] bg-[var(--bg-main)]">
-                <Share2 className="w-5 h-5 text-blue-400 mb-2.5" />
-                <h3 className="text-sm font-bold mb-1.5 text-[var(--text-main)]">Cross-Device Transfer</h3>
+              <div className="bg-[var(--bg-main)] border border-[var(--border-color)] rounded-xl p-5 hover:border-[var(--border-glow)] transition-colors">
+                <Wand2 className="w-5 h-5 text-[var(--accent-primary)] mb-2.5" />
+                <h3 className="text-sm font-bold mb-1">AI Copilot Formatting</h3>
                 <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                  Move files, screenshots, and text links between your phone, tablet, and PC in seconds using QR codes.
+                  One-click Markdown syntax cleanup that standardizes headers, task lists, and spacing while preserving raw code.
                 </p>
               </div>
 
-              <div className="p-5 rounded-xl border border-[var(--border-color)] bg-[var(--bg-main)]">
-                <CheckCircle2 className="w-5 h-5 text-amber-400 mb-2.5" />
-                <h3 className="text-sm font-bold mb-1.5 text-[var(--text-main)]">Classrooms & Workshops</h3>
+              <div className="bg-[var(--bg-main)] border border-[var(--border-color)] rounded-xl p-5 hover:border-[var(--border-glow)] transition-colors">
+                <Lock className="w-5 h-5 text-[var(--accent-primary)] mb-2.5" />
+                <h3 className="text-sm font-bold mb-1">Encrypted Password Gates</h3>
                 <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                  Distribute exercise files and live scratchpads to students effortlessly with a single memorable URL.
+                  Secure sensitive workspaces with 10-round salted bcrypt hashing and stateless JWT token authentication.
                 </p>
               </div>
+
+              <div className="bg-[var(--bg-main)] border border-[var(--border-color)] rounded-xl p-5 hover:border-[var(--border-glow)] transition-colors">
+                <QrCode className="w-5 h-5 text-[var(--accent-primary)] mb-2.5" />
+                <h3 className="text-sm font-bold mb-1">Instant QR Code Handoff</h3>
+                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                  Transfer workspaces between PC, tablet, and mobile devices in seconds with dynamic vector QR codes.
+                </p>
+              </div>
+
+              <div className="bg-[var(--bg-main)] border border-[var(--border-color)] rounded-xl p-5 hover:border-[var(--border-glow)] transition-colors">
+                <Globe className="w-5 h-5 text-[var(--accent-primary)] mb-2.5" />
+                <h3 className="text-sm font-bold mb-1">Zero Registration</h3>
+                <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                  No email or password needed. Open a custom URL slug and start collaborating immediately.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Featured Educational Resources & Guides Section */}
+        <section className="py-12 sm:py-16 max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mb-10">
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-mono bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-muted)] mb-3">
+                <BookOpen className="w-3.5 h-3.5 text-[var(--accent-primary)]" />
+                <span>Engineering Knowledge Hub</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-main)]">
+                Featured Guides & Technical Publications
+              </h2>
+              <p className="text-xs sm:text-sm text-[var(--text-muted)] mt-1">
+                Explore in-depth articles on remote collaboration, ephemeral security, and Markdown productivity.
+              </p>
+            </div>
+            <Link
+              href="/resources"
+              className="text-xs sm:text-sm font-semibold text-[var(--accent-primary)] hover:underline inline-flex items-center gap-1"
+            >
+              View All 8 Articles <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {featuredArticles.map((article) => (
+              <article
+                key={article.slug}
+                className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-6 flex flex-col justify-between hover:border-[var(--border-glow)] transition-all group"
+              >
+                <div>
+                  <div className="flex items-center justify-between text-xs text-[var(--text-subtle)] font-mono mb-2">
+                    <span className="text-[var(--accent-primary)]">{article.category}</span>
+                    <span>{article.readTime}</span>
+                  </div>
+                  <h3 className="text-base font-bold text-[var(--text-main)] group-hover:text-[var(--accent-primary)] transition-colors mb-2">
+                    <Link href={`/resources/${article.slug}`}>
+                      {article.title}
+                    </Link>
+                  </h3>
+                  <p className="text-xs text-[var(--text-muted)] leading-relaxed line-clamp-3 mb-4">
+                    {article.description}
+                  </p>
+                </div>
+                <div className="pt-3 border-t border-[var(--border-color)] flex items-center justify-between text-xs">
+                  <span className="text-[var(--text-subtle)] font-mono">{article.date}</span>
+                  <Link
+                    href={`/resources/${article.slug}`}
+                    className="font-semibold text-[var(--accent-primary)] inline-flex items-center gap-1 group-hover:gap-1.5 transition-all"
+                  >
+                    Read Guide <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        {/* Featured Public Workspaces */}
+        <section className="py-8 bg-[var(--bg-surface)] border-t border-b border-[var(--border-color)]">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6">
+            <h3 className="text-xs font-bold text-[var(--text-subtle)] uppercase tracking-wider text-center mb-4">Starter Public Workspaces</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {featuredWorkspaces.map((item) => {
+                const isItemActive = activeSlug === item.slug;
+                return (
+                  <Button
+                    key={item.slug}
+                    size="md"
+                    disabled={Boolean(activeSlug)}
+                    onClick={() => handleCreateSpace(item.slug)}
+                    className="!justify-start !items-center gap-2.5 !p-3 !rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] !text-left !font-semibold disabled:opacity-50"
+                    icon={<span className="text-lg">{item.icon}</span>}
+                    iconRight={isItemActive ? <Loader2 className="w-3.5 h-3.5 animate-spin text-[var(--accent-primary)]" /> : <ArrowRight className="w-3.5 h-3.5 text-[var(--text-subtle)]" />}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold text-xs truncate text-[var(--text-main)]">
+                        {item.title}
+                      </div>
+                      <div className="text-[11px] font-mono text-[var(--text-subtle)]">/s/{item.slug}</div>
+                    </div>
+                  </Button>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -383,32 +452,50 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
       </main>
 
       {/* Footer */}
-      <footer className="bg-[var(--header-bg)] border-t border-[var(--border-color)] py-6">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--text-muted)]">
-          <div className="flex items-center gap-1.5">
-            <Shield className="w-3.5 h-3.5 text-[var(--accent-primary)]" />
-            <span>FileShare — Real-Time Notes & Secure File Vault</span>
+      <footer className="bg-[var(--header-bg)] border-t border-[var(--border-color)] py-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col gap-4 text-xs text-[var(--text-muted)]">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-1.5">
+              <Shield className="w-3.5 h-3.5 text-[var(--accent-primary)]" />
+              <span>FileShare — Real-Time Notes & Secure File Vault</span>
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <Link href="/about" className="hover:text-[var(--text-main)] transition-colors">About</Link>
+              <span>•</span>
+              <Link href="/guide" className="hover:text-[var(--text-main)] transition-colors">User Guide</Link>
+              <span>•</span>
+              <Link href="/resources" className="hover:text-[var(--text-main)] transition-colors">Resources</Link>
+              <span>•</span>
+              <Link href="/contact" className="hover:text-[var(--text-main)] transition-colors">Contact</Link>
+              <span>•</span>
+              <Link href="/privacy" className="hover:text-[var(--text-main)] transition-colors">Privacy Policy</Link>
+              <span>•</span>
+              <Link href="/terms" className="hover:text-[var(--text-main)] transition-colors">Terms &amp; Conditions</Link>
+              <span>•</span>
+              <Link href="/cookies" className="hover:text-[var(--text-main)] transition-colors">Cookie Policy</Link>
+              <span>•</span>
+              <Link href="/refund" className="hover:text-[var(--text-main)] transition-colors">Refund Policy</Link>
+              <span>•</span>
+              <CookieSettingsButton />
+              <span>•</span>
+              <a
+                href="https://github.com/sandeshPatel06/file-share"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 hover:text-[var(--text-main)] transition-colors"
+                aria-label="FileShare on GitHub (opens in new tab)"
+              >
+                <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+                </svg>
+                <span>GitHub</span>
+              </a>
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <Link href="/about" className="hover:text-[var(--text-main)] transition-colors">About</Link>
-            <span>•</span>
-            <Link href="/guide" className="hover:text-[var(--text-main)] transition-colors">Guide</Link>
-            <span>•</span>
-            <Link href="/privacy" className="hover:text-[var(--text-main)] transition-colors">Privacy Policy</Link>
-            <span>•</span>
-            <Link href="/terms" className="hover:text-[var(--text-main)] transition-colors">Terms</Link>
-            <span>•</span>
-            <a
-              href="https://github.com/sandeshPatel06/file-share"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 hover:text-[var(--text-main)] transition-colors"
-            >
-              <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
-              </svg>
-              <span>GitHub</span>
-            </a>
+
+          <div className="pt-3 border-t border-[var(--border-color)] flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-[var(--text-subtle)]">
+            <p>Operated by <strong>SHP Technology</strong> • Founder: Sandesh Patel • Jabalpur, Madhya Pradesh 482001, India</p>
+            <p>GDPR &amp; India DPDP Act 2023 Compliant • Free Web Utility</p>
           </div>
         </div>
       </footer>
