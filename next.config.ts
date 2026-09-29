@@ -42,21 +42,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  async redirects() {
-    return [
-      {
-        source: "/:path*",
-        has: [
-          {
-            type: "host",
-            value: "fileshare-live.onrender.com",
-          },
-        ],
-        destination: "https://fileshare.shptechnology.online/:path*",
-        permanent: true,
-      },
-    ];
-  },
 };
 
 export default nextConfig;
