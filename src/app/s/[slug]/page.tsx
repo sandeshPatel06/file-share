@@ -14,7 +14,7 @@ interface PageRow {
   content: string | null;
 }
 
-const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://fileshare-live.onrender.com";
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://fileshare.shptechnology.online";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -75,9 +75,9 @@ export default async function SlugPage({ params }: Props) {
   return (
     <SharePage
       pageData={{
-        slug:        page.slug,
+        slug: page.slug,
         isProtected: Boolean(page.isProtected),
-        content:     page.content ?? "",
+        content: page.content ?? "",
       }}
     />
   );

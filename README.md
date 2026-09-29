@@ -71,7 +71,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 3. **Build Command**: `./deploy.sh`
 4. **Start Command**: `npm start`
 5. **Environment Variables**:
-   - `NEXT_PUBLIC_APP_URL` (e.g. `https://fileshare-live.onrender.com`)
+   - `NEXT_PUBLIC_APP_URL` (e.g. `https://fileshare.shptechnology.online`)
    - `JWT_SECRET`
    - `DATABASE_URL` (Render PostgreSQL connection string)
    - `B2_ENDPOINT`, `B2_KEY_ID`, `B2_APPLICATION_KEY`, `B2_BUCKET_NAME`, `B2_REGION`
