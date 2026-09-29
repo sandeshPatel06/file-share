@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
-  const host = request.headers.get("host");
+  const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || "";
 
-  if (host && host.includes("fileshare.shptechnology.online")) {
+  if (host.includes("fileshare-live.onrender.com")) {
     const url = request.nextUrl.clone();
     url.hostname = "fileshare.shptechnology.online";
     url.protocol = "https";
