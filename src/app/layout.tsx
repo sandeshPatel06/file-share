@@ -164,12 +164,7 @@ export default function RootLayout({
             gtag('config', 'G-QJ7L4HP72G');
           `}
         </Script>
-        {/* Google AdSense */}
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4947821599815451"
-          crossOrigin="anonymous"
-        />
+        {/* Google AdSense Site Verification (Script loaded conditionally on content-rich pages) */}
         <meta name="google-adsense-account" content="ca-pub-4947821599815451" />
       </head>
       <body className="antialiased bg-[var(--bg-main)] text-[var(--text-main)] min-h-dvh font-sans transition-colors duration-200">

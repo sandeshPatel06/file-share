@@ -148,16 +148,22 @@ export function SharePage({ pageData }: SharePageProps) {
         onSuccess={(protectedState) => setIsProtected(protectedState)}
       />
 
-      <footer className="border-t border-[var(--border-color)] bg-[var(--header-bg)] py-2 px-4 shrink-0 text-[11px] text-[var(--text-muted)] flex items-center justify-between">
-        <div>Workspace: <code className="font-mono text-[var(--text-main)]">/s/{slug}</code></div>
+      <footer className="border-t border-[var(--border-color)] bg-[var(--header-bg)] py-2 px-4 shrink-0 text-[11px] text-[var(--text-muted)] flex flex-wrap items-center justify-between gap-2 z-20">
+        <div className="flex items-center gap-2">
+          <span>Workspace: <code className="font-mono text-[var(--text-main)]">/s/{slug}</code></span>
+        </div>
         <div className="flex items-center gap-3">
-          <Link href="/about" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-main)]">About</Link>
+          <Link href="/guide" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-main)] transition-colors">User Guide</Link>
           <span>•</span>
-          <Link href="/guide" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-main)]">Guide</Link>
+          <Link href="/resources" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-main)] transition-colors">Resources</Link>
           <span>•</span>
-          <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-main)]">Privacy</Link>
+          <Link href="/about" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-main)] transition-colors">About</Link>
           <span>•</span>
-          <Link href="/terms" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-main)]">Terms</Link>
+          <Link href="/contact" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-main)] transition-colors">Contact</Link>
+          <span>•</span>
+          <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-main)] transition-colors">Privacy</Link>
+          <span>•</span>
+          <Link href="/terms" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-main)] transition-colors">Terms</Link>
         </div>
       </footer>
     </div>
