@@ -5,6 +5,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ToastProvider } from "@/components/ui/Toast";
 import { CookieConsent } from "@/components/ui/CookieConsent";
+import { getAppUrl } from "@/lib/seo";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -18,7 +19,7 @@ const jetbrainsMono = JetBrains_Mono({
   weight: ["400", "500", "600", "700"],
 });
 
-const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://fileshare.shptechnology.online";
+const appUrl = getAppUrl();
 
 export const viewport: Viewport = {
   themeColor: [
@@ -98,6 +99,9 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
+  verification: {
+    google: "google8d8686369b9d6380",
+  },
 };
 
 export default function RootLayout({
@@ -144,26 +148,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${plusJakartaSans.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
       <head>
-        <meta property="og:type" content="website" />
-        <meta property="og:site_name" content="FileShare" />
-        <meta property="og:title" content="FileShare — Instant Real-Time Notes & Secure File Sharing Vault" />
-        <meta property="og:description" content="Create instant, anonymous workspaces to collaborate, edit live Markdown notes, and share files in real-time. Zero registration required." />
-        <meta property="og:url" content={appUrl} />
-        <meta property="og:image" content={`${appUrl}/logo.png`} />
-        <meta property="og:image:width" content="512" />
-        <meta property="og:image:height" content="512" />
-        <meta property="og:image:type" content="image/png" />
-        <meta property="og:image:alt" content="FileShare Logo — Real-Time Notes & File Sharing Vault" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="FileShare — Instant Real-Time Notes & Secure File Sharing Vault" />
-        <meta name="twitter:description" content="Share notes & files instantly in real-time. No sign-up required." />
-        <meta name="twitter:image" content={`${appUrl}/logo.png`} />
         <Script
           id="json-ld"
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        {/* Google Consent Mode v2 Initialization (GDPR & DPDP Act 2023 Default Denied) */}
+        {/* Google Consent Mode v2 Initialization (GDPR & DPDP Act 2023 Default Denied with wait_for_update) */}
         <Script id="google-consent-mode" strategy="beforeInteractive">
           {`
             window.dataLayer = window.dataLayer || [];
@@ -172,7 +162,8 @@ export default function RootLayout({
               'analytics_storage': 'denied',
               'ad_storage': 'denied',
               'ad_user_data': 'denied',
-              'ad_personalization': 'denied'
+              'ad_personalization': 'denied',
+              'wait_for_update': 500
             });
           `}
         </Script>

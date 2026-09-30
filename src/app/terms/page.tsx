@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { FileText, CheckCircle2, AlertTriangle, ShieldAlert, Scale, Globe, Building2 } from "lucide-react";
+import { getAppUrl } from "@/lib/seo";
 
-const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://fileshare.shptechnology.online";
+const appUrl = getAppUrl();
 
 export const metadata: Metadata = {
   title: "Terms and Conditions & Intermediary Guidelines — FileShare",

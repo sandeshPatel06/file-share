@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import db from "@/lib/db";
 import { SharePage } from "@/components/SharePage";
 import { slugSchema } from "@/lib/validators";
+import { getAppUrl } from "@/lib/seo";
 import type { Metadata } from "next";
 
 interface Props {
@@ -14,15 +15,20 @@ interface PageRow {
   content: string | null;
 }
 
-const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://fileshare.shptechnology.online";
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const appUrl = getAppUrl();
   const { slug } = await params;
   const canonicalUrl = `${appUrl}/s/${slug}`;
 
   return {
     title: `${slug} — Live Workspace`,
     description: `Collaborate live in real-time at /s/${slug}. Instant markdown editing and file sharing vault.`,
+    robots: {
+      index: false,
+      follow: false,
+      noimageindex: true,
+      nocache: true,
+    },
     alternates: {
       canonical: canonicalUrl,
     },

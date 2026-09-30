@@ -1,13 +1,14 @@
 import type { MetadataRoute } from "next";
-
-const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://fileshare.shptechnology.online";
+import { getAppUrl } from "@/lib/seo";
 
 export default function robots(): MetadataRoute.Robots {
+  const appUrl = getAppUrl();
+
   return {
     rules: [
       {
         userAgent: "*",
-        allow: "/",
+        allow: ["/", "/api/health"],
         disallow: ["/api/", "/s/"],
       },
       {
@@ -20,5 +21,6 @@ export default function robots(): MetadataRoute.Robots {
       },
     ],
     sitemap: `${appUrl}/sitemap.xml`,
+    host: appUrl,
   };
 }

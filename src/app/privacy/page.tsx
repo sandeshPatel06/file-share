@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Shield, FileText, Lock, Globe, Database, Cookie, AlertCircle, Scale, UserCheck } from "lucide-react";
 import { CookieSettingsButton } from "@/components/ui/CookieConsent";
+import { getAppUrl } from "@/lib/seo";
 
-const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://fileshare.shptechnology.online";
+const appUrl = getAppUrl();
 
 export const metadata: Metadata = {
   title: "Privacy Policy — GDPR & India DPDP Act 2023 Compliant — FileShare",

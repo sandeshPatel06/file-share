@@ -14,8 +14,9 @@ import {
 import { AdSenseScript } from "@/components/ads/AdSenseScript";
 import { AdBanner } from "@/components/ads/AdBanner";
 import { CookieSettingsButton } from "@/components/ui/CookieConsent";
+import { getAppUrl } from "@/lib/seo";
 
-const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://fileshare.shptechnology.online";
+const appUrl = getAppUrl();
 
 export const metadata: Metadata = {
   title: "About FileShare — Engineering Mission, Architecture & Privacy Values",

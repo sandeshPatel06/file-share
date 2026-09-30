@@ -16,12 +16,13 @@ import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 import { AdSenseScript } from "@/components/ads/AdSenseScript";
 import { AdBanner } from "@/components/ads/AdBanner";
 import { CookieSettingsButton } from "@/components/ui/CookieConsent";
+import { getAppUrl } from "@/lib/seo";
 
 interface Props {
   params: Promise<{ slug: string }>;
 }
 
-const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://fileshare.shptechnology.online";
+const appUrl = getAppUrl();
 
 export async function generateStaticParams() {
   const articles = getAllArticles();
@@ -110,6 +111,31 @@ export default async function ArticlePage({ params }: Props) {
     wordCount: article.wordCount,
   };
 
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": appUrl,
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Resources",
+        "item": `${appUrl}/resources`,
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": article.title,
+        "item": `${appUrl}/resources/${slug}`,
+      },
+    ],
+  };
+
   // Split article content at natural mid-point section break (---)
   // Ensures the first ad only appears after at least 2-3 full sections of editorial text
   const sections = article.content.split(/\n---\n/);
@@ -122,10 +148,14 @@ export default async function ArticlePage({ params }: Props) {
       {/* Conditionally load AdSense on this substantial publisher content page */}
       <AdSenseScript />
 
-      {/* JSON-LD Schema */}
+      {/* JSON-LD Schemas */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
 
       {/* Header */}

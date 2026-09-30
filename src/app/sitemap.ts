@@ -1,9 +1,9 @@
 import type { MetadataRoute } from "next";
 import { getAllArticles } from "@/lib/articles";
-
-const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://fileshare.shptechnology.online";
+import { getAppUrl } from "@/lib/seo";
 
 export default function sitemap(): MetadataRoute.Sitemap {
+  const appUrl = getAppUrl();
   const articles = getAllArticles();
 
   const routes: MetadataRoute.Sitemap = [
