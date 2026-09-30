@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { Pencil, Lock, Unlock, Copy, CheckCheck, QrCode, PanelRightClose, PanelRightOpen } from "lucide-react";
+import { Pencil, Lock, Unlock, Copy, CheckCheck, QrCode, PanelRightClose, PanelRightOpen, MoreVertical } from "lucide-react";
 import { showToast } from "@/components/ui/Toast";
 import { QRCodeModal } from "@/components/QRCodeModal";
 import { RenameSlugModal } from "@/components/RenameSlugModal";
@@ -21,6 +21,7 @@ export function SlugBar({ slug, isProtected, token, onLockClick, onToggleFilePan
   const [copied,          setCopied]          = useState(false);
   const [showQR,          setShowQR]          = useState(false);
   const [showRenameModal, setShowRenameModal] = useState(false);
+  const [showMoreMenu,    setShowMoreMenu]    = useState(false);
 
   async function copyLink() {
     const url = `${window.location.origin}/s/${slug}`;
@@ -72,21 +73,22 @@ export function SlugBar({ slug, isProtected, token, onLockClick, onToggleFilePan
       </div>
 
       {/* Header Actions Toolbar */}
-      <div className="flex items-center gap-1 sm:gap-1.5 shrink-0 ml-auto">
+      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-auto">
+        {/* Desktop QR Button */}
         <button
           onClick={() => setShowQR(true)}
-          className="h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center shrink-0 rounded-xl bg-[var(--badge-bg)] border border-[var(--border-color)] text-[var(--text-main)] hover:opacity-80 active:scale-95 transition-all shadow-sm cursor-pointer"
+          className="hidden sm:flex h-9 w-9 items-center justify-center shrink-0 rounded-xl bg-[var(--badge-bg)] border border-[var(--border-color)] text-[var(--text-main)] hover:opacity-80 active:scale-95 transition-all shadow-sm cursor-pointer min-h-[40px] min-w-[40px]"
           title="Show QR Code"
           aria-label="Show QR Code"
         >
-          <QrCode size={16} />
+          <QrCode size={17} />
         </button>
 
         {/* Copy Link Button */}
         <button
           onClick={copyLink}
           className={`
-            h-8 w-8 sm:h-9 sm:w-auto px-0 sm:px-3 flex items-center justify-center gap-1.5 rounded-xl text-xs font-extrabold active:scale-95 transition-all duration-200 border shadow-sm cursor-pointer shrink-0
+            h-9 w-9 sm:w-auto px-0 sm:px-3 flex items-center justify-center gap-1.5 rounded-xl text-xs font-extrabold active:scale-95 transition-all duration-200 border shadow-sm cursor-pointer shrink-0 min-h-[40px] min-w-[40px]
             ${copied
               ? "bg-[var(--status-success-bg)] text-[var(--status-success-text)] border-[var(--status-success-border)]"
               : "bg-[var(--badge-bg)] text-[var(--text-main)] hover:bg-[var(--border-color)] border-[var(--border-color)]"
@@ -95,7 +97,7 @@ export function SlugBar({ slug, isProtected, token, onLockClick, onToggleFilePan
           title="Copy workspace link"
           aria-label="Copy workspace link"
         >
-          {copied ? <CheckCheck size={16} className="text-[var(--status-success-text)]" /> : <Copy size={16} />}
+          {copied ? <CheckCheck size={17} className="text-[var(--status-success-text)]" /> : <Copy size={17} />}
           <span className="hidden sm:inline">{copied ? "Copied!" : "Copy Link"}</span>
         </button>
 
@@ -105,45 +107,96 @@ export function SlugBar({ slug, isProtected, token, onLockClick, onToggleFilePan
           title={isProtected ? "Protected with password" : "Set protection password"}
           aria-label={isProtected ? "Protected with password" : "Set protection password"}
           className={`
-            h-8 w-8 sm:h-9 sm:w-auto px-0 sm:px-3 flex items-center justify-center gap-1.5 rounded-xl text-xs font-extrabold transition-all duration-200 border shadow-sm cursor-pointer shrink-0
+            h-9 w-9 sm:w-auto px-0 sm:px-3 flex items-center justify-center gap-1.5 rounded-xl text-xs font-extrabold transition-all duration-200 border shadow-sm cursor-pointer shrink-0 min-h-[40px] min-w-[40px]
             ${isProtected
               ? "bg-[var(--badge-bg)] text-[var(--badge-text)] border-[var(--badge-border)]"
               : "bg-[var(--badge-bg)] text-[var(--text-main)] hover:bg-[var(--border-color)] border-[var(--border-color)]"
             }
           `}
         >
-          {isProtected ? <Lock size={16} className="text-[var(--badge-text)]" /> : <Unlock size={16} />}
+          {isProtected ? <Lock size={17} className="text-[var(--badge-text)]" /> : <Unlock size={17} />}
           <span className="hidden sm:inline">{isProtected ? "Protected" : "Protect"}</span>
         </button>
 
+        {/* Desktop GitHub Link */}
         <a
           href="https://github.com/sandeshPatel06/file-share"
           target="_blank"
           rel="noopener noreferrer"
-          className="hidden min-[400px]:flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center shrink-0 rounded-xl bg-[var(--badge-bg)] border border-[var(--border-color)] hover:bg-[var(--border-color)] hover:scale-105 transition-all shadow-sm cursor-pointer"
+          className="hidden md:flex h-9 w-9 items-center justify-center shrink-0 rounded-xl bg-[var(--badge-bg)] border border-[var(--border-color)] hover:bg-[var(--border-color)] hover:scale-105 transition-all shadow-sm cursor-pointer min-h-[40px] min-w-[40px]"
           title="View GitHub Repository"
           aria-label="View GitHub Repository"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/github-icon.svg" alt="GitHub Repository" width={16} height={16} className="w-4 h-4 object-contain" />
+          <img src="/github-icon.svg" alt="GitHub Repository" width={17} height={17} className="w-4 h-4 object-contain" />
         </a>
 
-        <ThemeToggle />
+        {/* Desktop Theme Toggle */}
+        <div className="hidden sm:block">
+          <ThemeToggle />
+        </div>
 
+        {/* Mobile More Actions Menu */}
+        <div className="relative sm:hidden">
+          <button
+            onClick={() => setShowMoreMenu((prev) => !prev)}
+            aria-label="More workspace tools"
+            title="More workspace tools"
+            className="h-9 w-9 flex items-center justify-center shrink-0 rounded-xl bg-[var(--badge-bg)] border border-[var(--border-color)] text-[var(--text-main)] hover:bg-[var(--border-color)] active:scale-95 transition-all shadow-sm cursor-pointer min-h-[40px] min-w-[40px]"
+          >
+            <MoreVertical size={17} />
+          </button>
+          {showMoreMenu && (
+            <>
+              <div
+                className="fixed inset-0 z-40"
+                onClick={() => setShowMoreMenu(false)}
+              />
+              <div className="absolute right-0 top-full mt-2 w-48 rounded-xl bg-[var(--modal-bg)] border border-[var(--border-color)] shadow-2xl p-1.5 z-50 flex flex-col gap-1 text-xs font-bold animate-slide-down">
+                <button
+                  onClick={() => {
+                    setShowMoreMenu(false);
+                    setShowQR(true);
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2.5 text-[var(--text-main)] cursor-pointer"
+                >
+                  <QrCode size={15} className="text-[var(--accent-indigo)]" />
+                  <span>Show QR Code</span>
+                </button>
+                <div className="flex items-center justify-between px-3 py-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/10">
+                  <span className="text-[var(--text-main)]">Theme Mode</span>
+                  <ThemeToggle />
+                </div>
+                <a
+                  href="https://github.com/sandeshPatel06/file-share"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2.5 text-[var(--text-main)] cursor-pointer"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/github-icon.svg" alt="GitHub" width={15} height={15} className="w-3.5 h-3.5 object-contain" />
+                  <span>GitHub Project</span>
+                </a>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* File Panel Toggle */}
         {onToggleFilePanel && (
           <button
             onClick={onToggleFilePanel}
             title={filePanelOpen ? "Hide File Explorer" : "Show File Explorer"}
             aria-label={filePanelOpen ? "Hide File Explorer" : "Show File Explorer"}
             className={`
-              h-8 w-8 sm:h-9 sm:w-9 flex items-center justify-center shrink-0 rounded-xl border transition-all shadow-sm cursor-pointer
+              h-9 w-9 flex items-center justify-center shrink-0 rounded-xl border transition-all shadow-sm cursor-pointer min-h-[40px] min-w-[40px]
               ${filePanelOpen
                 ? "bg-[var(--accent-indigo)]/15 text-[var(--accent-indigo)] border-[var(--accent-indigo)]/40 hover:bg-[var(--accent-indigo)]/25"
                 : "bg-[var(--badge-bg)] text-[var(--text-main)] border-[var(--border-color)] hover:opacity-80"
               }
             `}
           >
-            {filePanelOpen ? <PanelRightClose size={16} /> : <PanelRightOpen size={16} />}
+            {filePanelOpen ? <PanelRightClose size={17} /> : <PanelRightOpen size={17} />}
           </button>
         )}
       </div>

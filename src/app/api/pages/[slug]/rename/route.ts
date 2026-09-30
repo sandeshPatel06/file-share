@@ -62,6 +62,11 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
       SET slug = ?
       WHERE slug = ?
     `).run(newSlug, slug);
+
+    await db.prepare(`
+      INSERT OR REPLACE INTO redirects (oldSlug, newSlug)
+      VALUES (?, ?)
+    `).run(slug, newSlug);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Failed to rename slug";
     return NextResponse.json({ error: message }, { status: 500 });

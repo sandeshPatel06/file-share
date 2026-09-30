@@ -5,7 +5,9 @@ import { useState, useRef } from "react";
 import { showToast } from "@/components/ui/Toast";
 import { slugSchema } from "@/lib/validators";
 import { useRouter } from "next/navigation";
-import { Globe, ArrowRight, Check } from "lucide-react";
+import { Globe, ArrowRight, Check, Trash2, Clock } from "lucide-react";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { useRecentSpaces } from "@/hooks/useRecentSpaces";
 
 interface RenameSlugModalProps {
   open:    boolean;
@@ -20,8 +22,41 @@ export function RenameSlugModal({ open, onClose, slug, token }: RenameSlugModalP
   const [checking,  setChecking]  = useState(false);
   const [saving,    setSaving]    = useState(false);
   const [slugError, setSlugError] = useState("");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting,  setDeleting]  = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const router = useRouter();
+  const { removeRecentSpace } = useRecentSpaces();
+
+  async function handleDelete() {
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/pages/${slug}`, {
+        method: "DELETE",
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        showToast(data.error || "Failed to delete workspace", "error");
+        return;
+      }
+      removeRecentSpace(slug);
+      if (typeof window !== "undefined") {
+        localStorage.removeItem(`token:${slug}`);
+        sessionStorage.removeItem(`token:${slug}`);
+      }
+      showToast("Workspace deleted permanently", "success");
+      onClose();
+      router.push("/");
+    } catch {
+      showToast("Connection error while deleting", "error");
+    } finally {
+      setDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  }
 
   function handleSlugChange(val: string) {
     setNewSlug(val);
@@ -149,6 +184,30 @@ export function RenameSlugModal({ open, onClose, slug, token }: RenameSlugModalP
           )}
         </div>
 
+        {/* Retention Policy Notice */}
+        <div className="flex items-start gap-2 p-2.5 rounded-xl bg-[var(--badge-bg)] border border-[var(--badge-border)] text-xs text-[var(--text-muted)]">
+          <Clock size={15} className="text-[var(--accent-indigo)] shrink-0 mt-0.5" />
+          <p className="leading-relaxed text-[11px]">
+            <strong className="text-[var(--text-main)]">Data Retention:</strong> Inactive spaces may be pruned after 30 days of inactivity. Please export important notes and files to keep offline copies.
+          </p>
+        </div>
+
+        {/* Danger Zone: Permanent Deletion */}
+        <div className="flex items-center justify-between p-2.5 rounded-xl bg-red-500/5 border border-red-500/20 text-xs">
+          <div>
+            <p className="font-bold text-[var(--status-danger-text)]">Delete Workspace</p>
+            <p className="text-[11px] text-[var(--text-muted)]">Permanently erase notes and all files.</p>
+          </div>
+          <Button
+            variant="danger"
+            size="xs"
+            onClick={() => setShowDeleteConfirm(true)}
+            icon={<Trash2 size={13} />}
+          >
+            Delete
+          </Button>
+        </div>
+
         {/* Modal Action Controls */}
         <div className="flex items-center justify-end gap-2 pt-3 mt-1 border-t border-[var(--border-color)]">
           <Button variant="secondary" size="sm" onClick={onClose}>
@@ -166,6 +225,17 @@ export function RenameSlugModal({ open, onClose, slug, token }: RenameSlugModalP
           </Button>
         </div>
       </div>
+
+      <ConfirmModal
+        open={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDelete}
+        loading={deleting}
+        title={`Delete /s/${slug}?`}
+        description="This action is irreversible. All Markdown notes and uploaded files in this workspace will be deleted immediately."
+        confirmText="Yes, Delete Permanently"
+        variant="danger"
+      />
     </Modal>
   );
 }

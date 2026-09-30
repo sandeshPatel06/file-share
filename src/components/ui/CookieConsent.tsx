@@ -133,84 +133,87 @@ export function CookieConsent() {
   if (!isOpen) return null;
 
   return (
-    <div
-      role="dialog"
-      aria-labelledby="cookie-banner-title"
-      aria-describedby="cookie-banner-description"
-      className="fixed bottom-0 inset-x-0 z-50 p-4 sm:p-6 bg-[var(--header-bg)]/95 backdrop-blur-md border-t border-[var(--border-color)] shadow-2xl animate-fade-in"
-    >
-      <div className="max-w-5xl mx-auto flex flex-col gap-4">
-        {!isCustomizeOpen ? (
-          /* Standard Compact Banner */
-          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
-            <div className="flex items-start gap-3">
-              <div className="p-2.5 rounded-xl bg-[var(--badge-bg)] text-[var(--accent-primary)] shrink-0 mt-0.5">
-                <Cookie className="w-5 h-5" aria-hidden="true" />
+    <>
+      {/* 1. Low-profile, Non-intrusive Bottom Banner */}
+      {!isCustomizeOpen ? (
+        <aside
+          role="dialog"
+          aria-labelledby="cookie-banner-title"
+          aria-describedby="cookie-banner-description"
+          className="fixed bottom-0 inset-x-0 z-50 px-3 py-2 sm:px-6 sm:py-3 bg-[var(--header-bg)]/95 backdrop-blur-md border-t border-[var(--border-color)] shadow-2xl animate-fade-in"
+        >
+          <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-2.5 sm:gap-4">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              <div className="p-1.5 sm:p-2 rounded-lg bg-[var(--badge-bg)] text-[var(--accent-primary)] shrink-0">
+                <Cookie className="w-4 h-4 sm:w-4.5 sm:h-4.5" aria-hidden="true" />
               </div>
-              <div className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed">
-                <h2 id="cookie-banner-title" className="font-bold text-[var(--text-main)] text-sm sm:text-base mb-1">
-                  We respect your privacy & data choices
-                </h2>
-                <p id="cookie-banner-description">
-                  FileShare uses strictly necessary storage for workspace sessions and authentication. With your explicit consent, we also use cookies for privacy-first Google Analytics and non-intrusive Google AdSense advertising in accordance with the EU GDPR and India&apos;s Digital Personal Data Protection (DPDP) Act, 2023. Read our{" "}
+              <div className="text-[11px] sm:text-xs text-[var(--text-muted)] leading-tight sm:leading-relaxed">
+                <span id="cookie-banner-title" className="font-bold text-[var(--text-main)] mr-1">
+                  Cookies & Privacy:
+                </span>
+                <span id="cookie-banner-description">
+                  We use strictly necessary storage for workspace sync and optional analytics. Read our{" "}
                   <Link href="/cookies" className="text-[var(--accent-primary)] underline hover:text-[var(--text-main)]">
                     Cookie Policy
-                  </Link>{" "}
-                  and{" "}
-                  <Link href="/privacy" className="text-[var(--accent-primary)] underline hover:text-[var(--text-main)]">
-                    Privacy Policy
                   </Link>.
-                </p>
+                </span>
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2.5 shrink-0 w-full lg:w-auto justify-end">
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 w-full md:w-auto justify-end">
               <button
                 type="button"
                 onClick={() => setIsCustomizeOpen(true)}
-                className="px-3.5 py-2 text-xs font-semibold rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] text-[var(--text-main)] hover:bg-[var(--bg-main)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]"
+                className="px-2.5 py-1.5 sm:px-3 text-[11px] sm:text-xs font-semibold rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] text-[var(--text-main)] hover:bg-[var(--bg-main)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] cursor-pointer"
               >
                 Customize
               </button>
               <button
                 type="button"
                 onClick={handleRejectNonEssential}
-                className="px-3.5 py-2 text-xs font-semibold rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] text-[var(--text-main)] hover:bg-[var(--bg-main)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]"
+                className="px-2.5 py-1.5 sm:px-3 text-[11px] sm:text-xs font-semibold rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] text-[var(--text-main)] hover:bg-[var(--bg-main)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] cursor-pointer"
               >
                 Reject Non-Essential
               </button>
               <button
                 type="button"
                 onClick={handleAcceptAll}
-                className="px-4 py-2 text-xs font-semibold rounded-lg bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white shadow-sm transition-colors focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)]"
+                className="px-3.5 py-1.5 sm:px-4 text-[11px] sm:text-xs font-semibold rounded-lg bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white shadow-sm transition-colors focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] cursor-pointer"
               >
                 Accept All
               </button>
             </div>
           </div>
-        ) : (
-          /* Granular Preferences View */
-          <div className="space-y-4">
+        </aside>
+      ) : (
+        /* 2. Granular Preferences Centered Modal */
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="cookie-preferences-title"
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in overflow-y-auto"
+        >
+          <div className="max-w-2xl w-full bg-[var(--modal-bg)] border border-[var(--border-color)] rounded-2xl shadow-2xl p-4 sm:p-6 space-y-4 my-auto">
             <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-3">
               <div className="flex items-center gap-2">
-                <Settings className="w-4 h-4 text-[var(--accent-primary)]" aria-hidden="true" />
-                <h2 className="font-bold text-sm sm:text-base text-[var(--text-main)]">
+                <Settings className="w-5 h-5 text-[var(--accent-primary)]" aria-hidden="true" />
+                <h2 id="cookie-preferences-title" className="font-bold text-sm sm:text-base text-[var(--text-main)]">
                   Manage Cookie & Tracking Preferences
                 </h2>
               </div>
               <button
                 type="button"
                 onClick={() => setIsCustomizeOpen(false)}
-                className="p-1 rounded-md text-[var(--text-muted)] hover:text-[var(--text-main)]"
-                aria-label="Close customization view"
+                className="p-1 rounded-md text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors cursor-pointer"
+                aria-label="Close customization modal"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+            <div className="grid grid-cols-1 gap-3 text-xs">
               {/* Category 1: Strictly Necessary */}
-              <div className="p-3.5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] space-y-1.5">
+              <div className="p-3 sm:p-3.5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] space-y-1">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-[var(--text-main)]">Strictly Necessary</span>
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[var(--badge-bg)] text-[var(--accent-primary)]">
@@ -223,7 +226,7 @@ export function CookieConsent() {
               </div>
 
               {/* Category 2: Analytics Cookies */}
-              <div className="p-3.5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] space-y-1.5">
+              <div className="p-3 sm:p-3.5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] space-y-1">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-[var(--text-main)]">Performance & Analytics</span>
                   <label className="relative inline-flex items-center cursor-pointer">
@@ -243,7 +246,7 @@ export function CookieConsent() {
               </div>
 
               {/* Category 3: Advertising / Marketing */}
-              <div className="p-3.5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] space-y-1.5">
+              <div className="p-3 sm:p-3.5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] space-y-1">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-[var(--text-main)]">Advertising & Partner</span>
                   <label className="relative inline-flex items-center cursor-pointer">
@@ -263,22 +266,22 @@ export function CookieConsent() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between pt-2">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2">
               <span className="text-[11px] text-[var(--text-muted)]">
                 You can change these preferences at any time via the &quot;Cookie Preferences&quot; link in the footer.
               </span>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 self-end sm:self-auto">
                 <button
                   type="button"
                   onClick={handleRejectNonEssential}
-                  className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] text-[var(--text-main)] hover:bg-[var(--bg-main)]"
+                  className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] text-[var(--text-main)] hover:bg-[var(--bg-main)] cursor-pointer"
                 >
-                  Reject All Non-Essential
+                  Reject Non-Essential
                 </button>
                 <button
                   type="button"
                   onClick={handleSaveCustom}
-                  className="px-4 py-1.5 text-xs font-semibold rounded-lg bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-primary-hover)] inline-flex items-center gap-1.5"
+                  className="px-4 py-1.5 text-xs font-semibold rounded-lg bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-primary-hover)] inline-flex items-center gap-1.5 cursor-pointer shadow-sm"
                 >
                   <Check className="w-3.5 h-3.5" />
                   Save Preferences
@@ -286,9 +289,9 @@ export function CookieConsent() {
               </div>
             </div>
           </div>
-        )}
-      </div>
-    </div>
+        </div>
+      )}
+    </>
   );
 }
 

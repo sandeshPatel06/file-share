@@ -59,8 +59,8 @@
   --input-bg: #f6f8fa;       /* Soft Sunken Input Canvas */
 
   --text-main: #1f2328;      /* GitHub Light primary text (14.2:1) */
-  --text-muted: #57606a;     /* Secondary text (5.6:1 - AA) */
-  --text-subtle: #4a545e;    /* Metadata text (7.3:1 - AAA) */
+  --text-muted: #3d454f;     /* Secondary text (8.0:1 - AAA contrast) */
+  --text-subtle: #424a53;    /* Metadata text (7.5:1 - AAA contrast) */
 
   --accent-primary: #1f883d; /* GitHub Light Green Accent */
   --accent-primary-hover: #1a7f37;

@@ -1,9 +1,10 @@
 "use client";
 import { useCallback, useRef, useState } from "react";
-import { UploadCloud, FolderOpen, FileUp, Search, LayoutGrid, LayoutList, X } from "lucide-react";
+import { UploadCloud, FolderOpen, FileUp, Search, LayoutGrid, LayoutList, X, Download, Loader2 } from "lucide-react";
 import { useFileList, FileItem } from "@/hooks/useFileList";
 import { FileCard } from "@/components/FileCard";
 import { showToast } from "@/components/ui/Toast";
+import { exportFilesOnlyAsZip } from "@/lib/exportZip";
 
 interface FilePanelProps {
   slug:  string;
@@ -78,7 +79,39 @@ export function FilePanel({ slug, token }: FilePanelProps) {
   const [activeCategory, setActiveCategory] = useState<FileCategory>("all");
   const [viewLayout,     setViewLayout]     = useState<"list" | "grid">("list");
   const [uploadProgress, setUploadProgress] = useState<Record<string, UploadProgressItem>>({});
+  const [downloadingZip, setDownloadingZip] = useState(false);
+  const [zipStatus,      setZipStatus]      = useState("");
+  const activeXhrs = useRef<Record<string, XMLHttpRequest>>({});
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const cancelUpload = useCallback((id: string) => {
+    if (activeXhrs.current[id]) {
+      activeXhrs.current[id].abort();
+      delete activeXhrs.current[id];
+    }
+    setUploadProgress((prev) => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
+    showToast("Upload cancelled", "info");
+  }, []);
+
+  const handleDownloadAllZip = useCallback(async () => {
+    if (downloadingZip || files.length === 0) return;
+    setDownloadingZip(true);
+    try {
+      await exportFilesOnlyAsZip({
+        slug,
+        files,
+        token,
+        onProgress: setZipStatus,
+      });
+    } finally {
+      setDownloadingZip(false);
+      setZipStatus("");
+    }
+  }, [downloadingZip, files, slug, token]);
 
   const uploadFile = useCallback(async (file: File) => {
     if (file.size > 500 * 1024 * 1024) {
@@ -104,6 +137,7 @@ export function FilePanel({ slug, token }: FilePanelProps) {
     try {
       await new Promise<void>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
+        activeXhrs.current[uploadId] = xhr;
         const formData = new FormData();
         formData.append("file", file);
 
@@ -147,6 +181,7 @@ export function FilePanel({ slug, token }: FilePanelProps) {
                 delete next[uploadId];
                 return next;
               });
+              delete activeXhrs.current[uploadId];
             }, 1000);
             resolve();
           } else {
@@ -156,6 +191,7 @@ export function FilePanel({ slug, token }: FilePanelProps) {
               if (res.error) errorMsg = res.error;
             } catch {}
             showToast(errorMsg, "error");
+            delete activeXhrs.current[uploadId];
             setUploadProgress((prev) => {
               const next = { ...prev };
               delete next[uploadId];
@@ -167,6 +203,7 @@ export function FilePanel({ slug, token }: FilePanelProps) {
 
         xhr.onerror = () => {
           showToast(`Connection error during upload of ${file.name}`, "error");
+          delete activeXhrs.current[uploadId];
           setUploadProgress((prev) => {
             const next = { ...prev };
             delete next[uploadId];
@@ -233,8 +270,24 @@ export function FilePanel({ slug, token }: FilePanelProps) {
           )}
         </div>
 
-        {/* View Layout Actions */}
-        <div className="flex items-center gap-1 shrink-0">
+        {/* Actions: Download All as ZIP & View Layout */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {files.length > 0 && (
+            <button
+              onClick={handleDownloadAllZip}
+              disabled={downloadingZip}
+              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[var(--badge-bg)] hover:bg-[var(--accent-primary)]/15 border border-[var(--badge-border)] text-[var(--accent-primary)] transition-all text-xs font-bold cursor-pointer disabled:opacity-50"
+              title="Download all files as ZIP archive"
+            >
+              {downloadingZip ? (
+                <Loader2 size={13} className="animate-spin text-[var(--accent-primary)]" />
+              ) : (
+                <Download size={13} />
+              )}
+              <span className="hidden sm:inline">{downloadingZip ? (zipStatus || "Zipping…") : "ZIP All"}</span>
+            </button>
+          )}
+
           <div className="flex items-center p-0.5 rounded-lg bg-[var(--badge-bg)] border border-[var(--border-color)]">
             <button
               onClick={() => setViewLayout("list")}
@@ -364,9 +417,19 @@ export function FilePanel({ slug, token }: FilePanelProps) {
                 <FileUp size={15} className="text-[var(--accent-primary)] animate-bounce shrink-0" />
                 <span className="text-xs font-bold text-[var(--text-main)] truncate">{item.name}</span>
               </div>
-              <span className="text-xs font-mono font-extrabold text-[var(--accent-primary)] shrink-0">
-                {item.percent}%
-              </span>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-xs font-mono font-extrabold text-[var(--accent-primary)]">
+                  {item.percent}%
+                </span>
+                <button
+                  type="button"
+                  onClick={() => cancelUpload(item.id)}
+                  title="Cancel upload"
+                  className="p-1 rounded text-[var(--text-muted)] hover:text-red-400 hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                >
+                  <X size={13} />
+                </button>
+              </div>
             </div>
 
             <div className="w-full h-1.5 bg-black/10 dark:bg-white/10 rounded-full overflow-hidden">
@@ -391,18 +454,28 @@ export function FilePanel({ slug, token }: FilePanelProps) {
             ))}
           </div>
         ) : filteredFiles.length === 0 && Object.keys(uploadProgress).length === 0 ? (
-          <div className="text-center py-8 px-3 border border-dashed border-[var(--border-color)] rounded-xl bg-[var(--bg-card)]">
-            <FolderOpen size={24} className="mx-auto text-[var(--text-subtle)] mb-2 opacity-60" />
-            <p className="text-xs font-bold text-[var(--text-muted)]">
+          <div
+            onClick={() => inputRef.current?.click()}
+            className="text-center py-9 px-4 border-2 border-dashed border-[var(--border-color)] hover:border-[var(--accent-primary)] rounded-2xl bg-[var(--bg-card)] hover:bg-[var(--bg-card-hover)] transition-all cursor-pointer group"
+          >
+            <div className="w-12 h-12 rounded-2xl bg-[var(--badge-bg)] border border-[var(--badge-border)] flex items-center justify-center mx-auto mb-3 text-[var(--accent-indigo)] group-hover:scale-110 transition-transform shadow-sm">
+              <FolderOpen size={24} />
+            </div>
+            <p className="text-xs sm:text-sm font-extrabold text-[var(--text-main)]">
               {searchQuery || activeCategory !== "all"
-                ? "No matching files"
-                : "No files yet"}
+                ? "No matching files found"
+                : "Drop files or click to browse"}
             </p>
-            <p className="text-[10px] text-[var(--text-subtle)] mt-1 font-medium">
+            <p className="text-[11px] text-[var(--text-muted)] mt-1 font-medium max-w-xs mx-auto">
               {searchQuery || activeCategory !== "all"
-                ? "Try clearing filters or search term"
-                : "Upload docs, images, or audio"}
+                ? "Try clearing your filters or search keywords"
+                : "Upload documents, images, audio, video or code up to 500 MB per file"}
             </p>
+            {!searchQuery && activeCategory === "all" && (
+              <span className="inline-block mt-3 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white shadow-sm transition-colors">
+                Select Files to Upload
+              </span>
+            )}
           </div>
         ) : (
           <div className={viewLayout === "grid" ? "grid grid-cols-2 gap-2" : "space-y-2"}>

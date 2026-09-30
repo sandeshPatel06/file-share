@@ -37,6 +37,7 @@ let sqliteDb: SqliteDbClient | null = null;
 const memoryStore = {
   pages: new Map<string, Record<string, unknown>>(),
   files: new Map<string, Record<string, unknown>>(),
+  redirects: new Map<string, Record<string, unknown>>(),
 };
 
 const hasPg = Boolean(process.env.DATABASE_URL);
@@ -95,6 +96,14 @@ if (hasPg) {
         await pgPool.query(`ALTER TABLE files ADD COLUMN IF NOT EXISTS "storedName" TEXT;`);
         await pgPool.query(`ALTER TABLE files ADD COLUMN IF NOT EXISTS "downloadURL" TEXT;`);
         await pgPool.query(`ALTER TABLE files ADD COLUMN IF NOT EXISTS "uploadedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP;`);
+
+        await pgPool.query(`
+          CREATE TABLE IF NOT EXISTS redirects (
+            "oldSlug" VARCHAR(255) PRIMARY KEY,
+            "newSlug" VARCHAR(255) NOT NULL,
+            "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          );
+        `);
       } catch (err) {
         console.error("PostgreSQL table provisioning error:", err);
       }
@@ -144,6 +153,12 @@ if (hasPg) {
         uploadedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (slug) REFERENCES pages(slug) ON DELETE CASCADE ON UPDATE CASCADE
       );
+
+      CREATE TABLE IF NOT EXISTS redirects (
+        oldSlug TEXT PRIMARY KEY,
+        newSlug TEXT NOT NULL,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
     `);
   } catch (err) {
     console.warn("better-sqlite3 unavailable, using in-memory fallback store:", err);
@@ -164,6 +179,13 @@ function convertSqlForPg(sql: string): string {
     }
   }
 
+  if (pgSql.toLowerCase().includes("insert or replace into redirects")) {
+    pgSql = pgSql.replace(/insert or replace into redirects/i, "INSERT INTO redirects");
+    if (!pgSql.toLowerCase().includes("on conflict")) {
+      pgSql += ` ON CONFLICT ("oldSlug") DO UPDATE SET "newSlug" = EXCLUDED."newSlug"`;
+    }
+  }
+
   // Quote camelCase identifiers for PostgreSQL case sensitivity
   pgSql = pgSql
     .replace(/(?<!")\bisProtected\b(?!")/gi, '"isProtected"')
@@ -174,7 +196,9 @@ function convertSqlForPg(sql: string): string {
     .replace(/(?<!")\boriginalName\b(?!")/gi, '"originalName"')
     .replace(/(?<!")\bstoredName\b(?!")/gi, '"storedName"')
     .replace(/(?<!")\bdownloadURL\b(?!")/gi, '"downloadURL"')
-    .replace(/(?<!")\buploadedAt\b(?!")/gi, '"uploadedAt"');
+    .replace(/(?<!")\buploadedAt\b(?!")/gi, '"uploadedAt"')
+    .replace(/(?<!")\boldSlug\b(?!")/gi, '"oldSlug"')
+    .replace(/(?<!")\bnewSlug\b(?!")/gi, '"newSlug"');
 
   return pgSql;
 }
@@ -194,6 +218,8 @@ function normalizeRow(row: Record<string, unknown> | null | undefined): Record<s
     else if (lower === "createdat") normalized.createdAt = val;
     else if (lower === "updatedat") normalized.updatedAt = val;
     else if (lower === "uploadedat") normalized.uploadedAt = val;
+    else if (lower === "oldslug") normalized.oldSlug = val;
+    else if (lower === "newslug") normalized.newSlug = val;
     else if (lower === "size") normalized.size = Number(val);
     else normalized[key] = val;
   }
@@ -259,6 +285,9 @@ function memoryRun(sql: string, params: unknown[]) {
   } else if (lower.includes("delete from files")) {
     const [fileId] = params as [string];
     memoryStore.files.delete(fileId);
+  } else if (lower.includes("insert into redirects") || lower.includes("insert or replace into redirects")) {
+    const [oldSlug, newSlug] = params as [string, string];
+    memoryStore.redirects.set(oldSlug, { oldSlug, newSlug, createdAt: new Date().toISOString() });
   }
   return { changes: 1 };
 }
@@ -273,6 +302,9 @@ function memoryGet(sql: string, params: unknown[]) {
     if (fileId) {
       return memoryStore.files.get(fileId) || undefined;
     }
+  } else if (lower.includes("from redirects")) {
+    const [oldSlug] = params as [string];
+    return memoryStore.redirects.get(oldSlug) || undefined;
   }
   return undefined;
 }

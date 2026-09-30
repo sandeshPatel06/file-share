@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import db from "@/lib/db";
 import { SharePage } from "@/components/SharePage";
 import { slugSchema } from "@/lib/validators";
@@ -93,6 +93,16 @@ export default async function SlugPage({ params }: Props) {
   let page = (await db.prepare("SELECT slug, isProtected, content FROM pages WHERE slug = ?").get(slug)) as PageRow | undefined;
 
   if (!page) {
+    // Check if this slug was previously renamed to a new slug
+    try {
+      const redirectRow = (await db.prepare("SELECT newSlug FROM redirects WHERE oldSlug = ?").get(slug)) as { newSlug?: string } | undefined;
+      if (redirectRow?.newSlug) {
+        redirect(`/s/${redirectRow.newSlug}`);
+      }
+    } catch {
+      // In case redirects table not yet queried
+    }
+
     try {
       await db.prepare("INSERT INTO pages (slug, content, isProtected) VALUES (?, ?, 0)").run(slug, starterContent);
       page = { slug, isProtected: 0, content: starterContent };

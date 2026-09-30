@@ -6,8 +6,9 @@ import { FilePanel } from "@/components/FilePanel";
 import { PasswordGate } from "@/components/PasswordGate";
 import { PasswordModal } from "@/components/PasswordModal";
 import Link from "next/link";
-import { PanelRightClose, FolderOpen } from "lucide-react";
+import { PanelRightClose, FolderOpen, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { useRecentSpaces } from "@/hooks/useRecentSpaces";
 
 interface SharePageProps {
   pageData: {
@@ -34,7 +35,10 @@ export function SharePage({ pageData }: SharePageProps) {
 
   const storedToken = useSyncExternalStore(
     emptySubscribe,
-    () => (typeof window !== "undefined" ? sessionStorage.getItem(`token:${slug}`) : null),
+    () => {
+      if (typeof window === "undefined") return null;
+      return localStorage.getItem(`token:${slug}`) || sessionStorage.getItem(`token:${slug}`);
+    },
     () => null
   );
 
@@ -46,6 +50,14 @@ export function SharePage({ pageData }: SharePageProps) {
   const [isProtected, setIsProtected]         = useState(initialProtected);
   const [isUnlockedState, setIsUnlockedState] = useState(false);
   const [showPwModal, setShowPwModal]         = useState(false);
+  const [showLegalMenu, setShowLegalMenu]     = useState(false);
+  const { addRecentSpace }                    = useRecentSpaces();
+
+  useEffect(() => {
+    if (slug) {
+      addRecentSpace(slug);
+    }
+  }, [slug, addRecentSpace]);
 
   // Close on Escape key on mobile
   useEffect(() => {
@@ -61,11 +73,14 @@ export function SharePage({ pageData }: SharePageProps) {
   const effectiveToken = tokenState ?? storedToken;
   const isUnlocked = !isProtected || Boolean(effectiveToken) || isUnlockedState;
 
-  function handleUnlocked(newToken: string) {
+  function handleUnlocked(newToken: string, rememberDevice?: boolean) {
     setTokenState(newToken);
     setIsUnlockedState(true);
     if (typeof window !== "undefined") {
       sessionStorage.setItem(`token:${slug}`, newToken);
+      if (rememberDevice) {
+        localStorage.setItem(`token:${slug}`, newToken);
+      }
     }
   }
 
@@ -148,26 +163,46 @@ export function SharePage({ pageData }: SharePageProps) {
         onSuccess={(protectedState) => setIsProtected(protectedState)}
       />
 
-      <footer className="border-t border-[var(--border-color)] bg-[var(--header-bg)] py-2 px-4 shrink-0 text-[11px] text-[var(--text-muted)] flex flex-wrap items-center justify-between gap-2 z-20">
+      <footer className="border-t border-[var(--border-color)] bg-[var(--header-bg)] py-2.5 px-4 shrink-0 text-xs sm:text-[13px] text-[var(--text-muted)] flex flex-wrap items-center justify-between gap-3 z-20 font-medium">
         <div className="flex items-center gap-2">
-          <span>Workspace: <code className="font-mono text-[var(--text-main)]">/s/{slug}</code></span>
+          <span>Workspace: <code className="font-mono font-semibold text-[var(--text-main)]">/s/{slug}</code></span>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
           <Link href="/guide" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-main)] transition-colors">User Guide</Link>
-          <span>•</span>
+          <span className="text-[var(--border-color)]">•</span>
           <Link href="/resources" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-main)] transition-colors">Resources</Link>
-          <span>•</span>
+          <span className="text-[var(--border-color)]">•</span>
           <Link href="/about" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-main)] transition-colors">About</Link>
-          <span>•</span>
+          <span className="text-[var(--border-color)]">•</span>
           <Link href="/contact" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-main)] transition-colors">Contact</Link>
-          <span>•</span>
-          <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-main)] transition-colors">Privacy</Link>
-          <span>•</span>
-          <Link href="/terms" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-main)] transition-colors">Terms</Link>
-          <span>•</span>
-          <Link href="/cookies" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-main)] transition-colors">Cookies</Link>
-          <span>•</span>
-          <Link href="/refund" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text-main)] transition-colors">Refund Policy</Link>
+
+          {/* Mobile Legal dropdown */}
+          <div className="relative sm:hidden">
+            <button
+              onClick={() => setShowLegalMenu(!showLegalMenu)}
+              className="hover:text-[var(--text-main)] transition-colors cursor-pointer inline-flex items-center gap-1 font-semibold"
+            >
+              Legal <ChevronUp size={12} className={`transition-transform duration-200 ${showLegalMenu ? "rotate-180" : ""}`} />
+            </button>
+            {showLegalMenu && (
+              <div className="absolute right-0 bottom-full mb-2 w-36 rounded-xl bg-[var(--modal-bg)] border border-[var(--border-color)] shadow-2xl p-1 z-30 flex flex-col gap-0.5 text-xs">
+                <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="px-2.5 py-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 text-[var(--text-main)]" onClick={() => setShowLegalMenu(false)}>Privacy Policy</Link>
+                <Link href="/terms" target="_blank" rel="noopener noreferrer" className="px-2.5 py-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 text-[var(--text-main)]" onClick={() => setShowLegalMenu(false)}>Terms of Service</Link>
+                <Link href="/cookies" target="_blank" rel="noopener noreferrer" className="px-2.5 py-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 text-[var(--text-main)]" onClick={() => setShowLegalMenu(false)}>Cookie Policy</Link>
+                <Link href="/refund" target="_blank" rel="noopener noreferrer" className="px-2.5 py-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 text-[var(--text-main)]" onClick={() => setShowLegalMenu(false)}>Refund Policy</Link>
+              </div>
+            )}
+          </div>
+
+          {/* Desktop inline legal links */}
+          <span className="hidden sm:inline text-[var(--border-color)]">•</span>
+          <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="hidden sm:inline hover:text-[var(--text-main)] transition-colors">Privacy</Link>
+          <span className="hidden sm:inline text-[var(--border-color)]">•</span>
+          <Link href="/terms" target="_blank" rel="noopener noreferrer" className="hidden sm:inline hover:text-[var(--text-main)] transition-colors">Terms</Link>
+          <span className="hidden sm:inline text-[var(--border-color)]">•</span>
+          <Link href="/cookies" target="_blank" rel="noopener noreferrer" className="hidden sm:inline hover:text-[var(--text-main)] transition-colors">Cookies</Link>
+          <span className="hidden sm:inline text-[var(--border-color)]">•</span>
+          <Link href="/refund" target="_blank" rel="noopener noreferrer" className="hidden sm:inline hover:text-[var(--text-main)] transition-colors">Refund</Link>
         </div>
       </footer>
     </div>

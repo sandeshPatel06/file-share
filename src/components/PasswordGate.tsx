@@ -5,14 +5,15 @@ import { Button } from "@/components/ui/Button";
 
 interface PasswordGateProps {
   slug:       string;
-  onUnlocked: (token: string) => void;
+  onUnlocked: (token: string, rememberDevice?: boolean) => void;
 }
 
 export function PasswordGate({ slug, onUnlocked }: PasswordGateProps) {
-  const [password, setPassword] = useState("");
-  const [showPw, setShowPw]     = useState(false);
-  const [error, setError]       = useState("");
-  const [loading, setLoading]   = useState(false);
+  const [password, setPassword]             = useState("");
+  const [showPw, setShowPw]                 = useState(false);
+  const [rememberDevice, setRememberDevice] = useState(true);
+  const [error, setError]                   = useState("");
+  const [loading, setLoading]               = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -33,7 +34,7 @@ export function PasswordGate({ slug, onUnlocked }: PasswordGateProps) {
         return;
       }
 
-      onUnlocked(data.token);
+      onUnlocked(data.token, rememberDevice);
     } catch {
       setError("Connection failed. Try again.");
     } finally {
@@ -85,6 +86,17 @@ export function PasswordGate({ slug, onUnlocked }: PasswordGateProps) {
                 {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
+
+            {/* Remember Unlock on this Device */}
+            <label className="flex items-center gap-2.5 text-xs text-[var(--text-muted)] cursor-pointer select-none text-left px-1">
+              <input
+                type="checkbox"
+                checked={rememberDevice}
+                onChange={(e) => setRememberDevice(e.target.checked)}
+                className="w-4 h-4 rounded border-[var(--border-color)] accent-[var(--accent-primary)] cursor-pointer"
+              />
+              <span>Remember unlock on this device</span>
+            </label>
 
             {error && (
               <div className="p-3 rounded-xl bg-[var(--status-danger-bg)] border border-[var(--status-danger-border)] text-xs text-[var(--status-danger-text)] font-bold flex items-center gap-2">

@@ -54,6 +54,21 @@ export async function GET(req: NextRequest, ctx: RouteContext) {
 
       pageEvents.on(slug, onPageEvent);
 
+      // Broadcast updated presence count
+      const activeCount = Math.max(1, pageEvents.listenerCount(slug));
+      pageEvents.emit(slug, {
+        type: "presence_updated",
+        slug,
+        activeCount,
+      });
+
+      // Send initial presence directly to new connection
+      try {
+        controller.enqueue(
+          encoder.encode(`event: message\ndata: ${JSON.stringify({ type: "presence_updated", slug, activeCount })}\n\n`)
+        );
+      } catch {}
+
       // Keepalive ping every 10s to keep connection open without dev server timeout
       const pingInterval = setInterval(() => {
         try {
@@ -67,6 +82,13 @@ export async function GET(req: NextRequest, ctx: RouteContext) {
         pageEvents.off(slug, onPageEvent);
         clearInterval(pingInterval);
         try { controller.close(); } catch {}
+
+        const remaining = pageEvents.listenerCount(slug);
+        pageEvents.emit(slug, {
+          type: "presence_updated",
+          slug,
+          activeCount: Math.max(1, remaining),
+        });
       });
     },
   });

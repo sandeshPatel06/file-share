@@ -19,11 +19,15 @@ import {
   CheckCircle2,
   HelpCircle,
   BookOpen,
+  Clock,
+  Pin,
+  X,
 } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 import { Button } from "@/components/ui/Button";
 import { ARTICLES } from "@/lib/articles";
 import { CookieSettingsButton } from "@/components/ui/CookieConsent";
+import { useRecentSpaces } from "@/hooks/useRecentSpaces";
 
 interface LandingPageProps {
   defaultSlug: string;
@@ -33,6 +37,7 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
   const router = useRouter();
   const [customSlug, setCustomSlug] = useState("");
   const [activeSlug, setActiveSlug] = useState<string | null>(null);
+  const { recentSpaces, removeRecentSpace, togglePin, clearRecentSpaces } = useRecentSpaces();
 
   const handleCreateSpace = (slugToUse?: string) => {
     const target = (slugToUse || customSlug.trim() || defaultSlug)
@@ -163,6 +168,60 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
                 </Button>
                 <span>500MB Limit per file</span>
               </div>
+
+              {/* Recent Spaces Quick Access (Local & Privacy-Safe) */}
+              {recentSpaces.length > 0 && (
+                <div className="mt-3.5 pt-3 border-t border-[var(--border-color)] text-left">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[11px] font-bold text-[var(--text-subtle)] uppercase tracking-wider flex items-center gap-1.5">
+                      <Clock className="w-3 h-3 text-[var(--accent-indigo)]" />
+                      Recent Spaces
+                    </span>
+                    <button
+                      type="button"
+                      onClick={clearRecentSpaces}
+                      className="text-[10px] text-[var(--text-subtle)] hover:text-red-400 transition-colors cursor-pointer"
+                      title="Clear recent workspaces"
+                    >
+                      Clear all
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pr-1">
+                    {recentSpaces.map((item) => (
+                      <div
+                        key={item.slug}
+                        className="group inline-flex items-center gap-1 pl-2.5 pr-1 py-1 rounded-lg bg-[var(--bg-main)] hover:bg-[var(--border-color)]/60 border border-[var(--border-color)] transition-all text-xs font-mono"
+                      >
+                        <Link
+                          href={`/s/${item.slug}`}
+                          className="font-bold text-[var(--text-main)] hover:text-[var(--accent-primary)] truncate max-w-[120px] transition-colors"
+                          title={`Open workspace /s/${item.slug}`}
+                        >
+                          {item.slug}
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => togglePin(item.slug)}
+                          title={item.pinned ? "Unpin workspace" : "Pin workspace"}
+                          className={`p-0.5 rounded hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer ${
+                            item.pinned ? "text-amber-400" : "text-[var(--text-subtle)] opacity-40 group-hover:opacity-100"
+                          }`}
+                        >
+                          <Pin className={`w-3 h-3 ${item.pinned ? "fill-current" : ""}`} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => removeRecentSpace(item.slug)}
+                          title="Remove from history"
+                          className="p-0.5 rounded text-[var(--text-subtle)] hover:text-red-400 opacity-40 group-hover:opacity-100 transition-all cursor-pointer"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Form Consent Notice (GDPR & DPDP Act 2023) */}
               <p className="mt-3 text-[11px] text-[var(--text-subtle)] text-center leading-normal">

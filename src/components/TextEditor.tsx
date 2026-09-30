@@ -5,13 +5,14 @@ import {
   List, ListOrdered, CheckSquare, Quote, Code, Table, Sparkles,
   CheckCircle2, Loader2, Upload, Layout, Eye, Columns,
   Maximize2, Minimize2, Download, Printer, FileText, FileCode,
-  Image as ImageIcon, FileSpreadsheet, ChevronDown, Check, FileJson
+  Image as ImageIcon, FileSpreadsheet, ChevronDown, Check, FileJson, Archive, AlertTriangle
 } from "lucide-react";
 import { usePageContent } from "@/hooks/usePageContent";
 import { showToast } from "@/components/ui/Toast";
 import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
+import { exportAllAsZip } from "@/lib/exportZip";
 import { createPortal } from "react-dom";
 import { computePosition, flip, shift, offset } from "@floating-ui/dom";
 import { getCaretCoordinates } from "@/lib/caret";
@@ -62,7 +63,16 @@ const getIsDesktop = () => (typeof window !== "undefined" ? window.innerWidth >=
 const getServerIsDesktop = () => true;
 
 export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
-  const { content: serverContent, loading, touchLocalEdit } = usePageContent(slug, initialContent);
+  const {
+    content: serverContent,
+    loading,
+    touchLocalEdit,
+    collaboratorCount,
+    conflict,
+    resolveConflictTakeMine,
+    resolveConflictTakeRemote,
+    resolveConflictMerge,
+  } = usePageContent(slug, initialContent);
 
   const isDesktop = useSyncExternalStore(subscribeDesktop, getIsDesktop, getServerIsDesktop);
   const [userViewMode, setUserViewMode] = useState<ViewMode | null>(null);
@@ -96,13 +106,34 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
   const lastPushedRef   = useRef<string>(initialContent);
   const debounceTimer   = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Sync server updates if user hasn't edited locally
+  // Sync server updates if user hasn't edited locally and no conflict active
   useEffect(() => {
-    if (serverContent !== null && serverContent !== lastPushedRef.current) {
+    if (serverContent !== null && serverContent !== lastPushedRef.current && !conflict) {
       setDisplayContent(serverContent);
       lastPushedRef.current = serverContent;
     }
-  }, [serverContent]);
+  }, [serverContent, conflict]);
+
+  const handleTakeMine = () => {
+    resolveConflictTakeMine();
+    showToast("Kept your local edits", "success");
+  };
+
+  const handleTakeRemote = () => {
+    if (conflict?.remoteContent !== undefined) {
+      setDisplayContent(conflict.remoteContent);
+      lastPushedRef.current = conflict.remoteContent;
+      resolveConflictTakeRemote();
+      showToast("Applied remote updates", "info");
+    }
+  };
+
+  const handleMerge = () => {
+    if (conflict?.remoteContent) {
+      resolveConflictMerge();
+      showToast("Appended collaborator update below notes", "info");
+    }
+  };
 
   // Keyboard shortcut for Zen Mode exit & export menu click-away
   useEffect(() => {
@@ -520,6 +551,11 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
       return previewRef.current.innerHTML;
     }
     return formatMarkdownToHTML(displayContent);
+  };
+
+  const handleExportAllZip = () => {
+    setShowExportMenu(false);
+    exportAllAsZip({ slug, content: displayContent, token });
   };
 
   const handleExportMarkdown = () => {
@@ -1075,7 +1111,14 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
               <ChevronDown size={12} className={`transition-transform duration-200 ${showExportMenu ? "rotate-180" : ""}`} />
             </button>
             {showExportMenu && (
-              <div className="absolute right-0 top-full mt-1.5 w-48 rounded-xl bg-[var(--modal-bg)] border border-[var(--border-color)] shadow-2xl p-1 z-[100] animate-slide-down text-xs font-bold">
+              <div className="absolute right-0 top-full mt-1.5 w-52 rounded-xl bg-[var(--modal-bg)] border border-[var(--border-color)] shadow-2xl p-1 z-[100] animate-slide-down text-xs font-bold">
+                <button
+                  onClick={handleExportAllZip}
+                  className="w-full text-left px-3 py-2 rounded-lg bg-[var(--badge-bg)] hover:bg-[var(--accent-primary)]/15 border border-[var(--badge-border)] flex items-center gap-2 text-[var(--accent-primary)] cursor-pointer font-extrabold mb-1"
+                >
+                  <Archive size={14} className="text-[var(--accent-primary)]" />
+                  <span>Export All (ZIP Archive)</span>
+                </button>
                 <button
                   onClick={handleExportMarkdown}
                   className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer"
@@ -1168,6 +1211,41 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
           </div>
         </div>
       </div>
+
+      {/* Soft Conflict Notification Banner */}
+      {conflict && (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 px-3 py-2 bg-amber-500/10 border-b border-amber-500/30 text-xs shrink-0 select-none animate-slide-down">
+          <div className="flex items-center gap-2">
+            <AlertTriangle size={15} className="text-amber-400 shrink-0" />
+            <span className="text-[var(--text-main)] font-semibold">
+              Remote update arrived while you were editing.
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-auto">
+            <button
+              type="button"
+              onClick={handleTakeMine}
+              className="px-2.5 py-1 rounded-lg bg-[var(--bg-surface)] hover:bg-[var(--border-color)]/60 border border-[var(--border-color)] text-[var(--text-main)] font-bold text-[11px] cursor-pointer shadow-sm transition-colors"
+            >
+              Keep Mine
+            </button>
+            <button
+              type="button"
+              onClick={handleTakeRemote}
+              className="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-[11px] cursor-pointer shadow-sm transition-colors"
+            >
+              Accept Remote
+            </button>
+            <button
+              type="button"
+              onClick={handleMerge}
+              className="px-2.5 py-1 rounded-lg bg-[var(--badge-bg)] hover:bg-[var(--border-color)]/60 border border-[var(--badge-border)] text-[var(--text-main)] font-bold text-[11px] cursor-pointer shadow-sm transition-colors"
+            >
+              Append Below
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Main Workspace Canvas (Full Width & Height, Zero Outer Padding) */}
       <div className="flex-1 min-h-0 flex overflow-hidden relative bg-[var(--bg-main)]">
@@ -1329,7 +1407,16 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
           )}
         </div>
 
-        <div ref={statusEl} data-status="idle" className="flex items-center gap-2">
+        <div ref={statusEl} data-status="idle" className="flex items-center gap-2.5">
+          {/* Active Collaborators Presence Badge */}
+          <div
+            className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 font-bold"
+            title={`${collaboratorCount} active browser session${collaboratorCount === 1 ? '' : 's'} connected to this workspace`}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span>{collaboratorCount} Live</span>
+          </div>
+
           <div className="[div[data-status='saving']_&]:flex hidden items-center gap-1.5 text-[var(--badge-text)] font-bold">
             <Loader2 size={11} className="animate-spin text-[var(--accent-indigo)]" />
             <span>Syncing…</span>
