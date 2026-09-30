@@ -110,6 +110,13 @@ export default async function ArticlePage({ params }: Props) {
     wordCount: article.wordCount,
   };
 
+  // Split article content at natural mid-point section break (---)
+  // Ensures the first ad only appears after at least 2-3 full sections of editorial text
+  const sections = article.content.split(/\n---\n/);
+  const midPoint = sections.length > 2 ? Math.floor(sections.length / 2) : 1;
+  const firstHalf = sections.slice(0, midPoint).join("\n\n---\n\n");
+  const secondHalf = sections.slice(midPoint).join("\n\n---\n\n");
+
   return (
     <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col transition-colors duration-200">
       {/* Conditionally load AdSense on this substantial publisher content page */}
@@ -189,16 +196,20 @@ export default async function ArticlePage({ params }: Props) {
           </div>
         </div>
 
-        {/* Compliant Ad Unit after intro / header */}
-        <AdBanner slot="1234567891" />
-
-        {/* Article Body */}
+        {/* Article Body Part 1 */}
         <article className="prose dark:prose-invert max-w-none text-sm sm:text-base leading-relaxed">
-          <MarkdownRenderer content={article.content} />
+          <MarkdownRenderer content={firstHalf} />
         </article>
 
-        {/* Compliant Mid/Bottom Ad Unit */}
-        <AdBanner slot="1234567892" />
+        {/* Safe In-Content Ad Unit: Embedded mid-editorial flow after 2-3 full sections */}
+        <AdBanner slot="1234567891" position="in-content" />
+
+        {/* Article Body Part 2 */}
+        {secondHalf.trim() && (
+          <article className="prose dark:prose-invert max-w-none text-sm sm:text-base leading-relaxed">
+            <MarkdownRenderer content={secondHalf} />
+          </article>
+        )}
 
         {/* Author / Editorial Box */}
         <div className="my-10 p-6 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">

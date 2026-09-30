@@ -71,9 +71,6 @@ export default function ResourcesPage() {
           </div>
         </div>
 
-        {/* Compliant Ad Unit after intro section */}
-        <AdBanner slot="9876543210" className="max-w-3xl mx-auto" />
-
         {/* Articles Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-8">
           {articles.map((article) => (
@@ -118,6 +115,9 @@ export default function ResourcesPage() {
             </article>
           ))}
         </div>
+
+        {/* Safe In-Content Ad Unit: Placed after 7 full editorial article summaries */}
+        <AdBanner slot="9876543210" position="in-content" className="max-w-3xl mx-auto" />
 
         {/* CTA Section */}
         <div className="mt-12 bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-2xl p-6 sm:p-8 text-center max-w-2xl mx-auto">

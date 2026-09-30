@@ -103,9 +103,6 @@ export default function GuidePage() {
           </div>
         </nav>
 
-        {/* Compliant Ad Unit 1 */}
-        <AdBanner slot="2000000001" className="max-w-3xl mx-auto" />
-
         {/* SECTION 1 */}
         <section id="section-1" className="my-10 space-y-4">
           <div className="flex items-center gap-3">
@@ -203,8 +200,8 @@ export default function GuidePage() {
           </div>
         </section>
 
-        {/* Compliant Ad Unit 2 */}
-        <AdBanner slot="2000000002" className="max-w-3xl mx-auto" />
+        {/* Safe In-Content Ad Unit 1: Placed after 3 complete editorial sections */}
+        <AdBanner slot="2000000001" position="in-content" className="max-w-3xl mx-auto" />
 
         {/* SECTION 4 */}
         <section id="section-4" className="my-10 space-y-4 pt-6 border-t border-[var(--border-color)]">
@@ -352,6 +349,9 @@ sequenceDiagram
           </div>
         </section>
 
+        {/* Safe In-Content Ad Unit 2: Placed deep in editorial reading flow */}
+        <AdBanner slot="2000000002" position="in-content" className="max-w-3xl mx-auto" />
+
         {/* SECTION 8 */}
         <section id="section-8" className="my-10 space-y-4 pt-6 border-t border-[var(--border-color)]">
           <div className="flex items-center gap-3">
@@ -492,10 +492,7 @@ sequenceDiagram
           </div>
         </section>
 
-        {/* Compliant Ad Unit 3 */}
-        <AdBanner slot="2000000003" className="max-w-3xl mx-auto" />
-
-        {/* CTA Footer Box */}
+        {/* CTA Footer Box (safely separated without ad interference) */}
         <div className="my-12 p-8 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-color)] text-center max-w-2xl mx-auto">
           <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto mb-3" />
           <h2 className="text-xl font-bold mb-2">Ready to Experience FileShare?</h2>

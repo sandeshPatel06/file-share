@@ -88,9 +88,6 @@ export default function AboutPage() {
             </p>
           </section>
 
-          {/* Compliant Ad Unit 1 */}
-          <AdBanner slot="3000000001" />
-
           {/* Section: Who We Built It For */}
           <section className="space-y-4">
             <h2 className="text-xl sm:text-2xl font-bold text-[var(--text-main)]">
@@ -177,6 +174,9 @@ export default function AboutPage() {
             </div>
           </section>
 
+          {/* Safe In-Content Ad Unit: Placed after 3 extensive sections, safely buffered before monetization and CTAs */}
+          <AdBanner slot="3000000001" position="in-content" className="max-w-3xl mx-auto" />
+
           {/* Section: Ethical Monetization & Ad Transparency */}
           <section className="space-y-4">
             <div className="flex items-center gap-2">
@@ -202,10 +202,7 @@ export default function AboutPage() {
             </div>
           </section>
 
-          {/* Compliant Ad Unit 2 */}
-          <AdBanner slot="3000000002" />
-
-          {/* Call to action */}
+          {/* Call to action (safely buffered without ad interference) */}
           <section className="bg-[var(--bg-surface)] p-8 rounded-2xl border border-[var(--border-color)] text-center">
             <h2 className="text-xl sm:text-2xl font-bold mb-2 text-[var(--text-main)]">
               Experience Collaboration Without Barriers
