@@ -255,7 +255,10 @@ export function FilePanel({ slug, token }: FilePanelProps) {
         multiple
         aria-label="Upload files to space vault"
         className="hidden"
-        onChange={(e) => handleFiles(e.target.files)}
+        onChange={(e) => {
+          handleFiles(e.target.files);
+          e.target.value = "";
+        }}
       />
 
       {/* Header Toolbar */}
@@ -355,59 +358,35 @@ export function FilePanel({ slug, token }: FilePanelProps) {
 
       {/* Panel Scrollable Content */}
       <div className="flex-1 overflow-y-auto p-2.5 space-y-2.5 min-h-0">
-        {/* Drop zone container */}
-        <div
-          onDragOver={onDragOver}
-          onDragLeave={onDragLeave}
-          onDrop={onDrop}
-          onClick={() => inputRef.current?.click()}
-          className={`
-            relative flex items-center justify-between gap-3
-            rounded-xl border-2 border-dashed transition-all duration-200 cursor-pointer group
-            ${files.length > 0 ? "px-3 py-2" : "flex-col p-5 text-center"}
-            ${dragging
-              ? "border-[var(--accent-primary)] bg-[var(--badge-bg)] scale-[1.01] shadow-lg"
-              : "border-[var(--border-color)] hover:border-[var(--accent-primary)] bg-[var(--bg-card)] hover:bg-[var(--bg-card-hover)] shadow-sm"
-            }
-          `}
-        >
-          {files.length > 0 ? (
-            <>
-              <div className="flex items-center gap-2">
-                <div className="p-1 rounded-md bg-[var(--badge-bg)] text-[var(--accent-indigo)]">
-                  <UploadCloud size={15} />
-                </div>
-                <span className="text-xs font-bold text-[var(--text-main)]">
-                  {dragging ? "Drop files to upload" : "Upload new file"}
-                </span>
+        {/* Compact drop zone container (only when files already exist in space) */}
+        {files.length > 0 && (
+          <div
+            onDragOver={onDragOver}
+            onDragLeave={onDragLeave}
+            onDrop={onDrop}
+            onClick={() => inputRef.current?.click()}
+            className={`
+              relative flex items-center justify-between gap-3 px-3 py-2
+              rounded-xl border-2 border-dashed transition-all duration-200 cursor-pointer group shadow-sm
+              ${dragging
+                ? "border-[var(--accent-primary)] bg-[var(--badge-bg)] scale-[1.01]"
+                : "border-[var(--border-color)] hover:border-[var(--accent-primary)] bg-[var(--bg-card)] hover:bg-[var(--bg-card-hover)]"
+              }
+            `}
+          >
+            <div className="flex items-center gap-2">
+              <div className="p-1 rounded-md bg-[var(--badge-bg)] text-[var(--accent-indigo)]">
+                <UploadCloud size={15} />
               </div>
-              <span className="text-[10px] text-[var(--accent-indigo)] font-bold underline underline-offset-2">
-                Browse
+              <span className="text-xs font-bold text-[var(--text-main)]">
+                {dragging ? "Drop files to upload" : "Upload new file"}
               </span>
-            </>
-          ) : (
-            <>
-              <div className={`
-                w-10 h-10 rounded-xl flex items-center justify-center
-                transition-all duration-200 border
-                ${dragging
-                  ? "bg-[var(--badge-bg)] border-[var(--accent-primary)]"
-                  : "bg-[var(--badge-bg)] border-[var(--badge-border)] group-hover:scale-105"
-                }
-              `}>
-                <UploadCloud size={20} className="text-[var(--accent-indigo)]" />
-              </div>
-              <div>
-                <p className={`text-xs font-bold transition-colors ${dragging ? "text-[var(--accent-primary)]" : "text-[var(--text-main)]"}`}>
-                  {dragging ? "Drop files" : "Drag & drop files here"}
-                </p>
-                <p className="text-[10px] text-[var(--text-muted)] mt-0.5 font-medium">
-                  or <span className="text-[var(--accent-indigo)] underline underline-offset-2 font-bold">browse files</span>
-                </p>
-              </div>
-            </>
-          )}
-        </div>
+            </div>
+            <span className="text-[10px] text-[var(--accent-indigo)] font-bold underline underline-offset-2">
+              Browse
+            </span>
+          </div>
+        )}
 
         {/* Real-time Upload Progress Items */}
         {Object.values(uploadProgress).map((item) => (
@@ -454,29 +433,50 @@ export function FilePanel({ slug, token }: FilePanelProps) {
             ))}
           </div>
         ) : filteredFiles.length === 0 && Object.keys(uploadProgress).length === 0 ? (
-          <div
-            onClick={() => inputRef.current?.click()}
-            className="text-center py-9 px-4 border-2 border-dashed border-[var(--border-color)] hover:border-[var(--accent-primary)] rounded-2xl bg-[var(--bg-card)] hover:bg-[var(--bg-card-hover)] transition-all cursor-pointer group"
-          >
-            <div className="w-12 h-12 rounded-2xl bg-[var(--badge-bg)] border border-[var(--badge-border)] flex items-center justify-center mx-auto mb-3 text-[var(--accent-indigo)] group-hover:scale-110 transition-transform shadow-sm">
-              <FolderOpen size={24} />
-            </div>
-            <p className="text-xs sm:text-sm font-extrabold text-[var(--text-main)]">
-              {searchQuery || activeCategory !== "all"
-                ? "No matching files found"
-                : "Drop files or click to browse"}
-            </p>
-            <p className="text-[11px] text-[var(--text-muted)] mt-1 font-medium max-w-xs mx-auto">
-              {searchQuery || activeCategory !== "all"
-                ? "Try clearing your filters or search keywords"
-                : "Upload documents, images, audio, video or code up to 500 MB per file"}
-            </p>
-            {!searchQuery && activeCategory === "all" && (
-              <span className="inline-block mt-3 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white shadow-sm transition-colors">
+          files.length === 0 ? (
+            /* Single unified empty-state upload dropzone */
+            <div
+              onDragOver={onDragOver}
+              onDragLeave={onDragLeave}
+              onDrop={onDrop}
+              onClick={() => inputRef.current?.click()}
+              className={`
+                text-center py-10 px-4 border-2 border-dashed rounded-2xl transition-all cursor-pointer group shadow-sm
+                ${dragging
+                  ? "border-[var(--accent-primary)] bg-[var(--badge-bg)] scale-[1.01]"
+                  : "border-[var(--border-color)] hover:border-[var(--accent-primary)] bg-[var(--bg-card)] hover:bg-[var(--bg-card-hover)]"
+                }
+              `}
+            >
+              <div className={`
+                w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3 transition-all duration-200 border
+                ${dragging
+                  ? "bg-[var(--badge-bg)] border-[var(--accent-primary)] scale-110"
+                  : "bg-[var(--badge-bg)] border-[var(--badge-border)] group-hover:scale-110 text-[var(--accent-indigo)] shadow-sm"
+                }
+              `}>
+                <UploadCloud size={24} className="text-[var(--accent-indigo)]" />
+              </div>
+              <p className={`text-xs sm:text-sm font-extrabold transition-colors ${dragging ? "text-[var(--accent-primary)]" : "text-[var(--text-main)]"}`}>
+                {dragging ? "Drop files to upload" : "Drag & drop files here"}
+              </p>
+              <p className="text-[11px] text-[var(--text-muted)] mt-1 font-medium max-w-xs mx-auto">
+                Upload documents, images, audio, video or code up to 500 MB per file
+              </p>
+              <span className="inline-block mt-3.5 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white shadow-sm transition-colors">
                 Select Files to Upload
               </span>
-            )}
-          </div>
+            </div>
+          ) : (
+            /* Filter/Search empty state (files exist, but none match filter) */
+            <div className="text-center py-8 px-4 border border-dashed border-[var(--border-color)] rounded-xl bg-[var(--bg-card)]">
+              <FolderOpen size={24} className="mx-auto text-[var(--text-subtle)] mb-2 opacity-60" />
+              <p className="text-xs font-bold text-[var(--text-main)]">No matching files found</p>
+              <p className="text-[11px] text-[var(--text-muted)] mt-1 font-medium max-w-xs mx-auto">
+                Try clearing your search or category filters
+              </p>
+            </div>
+          )
         ) : (
           <div className={viewLayout === "grid" ? "grid grid-cols-2 gap-2" : "space-y-2"}>
             {filteredFiles.map((f) => (
