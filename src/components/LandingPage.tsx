@@ -109,11 +109,11 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
             </div>
 
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-[var(--text-main)] mb-6 leading-tight">
-              Live Markdown Notes & Secure Ephemeral File Vault
+              Instant Online Notepad &amp; Secure 500MB File Vault
             </h1>
 
             <p className="max-w-2xl mx-auto text-sm sm:text-base text-[var(--text-muted)] mb-8 leading-relaxed">
-              Create instant, anonymous workspaces for live Markdown editing, Mermaid diagrams, and high-speed file sharing up to 500MB. Zero logins, zero corporate gatekeeping.
+              Create instant, anonymous workspaces to collaborate on live Markdown notes, render Mermaid diagrams, and share files up to 500MB in real-time. Zero registration, no email verification, and instant QR code handoff between devices.
             </p>
 
             {/* Workspace Launcher Action Form */}
@@ -300,6 +300,69 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
           </div>
         </section>
 
+        {/* Tool Comparison Matrix — Optimized for Google AI Mode & Long-Tail Searchers */}
+        <section className="py-12 sm:py-16 max-w-5xl mx-auto px-4 sm:px-6">
+          <div className="text-center max-w-2xl mx-auto mb-10">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-main)] mb-3">
+              Why Teams Choose FileShare
+            </h2>
+            <p className="text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed">
+              Compare FileShare with traditional cloud storage, pastebins, and file transfer services.
+            </p>
+          </div>
+
+          <div className="overflow-x-auto bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl shadow-sm">
+            <table className="w-full text-left text-xs sm:text-sm">
+              <thead>
+                <tr className="border-b border-[var(--border-color)] bg-[var(--bg-main)]">
+                  <th className="p-3 sm:p-4 font-bold text-[var(--text-main)]">Key Capability</th>
+                  <th className="p-3 sm:p-4 font-bold text-[var(--accent-primary)]">FileShare</th>
+                  <th className="p-3 sm:p-4 font-medium text-[var(--text-subtle)]">Cloud Drives (Google Drive)</th>
+                  <th className="p-3 sm:p-4 font-medium text-[var(--text-subtle)]">Standard Pastebin</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[var(--border-color)] text-xs text-[var(--text-muted)]">
+                <tr>
+                  <td className="p-3 sm:p-4 font-medium text-[var(--text-main)]">Registration &amp; Login</td>
+                  <td className="p-3 sm:p-4 font-bold text-emerald-500">Zero (Anonymous)</td>
+                  <td className="p-3 sm:p-4">Mandatory Account</td>
+                  <td className="p-3 sm:p-4">Optional / Limited</td>
+                </tr>
+                <tr>
+                  <td className="p-3 sm:p-4 font-medium text-[var(--text-main)]">Real-Time Collaborative Editing</td>
+                  <td className="p-3 sm:p-4 font-bold text-emerald-500">Live SSE Sync (Milliseconds)</td>
+                  <td className="p-3 sm:p-4">Document Delay</td>
+                  <td className="p-3 sm:p-4 text-rose-400">Static (No Live Sync)</td>
+                </tr>
+                <tr>
+                  <td className="p-3 sm:p-4 font-medium text-[var(--text-main)]">File Attachment Capacity</td>
+                  <td className="p-3 sm:p-4 font-bold text-emerald-500">500 MB Free per file</td>
+                  <td className="p-3 sm:p-4">Consumes Account Quota</td>
+                  <td className="p-3 sm:p-4 text-rose-400">None (Text Only)</td>
+                </tr>
+                <tr>
+                  <td className="p-3 sm:p-4 font-medium text-[var(--text-main)]">Markdown &amp; Mermaid Diagrams</td>
+                  <td className="p-3 sm:p-4 font-bold text-emerald-500">Native Inline Rendering</td>
+                  <td className="p-3 sm:p-4">Requires Third-Party Extensions</td>
+                  <td className="p-3 sm:p-4 text-rose-400">Plain Raw Text Only</td>
+                </tr>
+                <tr>
+                  <td className="p-3 sm:p-4 font-medium text-[var(--text-main)]">Instant Device Handoff</td>
+                  <td className="p-3 sm:p-4 font-bold text-emerald-500">Dynamic Vector QR Code</td>
+                  <td className="p-3 sm:p-4">Requires App Install</td>
+                  <td className="p-3 sm:p-4">Manual URL Copying</td>
+                </tr>
+                <tr>
+                  <td className="p-3 sm:p-4 font-medium text-[var(--text-main)]">Security &amp; Encryption</td>
+                  <td className="p-3 sm:p-4 font-bold text-emerald-500">Bcrypt Password Lock &amp; JWT</td>
+                  <td className="p-3 sm:p-4">Account Permissions</td>
+                  <td className="p-3 sm:p-4">Public / Unprotected</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
         {/* Featured Educational Resources & Guides Section */}
         <section className="py-12 sm:py-16 max-w-6xl mx-auto px-4 sm:px-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mb-10">
@@ -445,6 +508,24 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
               </h3>
               <p className="text-xs text-[var(--text-muted)] leading-relaxed">
                 Click the QR code button in the top navigation bar of your workspace to generate a high-resolution QR code. Scan it with your phone&apos;s camera to immediately continue editing on mobile.
+              </p>
+            </div>
+
+            <div className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-5">
+              <h3 className="text-sm font-bold text-[var(--text-main)] mb-2">
+                How is FileShare different from Pastebin, Google Drive, or WeTransfer?
+              </h3>
+              <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                Unlike Pastebin, FileShare offers real-time live typing synchronization, rich Markdown formatting, Mermaid diagram rendering, and 500MB multi-file uploads. Unlike Google Drive or WeTransfer, FileShare requires zero registration, no recipient email addresses, and creates instant workspaces accessible by custom URL slug or QR code.
+              </p>
+            </div>
+
+            <div className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-5">
+              <h3 className="text-sm font-bold text-[var(--text-main)] mb-2">
+                Can I write Markdown and render Mermaid diagrams?
+              </h3>
+              <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+                Yes! FileShare natively parses GitHub Flavored Markdown (headings, task lists, code blocks with syntax highlighting) and automatically renders Mermaid sequence, flowchart, and class diagrams inline with live synchronization.
               </p>
             </div>
           </div>
