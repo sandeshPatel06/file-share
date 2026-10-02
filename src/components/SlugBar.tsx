@@ -73,22 +73,22 @@ export function SlugBar({ slug, isProtected, token, onLockClick, onToggleFilePan
       </div>
 
       {/* Header Actions Toolbar */}
-      <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-auto">
+      <div className="flex items-center gap-2 sm:gap-2.5 shrink-0 ml-auto">
         {/* Desktop QR Button */}
         <button
           onClick={() => setShowQR(true)}
-          className="hidden sm:flex h-9 w-9 items-center justify-center shrink-0 rounded-xl bg-[var(--badge-bg)] border border-[var(--border-color)] text-[var(--text-main)] hover:opacity-80 active:scale-95 transition-all shadow-sm cursor-pointer min-h-[40px] min-w-[40px]"
+          className="hidden sm:flex h-10 w-10 items-center justify-center shrink-0 rounded-xl bg-[var(--badge-bg)] border border-[var(--border-color)] text-[var(--text-main)] hover:bg-[var(--border-color)] active:scale-95 transition-all shadow-sm cursor-pointer min-h-[40px] min-w-[40px]"
           title="Show QR Code"
           aria-label="Show QR Code"
         >
-          <QrCode size={17} />
+          <QrCode size={18} />
         </button>
 
         {/* Copy Link Button */}
         <button
           onClick={copyLink}
           className={`
-            h-9 w-9 sm:w-auto px-0 sm:px-3 flex items-center justify-center gap-1.5 rounded-xl text-xs font-extrabold active:scale-95 transition-all duration-200 border shadow-sm cursor-pointer shrink-0 min-h-[40px] min-w-[40px]
+            h-10 w-10 sm:w-auto px-0 sm:px-3.5 flex items-center justify-center gap-1.5 rounded-xl text-xs sm:text-sm font-bold active:scale-95 transition-all duration-200 border shadow-sm cursor-pointer shrink-0 min-h-[40px] min-w-[40px]
             ${copied
               ? "bg-[var(--status-success-bg)] text-[var(--status-success-text)] border-[var(--status-success-border)]"
               : "bg-[var(--badge-bg)] text-[var(--text-main)] hover:bg-[var(--border-color)] border-[var(--border-color)]"
@@ -97,7 +97,7 @@ export function SlugBar({ slug, isProtected, token, onLockClick, onToggleFilePan
           title="Copy workspace link"
           aria-label="Copy workspace link"
         >
-          {copied ? <CheckCheck size={17} className="text-[var(--status-success-text)]" /> : <Copy size={17} />}
+          {copied ? <CheckCheck size={18} className="text-[var(--status-success-text)]" /> : <Copy size={18} />}
           <span className="hidden sm:inline">{copied ? "Copied!" : "Copy Link"}</span>
         </button>
 
@@ -107,14 +107,14 @@ export function SlugBar({ slug, isProtected, token, onLockClick, onToggleFilePan
           title={isProtected ? "Protected with password" : "Set protection password"}
           aria-label={isProtected ? "Protected with password" : "Set protection password"}
           className={`
-            h-9 w-9 sm:w-auto px-0 sm:px-3 flex items-center justify-center gap-1.5 rounded-xl text-xs font-extrabold transition-all duration-200 border shadow-sm cursor-pointer shrink-0 min-h-[40px] min-w-[40px]
+            h-10 w-10 sm:w-auto px-0 sm:px-3.5 flex items-center justify-center gap-1.5 rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 border shadow-sm cursor-pointer shrink-0 min-h-[40px] min-w-[40px]
             ${isProtected
               ? "bg-[var(--badge-bg)] text-[var(--badge-text)] border-[var(--badge-border)]"
               : "bg-[var(--badge-bg)] text-[var(--text-main)] hover:bg-[var(--border-color)] border-[var(--border-color)]"
             }
           `}
         >
-          {isProtected ? <Lock size={17} className="text-[var(--badge-text)]" /> : <Unlock size={17} />}
+          {isProtected ? <Lock size={18} className="text-[var(--badge-text)]" /> : <Unlock size={18} />}
           <span className="hidden sm:inline">{isProtected ? "Protected" : "Protect"}</span>
         </button>
 
@@ -123,12 +123,12 @@ export function SlugBar({ slug, isProtected, token, onLockClick, onToggleFilePan
           href="https://github.com/sandeshPatel06/file-share"
           target="_blank"
           rel="noopener noreferrer"
-          className="hidden md:flex h-9 w-9 items-center justify-center shrink-0 rounded-xl bg-[var(--badge-bg)] border border-[var(--border-color)] hover:bg-[var(--border-color)] hover:scale-105 transition-all shadow-sm cursor-pointer min-h-[40px] min-w-[40px]"
+          className="hidden md:flex h-10 w-10 items-center justify-center shrink-0 rounded-xl bg-[var(--badge-bg)] border border-[var(--border-color)] hover:bg-[var(--border-color)] hover:scale-105 transition-all shadow-sm cursor-pointer min-h-[40px] min-w-[40px]"
           title="View GitHub Repository"
           aria-label="View GitHub Repository"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/github-icon.svg" alt="GitHub Repository" width={17} height={17} className="w-4 h-4 object-contain" />
+          <img src="/github-icon.svg" alt="GitHub Repository" width={18} height={18} className="w-4.5 h-4.5 object-contain" />
         </a>
 
         {/* Desktop Theme Toggle */}
@@ -142,9 +142,9 @@ export function SlugBar({ slug, isProtected, token, onLockClick, onToggleFilePan
             onClick={() => setShowMoreMenu((prev) => !prev)}
             aria-label="More workspace tools"
             title="More workspace tools"
-            className="h-9 w-9 flex items-center justify-center shrink-0 rounded-xl bg-[var(--badge-bg)] border border-[var(--border-color)] text-[var(--text-main)] hover:bg-[var(--border-color)] active:scale-95 transition-all shadow-sm cursor-pointer min-h-[40px] min-w-[40px]"
+            className="h-10 w-10 flex items-center justify-center shrink-0 rounded-xl bg-[var(--badge-bg)] border border-[var(--border-color)] text-[var(--text-main)] hover:bg-[var(--border-color)] active:scale-95 transition-all shadow-sm cursor-pointer min-h-[40px] min-w-[40px]"
           >
-            <MoreVertical size={17} />
+            <MoreVertical size={18} />
           </button>
           {showMoreMenu && (
             <>
@@ -160,7 +160,7 @@ export function SlugBar({ slug, isProtected, token, onLockClick, onToggleFilePan
                   }}
                   className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2.5 text-[var(--text-main)] cursor-pointer"
                 >
-                  <QrCode size={15} className="text-[var(--accent-indigo)]" />
+                  <QrCode size={16} className="text-[var(--accent-indigo)]" />
                   <span>Show QR Code</span>
                 </button>
                 <div className="flex items-center justify-between px-3 py-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/10">
@@ -174,7 +174,7 @@ export function SlugBar({ slug, isProtected, token, onLockClick, onToggleFilePan
                   className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2.5 text-[var(--text-main)] cursor-pointer"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/github-icon.svg" alt="GitHub" width={15} height={15} className="w-3.5 h-3.5 object-contain" />
+                  <img src="/github-icon.svg" alt="GitHub" width={16} height={16} className="w-4 h-4 object-contain" />
                   <span>GitHub Project</span>
                 </a>
               </div>
@@ -189,14 +189,14 @@ export function SlugBar({ slug, isProtected, token, onLockClick, onToggleFilePan
             title={filePanelOpen ? "Hide File Explorer" : "Show File Explorer"}
             aria-label={filePanelOpen ? "Hide File Explorer" : "Show File Explorer"}
             className={`
-              h-9 w-9 flex items-center justify-center shrink-0 rounded-xl border transition-all shadow-sm cursor-pointer min-h-[40px] min-w-[40px]
+              h-10 w-10 flex items-center justify-center shrink-0 rounded-xl border transition-all shadow-sm cursor-pointer min-h-[40px] min-w-[40px]
               ${filePanelOpen
                 ? "bg-[var(--accent-indigo)]/15 text-[var(--accent-indigo)] border-[var(--accent-indigo)]/40 hover:bg-[var(--accent-indigo)]/25"
-                : "bg-[var(--badge-bg)] text-[var(--text-main)] border-[var(--border-color)] hover:opacity-80"
+                : "bg-[var(--badge-bg)] text-[var(--text-main)] border-[var(--border-color)] hover:bg-[var(--border-color)]"
               }
             `}
           >
-            {filePanelOpen ? <PanelRightClose size={17} /> : <PanelRightOpen size={17} />}
+            {filePanelOpen ? <PanelRightClose size={18} /> : <PanelRightOpen size={18} />}
           </button>
         )}
       </div>

@@ -936,120 +936,120 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
       />
 
       {/* Sleek IDE Top Toolbar (100% Width) */}
-      <div className="relative z-30 flex items-center justify-between px-2 py-1 border-b border-[var(--border-color)] bg-[var(--bg-surface)] shrink-0 gap-1.5 select-none min-h-[38px] w-full">
+      <div className="relative z-30 flex items-center justify-between px-2.5 py-1.5 border-b border-[var(--border-color)] bg-[var(--bg-surface)] shrink-0 gap-2 select-none min-h-[44px] w-full">
         {/* Left: Markdown Format Icons Toolbar */}
-        <div className="flex items-center gap-1 flex-nowrap shrink overflow-x-auto no-scrollbar py-0.5 min-w-0">
+        <div className="flex items-center gap-1.5 flex-nowrap shrink overflow-x-auto no-scrollbar py-0.5 min-w-0">
           <div className="flex items-center gap-0.5 bg-[var(--bg-card)] p-0.5 rounded-lg border border-[var(--border-color)]">
             <button
               onClick={() => applyFormat("# ")}
               title="Heading 1 (#)"
               aria-label="Heading 1"
-              className="p-1.5 rounded text-xs font-black text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              className="min-h-[36px] min-w-[36px] p-2 flex items-center justify-center rounded-md text-xs font-black text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
-              <Heading1 size={14} />
+              <Heading1 size={15} />
             </button>
             <button
               onClick={() => applyFormat("## ")}
               title="Heading 2 (##)"
               aria-label="Heading 2"
-              className="p-1.5 rounded text-xs font-black text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              className="min-h-[36px] min-w-[36px] p-2 flex items-center justify-center rounded-md text-xs font-black text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
-              <Heading2 size={14} />
+              <Heading2 size={15} />
             </button>
             <button
               onClick={() => applyFormat("### ")}
               title="Heading 3 (###)"
               aria-label="Heading 3"
-              className="p-1.5 rounded text-xs font-black text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              className="min-h-[36px] min-w-[36px] p-2 flex items-center justify-center rounded-md text-xs font-black text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
-              <Heading3 size={14} />
+              <Heading3 size={15} />
             </button>
           </div>
 
-          <div className="w-px h-4 bg-[var(--border-color)] mx-0.5" />
+          <div className="w-px h-5 bg-[var(--border-color)] mx-0.5" />
 
           <div className="flex items-center gap-0.5 bg-[var(--bg-card)] p-0.5 rounded-lg border border-[var(--border-color)]">
             <button
               onClick={() => applyFormat("**", "**")}
               title="Bold (**text**)"
               aria-label="Bold"
-              className="p-1.5 rounded text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              className="min-h-[36px] min-w-[36px] p-2 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
-              <Bold size={14} />
+              <Bold size={15} />
             </button>
             <button
               onClick={() => applyFormat("*", "*")}
               title="Italic (*text*)"
               aria-label="Italic"
-              className="p-1.5 rounded text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              className="min-h-[36px] min-w-[36px] p-2 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
-              <Italic size={14} />
+              <Italic size={15} />
             </button>
             <button
               onClick={() => applyFormat("~~", "~~")}
               title="Strikethrough (~~text~~)"
               aria-label="Strikethrough"
-              className="p-1.5 rounded text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              className="min-h-[36px] min-w-[36px] p-2 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
-              <Strikethrough size={14} />
+              <Strikethrough size={15} />
             </button>
           </div>
 
-          <div className="w-px h-4 bg-[var(--border-color)] mx-0.5 hidden sm:block" />
+          <div className="w-px h-5 bg-[var(--border-color)] mx-0.5 hidden sm:block" />
 
           <div className="hidden sm:flex items-center gap-0.5 bg-[var(--bg-card)] p-0.5 rounded-lg border border-[var(--border-color)]">
             <button
               onClick={() => applyFormat("- ")}
               title="Unordered List (-)"
               aria-label="Unordered List"
-              className="p-1.5 rounded text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              className="min-h-[36px] min-w-[36px] p-2 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
-              <List size={14} />
+              <List size={15} />
             </button>
             <button
               onClick={() => applyFormat("1. ")}
               title="Numbered List (1.)"
               aria-label="Numbered List"
-              className="p-1.5 rounded text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              className="min-h-[36px] min-w-[36px] p-2 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
-              <ListOrdered size={14} />
+              <ListOrdered size={15} />
             </button>
             <button
               onClick={() => applyFormat("- [ ] ")}
               title="Task Checkbox (- [ ])"
               aria-label="Task Checkbox"
-              className="p-1.5 rounded text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              className="min-h-[36px] min-w-[36px] p-2 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
-              <CheckSquare size={14} />
+              <CheckSquare size={15} />
             </button>
           </div>
 
-          <div className="w-px h-4 bg-[var(--border-color)] mx-0.5 hidden md:block" />
+          <div className="w-px h-5 bg-[var(--border-color)] mx-0.5 hidden md:block" />
 
           <div className="hidden md:flex items-center gap-0.5 bg-[var(--bg-card)] p-0.5 rounded-lg border border-[var(--border-color)]">
             <button
               onClick={() => applyFormat("> ")}
               title="Blockquote (>)"
               aria-label="Blockquote"
-              className="p-1.5 rounded text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              className="min-h-[36px] min-w-[36px] p-2 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
-              <Quote size={14} />
+              <Quote size={15} />
             </button>
             <button
               onClick={() => applyFormat("```\n", "\n```")}
               title="Code Block (```)"
               aria-label="Code Block"
-              className="p-1.5 rounded text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              className="min-h-[36px] min-w-[36px] p-2 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
-              <Code size={14} />
+              <Code size={15} />
             </button>
             <button
               onClick={() => applyFormat("| Header 1 | Header 2 |\n| :--- | :--- |\n| Cell 1 | Cell 2 |\n")}
               title="Insert Table"
               aria-label="Insert Table"
-              className="p-1.5 rounded text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              className="min-h-[36px] min-w-[36px] p-2 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
-              <Table size={14} />
+              <Table size={15} />
             </button>
           </div>
         </div>
@@ -1059,107 +1059,107 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
           {/* Starter Templates Button */}
           <button
             onClick={() => setShowTemplateModal(true)}
-            className="flex items-center gap-1 px-2 py-1 rounded-lg bg-[var(--badge-bg)] border border-[var(--border-color)] text-[var(--text-main)] hover:bg-[var(--border-color)] transition-all text-xs font-bold cursor-pointer"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 min-h-[36px] rounded-lg bg-[var(--badge-bg)] border border-[var(--border-color)] text-[var(--text-main)] hover:bg-[var(--border-color)] transition-all text-xs font-bold cursor-pointer"
             title="Starter Templates Gallery"
           >
-            <FileText size={13} className="text-[var(--accent-indigo)]" />
+            <FileText size={14} className="text-[var(--accent-indigo)]" />
             <span className="hidden lg:inline">Templates</span>
           </button>
 
           {/* AI Copilot Button */}
           <button
             onClick={handleAICopilotFormat}
-            className="flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-[var(--accent-indigo)] hover:bg-emerald-500/20 transition-all text-xs font-bold cursor-pointer shadow-sm"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 min-h-[36px] rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-[var(--accent-indigo)] hover:bg-emerald-500/20 transition-all text-xs font-bold cursor-pointer shadow-sm"
             title="AI Copilot: Auto-format document"
           >
-            <Sparkles size={13} className="text-[var(--accent-indigo)] animate-pulse" />
+            <Sparkles size={14} className="text-[var(--accent-indigo)] animate-pulse" />
             <span className="hidden sm:inline">AI Format</span>
           </button>
 
           {/* Outline / ToC Toggle */}
           <button
             onClick={() => setShowOutline(prev => !prev)}
-            className={`p-1.5 rounded-lg border transition-all cursor-pointer ${
+            className={`min-h-[36px] min-w-[36px] p-2 flex items-center justify-center rounded-lg border transition-all cursor-pointer ${
               showOutline 
                 ? "bg-[var(--accent-primary)] border-[var(--accent-primary)] text-white" 
                 : "bg-[var(--badge-bg)] border-[var(--border-color)] text-[var(--text-main)] hover:bg-[var(--border-color)]"
             }`}
             title="Toggle Document Outline"
           >
-            <ListOrdered size={13} />
+            <ListOrdered size={14} />
           </button>
 
           {/* Attach File Button */}
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
-            className="p-1.5 rounded-lg bg-[var(--badge-bg)] border border-[var(--border-color)] text-[var(--text-main)] hover:bg-[var(--border-color)] transition-all cursor-pointer"
+            className="min-h-[36px] min-w-[36px] p-2 flex items-center justify-center rounded-lg bg-[var(--badge-bg)] border border-[var(--border-color)] text-[var(--text-main)] hover:bg-[var(--border-color)] transition-all cursor-pointer"
             title="Attach file to notes"
           >
-            <Upload size={13} />
+            <Upload size={14} />
           </button>
 
           {/* Rich Export Menu Dropdown */}
           <div className="relative" ref={exportMenuRef}>
             <button
               onClick={() => setShowExportMenu((v) => !v)}
-              className="px-2 sm:px-2.5 py-1 rounded-lg bg-[var(--badge-bg)] border border-[var(--border-color)] text-[var(--text-main)] hover:bg-[var(--border-color)] transition-all cursor-pointer flex items-center gap-1 text-xs font-extrabold shadow-sm"
+              className="px-2.5 sm:px-3 py-1.5 min-h-[36px] rounded-lg bg-[var(--badge-bg)] border border-[var(--border-color)] text-[var(--text-main)] hover:bg-[var(--border-color)] transition-all cursor-pointer flex items-center gap-1.5 text-xs font-extrabold shadow-sm"
               title="Export Document Options"
             >
-              <Download size={13} className="text-[var(--accent-indigo)]" />
+              <Download size={14} className="text-[var(--accent-indigo)]" />
               <span>Export</span>
-              <ChevronDown size={12} className={`transition-transform duration-200 ${showExportMenu ? "rotate-180" : ""}`} />
+              <ChevronDown size={13} className={`transition-transform duration-200 ${showExportMenu ? "rotate-180" : ""}`} />
             </button>
             {showExportMenu && (
-              <div className="absolute right-0 top-full mt-1.5 w-52 rounded-xl bg-[var(--modal-bg)] border border-[var(--border-color)] shadow-2xl p-1 z-[100] animate-slide-down text-xs font-bold">
+              <div className="absolute right-0 top-full mt-1.5 w-56 rounded-xl bg-[var(--modal-bg)] border border-[var(--border-color)] shadow-2xl p-1 z-[100] animate-slide-down text-xs font-bold">
                 <button
                   onClick={handleExportAllZip}
-                  className="w-full text-left px-3 py-2 rounded-lg bg-[var(--badge-bg)] hover:bg-[var(--accent-primary)]/15 border border-[var(--badge-border)] flex items-center gap-2 text-[var(--accent-primary)] cursor-pointer font-extrabold mb-1"
+                  className="w-full text-left px-3 py-2 rounded-lg bg-[var(--badge-bg)] hover:bg-[var(--accent-primary)]/15 border border-[var(--badge-border)] flex items-center gap-2 text-[var(--accent-primary)] cursor-pointer font-extrabold mb-1 min-h-[36px]"
                 >
-                  <Archive size={14} className="text-[var(--accent-primary)]" />
+                  <Archive size={15} className="text-[var(--accent-primary)]" />
                   <span>Export All (ZIP Archive)</span>
                 </button>
                 <button
                   onClick={handleExportMarkdown}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer"
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer min-h-[34px]"
                 >
-                  <FileText size={14} className="text-[var(--accent-indigo)]" />
+                  <FileText size={15} className="text-[var(--accent-indigo)]" />
                   <span>Markdown (.md)</span>
                 </button>
                 <button
                   onClick={handleExportHTML}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer"
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer min-h-[34px]"
                 >
-                  <FileCode size={14} className="text-[var(--accent-sky)]" />
+                  <FileCode size={15} className="text-[var(--accent-sky)]" />
                   <span>HTML Document</span>
                 </button>
                 <button
                   onClick={handlePrintPDF}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer"
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer min-h-[34px]"
                 >
-                  <Printer size={14} className="text-purple-400" />
+                  <Printer size={15} className="text-purple-400" />
                   <span>PDF Document</span>
                 </button>
                 <button
                   onClick={handleExportImage}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer"
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer min-h-[34px]"
                 >
-                  <ImageIcon size={14} className="text-emerald-400" />
+                  <ImageIcon size={15} className="text-emerald-400" />
                   <span>Image (.png)</span>
                 </button>
                 <div className="my-1 border-t border-[var(--border-color)]" />
                 <button
                   onClick={handleExportText}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer"
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer min-h-[34px]"
                 >
-                  <FileSpreadsheet size={14} className="text-amber-400" />
+                  <FileSpreadsheet size={15} className="text-amber-400" />
                   <span>Plain Text (.txt)</span>
                 </button>
                 <button
                   onClick={handleExportJSON}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer"
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer min-h-[34px]"
                 >
-                  <FileJson size={14} className="text-rose-400" />
+                  <FileJson size={15} className="text-rose-400" />
                   <span>JSON Dataset (.json)</span>
                 </button>
               </div>
@@ -1169,44 +1169,44 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
           {/* Zen Focus Mode Toggle */}
           <button
             onClick={() => setZenMode(!zenMode)}
-            className={`p-1.5 rounded-lg border transition-all cursor-pointer ${
+            className={`min-h-[36px] min-w-[36px] p-2 flex items-center justify-center rounded-lg border transition-all cursor-pointer ${
               zenMode
                 ? "bg-[var(--accent-indigo)] text-white border-[var(--accent-indigo)] shadow-sm"
                 : "bg-[var(--badge-bg)] text-[var(--text-main)] border-[var(--border-color)] hover:bg-[var(--border-color)]"
             }`}
             title={zenMode ? "Exit Zen Mode (Esc)" : "Zen Focus Writing Mode"}
           >
-            {zenMode ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
+            {zenMode ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
           </button>
 
           {/* View Mode Toggle Segmented Control */}
           <div className="flex items-center p-0.5 rounded-lg bg-[var(--badge-bg)] border border-[var(--border-color)]">
             <button
               onClick={() => setViewMode("write")}
-              className={`p-1 rounded transition-colors cursor-pointer ${
+              className={`min-h-[32px] min-w-[32px] p-1.5 flex items-center justify-center rounded-md transition-colors cursor-pointer ${
                 viewMode === "write" ? "bg-[var(--accent-primary)] text-white shadow-sm" : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
               }`}
               title="Write Mode"
             >
-              <Layout size={13} />
+              <Layout size={14} />
             </button>
             <button
               onClick={() => setViewMode("split")}
-              className={`p-1 rounded transition-colors cursor-pointer hidden sm:block ${
+              className={`min-h-[32px] min-w-[32px] p-1.5 flex items-center justify-center rounded-md transition-colors cursor-pointer hidden sm:flex ${
                 viewMode === "split" ? "bg-[var(--accent-primary)] text-white shadow-sm" : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
               }`}
               title="Split View"
             >
-              <Columns size={13} />
+              <Columns size={14} />
             </button>
             <button
               onClick={() => setViewMode("preview")}
-              className={`p-1 rounded transition-colors cursor-pointer ${
+              className={`min-h-[32px] min-w-[32px] p-1.5 flex items-center justify-center rounded-md transition-colors cursor-pointer ${
                 viewMode === "preview" ? "bg-[var(--accent-primary)] text-white shadow-sm" : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
               }`}
               title="Preview Mode"
             >
-              <Eye size={13} />
+              <Eye size={14} />
             </button>
           </div>
         </div>
@@ -1225,21 +1225,21 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
             <button
               type="button"
               onClick={handleTakeMine}
-              className="px-2.5 py-1 rounded-lg bg-[var(--bg-surface)] hover:bg-[var(--border-color)]/60 border border-[var(--border-color)] text-[var(--text-main)] font-bold text-[11px] cursor-pointer shadow-sm transition-colors"
+              className="px-3 py-1.5 min-h-[32px] sm:min-h-[36px] rounded-lg bg-[var(--bg-surface)] hover:bg-[var(--border-color)]/60 border border-[var(--border-color)] text-[var(--text-main)] font-bold text-xs cursor-pointer shadow-sm transition-colors"
             >
               Keep Mine
             </button>
             <button
               type="button"
               onClick={handleTakeRemote}
-              className="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-[11px] cursor-pointer shadow-sm transition-colors"
+              className="px-3 py-1.5 min-h-[32px] sm:min-h-[36px] rounded-lg bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-xs cursor-pointer shadow-sm transition-colors"
             >
               Accept Remote
             </button>
             <button
               type="button"
               onClick={handleMerge}
-              className="px-2.5 py-1 rounded-lg bg-[var(--badge-bg)] hover:bg-[var(--border-color)]/60 border border-[var(--badge-border)] text-[var(--text-main)] font-bold text-[11px] cursor-pointer shadow-sm transition-colors"
+              className="px-3 py-1.5 min-h-[32px] sm:min-h-[36px] rounded-lg bg-[var(--badge-bg)] hover:bg-[var(--border-color)]/60 border border-[var(--badge-border)] text-[var(--text-main)] font-bold text-xs cursor-pointer shadow-sm transition-colors"
             >
               Append Below
             </button>
@@ -1298,11 +1298,11 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
                   {/* Line Numbers Gutter */}
                   <div
                     ref={lineNumbersRef}
-                    className="select-none py-3 px-2 text-right font-mono text-xs text-[var(--text-subtle)] bg-[var(--bg-surface)]/50 border-r border-[var(--border-color)] shrink-0 overflow-hidden text-opacity-40 select-none hidden sm:block min-w-[42px]"
+                    className="select-none py-3 px-2 text-right font-mono text-sm text-[var(--text-subtle)] bg-[var(--bg-surface)]/50 border-r border-[var(--border-color)] shrink-0 overflow-hidden hidden sm:block min-w-[42px]"
                     aria-hidden="true"
                   >
                     {Array.from({ length: lineCount }, (_, i) => (
-                      <div key={i + 1} className="leading-[1.625rem] text-[13px]">
+                      <div key={i + 1} className="leading-relaxed sm:leading-[1.625rem] text-sm">
                         {i + 1}
                       </div>
                     ))}
@@ -1317,7 +1317,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
                     onScroll={handleScroll}
                     placeholder="Type or paste Markdown here... (Type '/' for commands)"
                     aria-label="Notes markdown content editor"
-                    className="w-full flex-1 resize-none bg-transparent text-[var(--text-main)] py-3 px-3 sm:px-4 outline-none font-mono text-[13px] sm:text-sm leading-[1.625rem] placeholder-[var(--text-subtle)] overflow-y-auto selection:bg-[var(--accent-indigo)]/20 relative z-10"
+                    className="w-full flex-1 resize-none bg-transparent text-[var(--text-main)] py-3 px-3 sm:px-4 outline-none font-mono text-sm leading-relaxed sm:leading-[1.625rem] placeholder-[var(--text-subtle)] overflow-y-auto selection:bg-[var(--accent-indigo)]/20 relative z-10"
                     spellCheck="false"
                   />
 
@@ -1349,7 +1349,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
                               onMouseEnter={() => setSlashMenu(prev => ({ ...prev, activeIndex: i }))}
                               className={`flex items-center gap-2.5 px-3 py-2 rounded-lg cursor-pointer transition-colors ${
                                 i === slashMenu.activeIndex 
-                                  ? "bg-[var(--accent-primary)] text-white" 
+                                   ? "bg-[var(--accent-primary)] text-white" 
                                   : "text-[var(--text-main)] hover:bg-[var(--bg-card)]"
                               }`}
                             >
@@ -1381,7 +1381,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
       </div>
 
       {/* Bottom Status Bar (Markdown Viewer Style) */}
-      <div className="h-6 px-3 bg-[var(--bg-surface)] border-t border-[var(--border-color)] text-[10px] text-[var(--text-muted)] flex items-center justify-between font-mono select-none shrink-0">
+      <div className="h-7 sm:h-7.5 px-3 bg-[var(--bg-surface)] border-t border-[var(--border-color)] text-xs text-[var(--text-muted)] flex items-center justify-between font-mono select-none shrink-0">
         <div className="flex items-center gap-3">
           <span>⏱️ {readTime} Min Read</span>
           <span className="hidden sm:inline">·</span>
@@ -1394,14 +1394,14 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
             <>
               <span className="hidden md:inline">·</span>
               <span className="hidden md:flex items-center gap-1.5" title={`${completedCount} of ${totalTasks} tasks completed`}>
-                <CheckSquare size={11} className={completedCount === totalTasks ? "text-[var(--status-success-text)]" : ""} />
+                <CheckSquare size={12} className={completedCount === totalTasks ? "text-[var(--status-success-text)]" : ""} />
                 <div className="w-16 h-1.5 bg-[var(--border-color)] rounded-full overflow-hidden flex">
                   <div 
                     className="h-full bg-[var(--status-success-text)] transition-all duration-300"
                     style={{ width: `${taskProgress}%` }}
                   />
                 </div>
-                <span className="text-[9px] font-bold">{taskProgress}%</span>
+                <span className="text-[11px] font-bold">{taskProgress}%</span>
               </span>
             </>
           )}
@@ -1418,15 +1418,15 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
           </div>
 
           <div className="[div[data-status='saving']_&]:flex hidden items-center gap-1.5 text-[var(--badge-text)] font-bold">
-            <Loader2 size={11} className="animate-spin text-[var(--accent-indigo)]" />
+            <Loader2 size={12} className="animate-spin text-[var(--accent-indigo)]" />
             <span>Syncing…</span>
           </div>
           <div className="[div[data-status='saved']_&]:flex hidden items-center gap-1.5 text-[var(--status-success-text)] font-bold">
-            <CheckCircle2 size={11} />
+            <CheckCircle2 size={12} />
             <span>All changes saved</span>
           </div>
           <div className="[div[data-status='idle']_&]:flex hidden items-center gap-1.5 text-[var(--text-subtle)]">
-            <Sparkles size={11} className="text-[var(--accent-indigo)]" />
+            <Sparkles size={12} className="text-[var(--accent-indigo)]" />
             <span>Auto-sync active</span>
           </div>
         </div>
@@ -1449,7 +1449,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
                   Insert
                 </Button>
               </div>
-              <p className="text-[11px] text-[var(--text-muted)] font-medium leading-relaxed">
+              <p className="text-xs text-[var(--text-muted)] font-medium leading-relaxed">
                 {tmpl.description}
               </p>
             </div>

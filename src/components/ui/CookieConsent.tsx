@@ -147,7 +147,7 @@ export function CookieConsent() {
               <div className="p-1.5 sm:p-2 rounded-lg bg-[var(--badge-bg)] text-[var(--accent-primary)] shrink-0">
                 <Cookie className="w-4 h-4 sm:w-4.5 sm:h-4.5" aria-hidden="true" />
               </div>
-              <div className="text-[11px] sm:text-xs text-[var(--text-muted)] leading-tight sm:leading-relaxed">
+              <div className="text-xs sm:text-[13px] text-[var(--text-muted)] leading-relaxed">
                 <span id="cookie-banner-title" className="font-bold text-[var(--text-main)] mr-1">
                   Cookies & Privacy:
                 </span>
@@ -164,21 +164,21 @@ export function CookieConsent() {
               <button
                 type="button"
                 onClick={() => setIsCustomizeOpen(true)}
-                className="px-2.5 py-1.5 sm:px-3 text-[11px] sm:text-xs font-semibold rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] text-[var(--text-main)] hover:bg-[var(--bg-main)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] cursor-pointer"
+                className="px-3 py-2 sm:px-3.5 text-xs font-semibold rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] text-[var(--text-main)] hover:bg-[var(--bg-main)] min-h-[38px] flex items-center justify-center transition-colors focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] cursor-pointer"
               >
                 Customize
               </button>
               <button
                 type="button"
                 onClick={handleRejectNonEssential}
-                className="px-2.5 py-1.5 sm:px-3 text-[11px] sm:text-xs font-semibold rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] text-[var(--text-main)] hover:bg-[var(--bg-main)] transition-colors focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] cursor-pointer"
+                className="px-3 py-2 sm:px-3.5 text-xs font-semibold rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] text-[var(--text-main)] hover:bg-[var(--bg-main)] min-h-[38px] flex items-center justify-center transition-colors focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] cursor-pointer"
               >
                 Reject Non-Essential
               </button>
               <button
                 type="button"
                 onClick={handleAcceptAll}
-                className="px-3.5 py-1.5 sm:px-4 text-[11px] sm:text-xs font-semibold rounded-lg bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white shadow-sm transition-colors focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] cursor-pointer"
+                className="px-4 py-2 sm:px-4.5 text-xs font-semibold rounded-lg bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white shadow-sm min-h-[38px] flex items-center justify-center transition-colors focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] cursor-pointer"
               >
                 Accept All
               </button>
@@ -197,14 +197,14 @@ export function CookieConsent() {
             <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-3">
               <div className="flex items-center gap-2">
                 <Settings className="w-5 h-5 text-[var(--accent-primary)]" aria-hidden="true" />
-                <h2 id="cookie-preferences-title" className="font-bold text-sm sm:text-base text-[var(--text-main)]">
+                <h2 id="cookie-preferences-title" className="font-bold text-base sm:text-lg text-[var(--text-main)]">
                   Manage Cookie & Tracking Preferences
                 </h2>
               </div>
               <button
                 type="button"
                 onClick={() => setIsCustomizeOpen(false)}
-                className="p-1 rounded-md text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors cursor-pointer"
+                className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center"
                 aria-label="Close customization modal"
               >
                 <X className="w-5 h-5" />
@@ -216,7 +216,7 @@ export function CookieConsent() {
               <div className="p-3 sm:p-3.5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] space-y-1">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-[var(--text-main)]">Strictly Necessary</span>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[var(--badge-bg)] text-[var(--accent-primary)]">
+                  <span className="text-xs font-mono px-2 py-0.5 rounded bg-[var(--badge-bg)] text-[var(--accent-primary)]">
                     Always Active
                   </span>
                 </div>
@@ -267,21 +267,21 @@ export function CookieConsent() {
             </div>
 
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2">
-              <span className="text-[11px] text-[var(--text-muted)]">
+              <span className="text-xs text-[var(--text-muted)]">
                 You can change these preferences at any time via the &quot;Cookie Preferences&quot; link in the footer.
               </span>
               <div className="flex items-center gap-2 self-end sm:self-auto">
                 <button
                   type="button"
                   onClick={handleRejectNonEssential}
-                  className="px-3 py-1.5 text-xs font-semibold rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] text-[var(--text-main)] hover:bg-[var(--bg-main)] cursor-pointer"
+                  className="px-3.5 py-2 text-xs font-semibold rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] text-[var(--text-main)] hover:bg-[var(--bg-main)] cursor-pointer min-h-[38px] flex items-center justify-center"
                 >
                   Reject Non-Essential
                 </button>
                 <button
                   type="button"
                   onClick={handleSaveCustom}
-                  className="px-4 py-1.5 text-xs font-semibold rounded-lg bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-primary-hover)] inline-flex items-center gap-1.5 cursor-pointer shadow-sm"
+                  className="px-4.5 py-2 text-xs font-semibold rounded-lg bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-primary-hover)] inline-flex items-center gap-1.5 cursor-pointer shadow-sm min-h-[38px]"
                 >
                   <Check className="w-3.5 h-3.5" />
                   Save Preferences

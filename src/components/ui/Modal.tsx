@@ -66,22 +66,22 @@ export function Modal({ open, onClose, title, children, maxWidth = "max-w-md" }:
         {/* Header */}
         {title ? (
           <div className="flex items-center justify-between mb-3.5 pb-2.5 border-b border-[var(--border-color)] shrink-0 select-none">
-            <h2 className="text-sm sm:text-base font-extrabold text-[var(--text-main)] truncate pr-2">{title}</h2>
+            <h2 className="text-base sm:text-lg font-bold text-[var(--text-main)] truncate pr-2">{title}</h2>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-all cursor-pointer shrink-0"
+              className="p-2 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-all cursor-pointer shrink-0 min-h-[36px] min-w-[36px] flex items-center justify-center"
               aria-label="Close dialog"
             >
-              <X size={16} />
+              <X size={18} />
             </button>
           </div>
         ) : (
           <button
             onClick={onClose}
-            className="absolute top-3 right-3 p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-all cursor-pointer z-10"
+            className="absolute top-3 right-3 p-2 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-all cursor-pointer z-10 min-h-[36px] min-w-[36px] flex items-center justify-center"
             aria-label="Close dialog"
           >
-            <X size={16} />
+            <X size={18} />
           </button>
         )}
 

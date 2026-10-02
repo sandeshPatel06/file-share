@@ -173,14 +173,14 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
               {recentSpaces.length > 0 && (
                 <div className="mt-3.5 pt-3 border-t border-[var(--border-color)] text-left">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-[11px] font-bold text-[var(--text-subtle)] uppercase tracking-wider flex items-center gap-1.5">
-                      <Clock className="w-3 h-3 text-[var(--accent-indigo)]" />
+                    <span className="text-xs font-bold text-[var(--text-subtle)] uppercase tracking-wider flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5 text-[var(--accent-indigo)]" />
                       Recent Spaces
                     </span>
                     <button
                       type="button"
                       onClick={clearRecentSpaces}
-                      className="text-[10px] text-[var(--text-subtle)] hover:text-red-400 transition-colors cursor-pointer"
+                      className="text-xs text-[var(--text-subtle)] hover:text-red-400 transition-colors cursor-pointer"
                       title="Clear recent workspaces"
                     >
                       Clear all
@@ -224,7 +224,7 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
               )}
 
               {/* Form Consent Notice (GDPR & DPDP Act 2023) */}
-              <p className="mt-3 text-[11px] text-[var(--text-subtle)] text-center leading-normal">
+              <p className="mt-3 text-xs text-[var(--text-muted)] text-center leading-normal">
                 By opening or joining a workspace, you agree to our{" "}
                 <Link href="/terms" className="underline hover:text-[var(--text-main)]">
                   Terms
@@ -633,7 +633,7 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
             </div>
           </div>
 
-          <div className="pt-3 border-t border-[var(--border-color)] flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-[var(--text-subtle)]">
+          <div className="pt-3 border-t border-[var(--border-color)] flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-[var(--text-muted)]">
             <p>Operated by <strong>SHP Technology</strong> • Founder: Sandesh Patel • Jabalpur, Madhya Pradesh 482001, India</p>
             <p>GDPR &amp; India DPDP Act 2023 Compliant • Free Web Utility</p>
           </div>

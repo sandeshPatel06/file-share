@@ -24,18 +24,18 @@ export function Button({
   const baseStyles = "inline-flex items-center justify-center font-bold rounded-xl transition-all duration-200 outline-none select-none disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none hover:scale-[1.015] active:scale-[0.97] cursor-pointer";
 
   const sizes = {
-    xs: "px-2 py-0.5 text-[11px] gap-1 rounded-md font-semibold",
-    sm: "px-3 py-1.5 text-xs gap-1.5 rounded-lg font-bold",
-    md: "px-3.5 py-2 text-xs sm:text-sm gap-2 rounded-xl font-bold",
-    lg: "px-5 py-2.5 text-sm sm:text-base gap-2 rounded-xl font-bold",
-    xl: "px-7 py-3 text-base sm:text-lg gap-2.5 rounded-2xl font-bold",
+    xs: "px-2.5 py-1 min-h-[32px] text-xs gap-1 rounded-md font-semibold",
+    sm: "px-3 py-1.5 min-h-[36px] text-xs gap-1.5 rounded-lg font-bold",
+    md: "px-3.5 py-2 min-h-[40px] text-xs sm:text-sm gap-2 rounded-xl font-bold",
+    lg: "px-5 py-2.5 min-h-[44px] text-sm sm:text-base gap-2 rounded-xl font-bold",
+    xl: "px-7 py-3 min-h-[48px] text-base sm:text-lg gap-2.5 rounded-2xl font-bold",
   };
 
   const variants = {
     primary:
-      "bg-emerald-600 hover:bg-emerald-700 text-white shadow-md border border-emerald-500/30",
+      "bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white shadow-md border border-[var(--badge-border)]",
     glow:
-      "bg-emerald-600 hover:bg-emerald-700 text-white shadow-md border border-emerald-500/30",
+      "bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white shadow-md border border-[var(--badge-border)]",
     secondary:
       "bg-[var(--badge-bg)] text-[var(--text-main)] hover:bg-[var(--border-color)] border border-[var(--border-color)] shadow-sm",
     ghost:

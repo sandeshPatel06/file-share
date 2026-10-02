@@ -18,9 +18,9 @@
   --bg-card-hover: #21262d;  /* Interactive Hover */
   --input-bg: #0d1117;       /* Sunken Code / Editor Canvas */
 
-  --text-main: #e6edf3;      /* GitHub Dark primary text (14.5:1) */
-  --text-muted: #9da7b3;     /* GitHub Dark secondary text (7.2:1 - AAA) */
-  --text-subtle: #8b949e;    /* GitHub Dark subtle text (5.5:1 - AA) */
+  --text-main: #e6edf3;      /* GitHub Dark primary text (14.5:1 - AAA) */
+  --text-muted: #a2abb7;     /* GitHub Dark secondary text (7.6:1 - AAA) */
+  --text-subtle: #919ba5;    /* GitHub Dark subtle text (6.0:1 - AA+) */
 
   --accent-primary: #238636; /* GitHub Pro Green */
   --accent-primary-hover: #2ea043;
@@ -58,27 +58,27 @@
   --bg-card-hover: #f3f4f6;  /* Light Hover */
   --input-bg: #f6f8fa;       /* Soft Sunken Input Canvas */
 
-  --text-main: #1f2328;      /* GitHub Light primary text (14.2:1) */
-  --text-muted: #3d454f;     /* Secondary text (8.0:1 - AAA contrast) */
+  --text-main: #1f2328;      /* GitHub Light primary text (14.2:1 - AAA) */
+  --text-muted: #38404a;     /* Secondary text (8.8:1 - AAA contrast) */
   --text-subtle: #424a53;    /* Metadata text (7.5:1 - AAA contrast) */
 
-  --accent-primary: #1f883d; /* GitHub Light Green Accent */
-  --accent-primary-hover: #1a7f37;
-  --accent-indigo: #1f883d;
+  --accent-primary: #1a7f37; /* Crisp Green Accent (≥4.5:1 AA contrast on white) */
+  --accent-primary-hover: #15692d;
+  --accent-indigo: #1a7f37;
   --accent-cyan: #0969da;
   --accent-sky: #0550ae;
 
   --border-color: #d0d7de;   /* GitHub Light border */
-  --border-glow: #1f883d;
+  --border-glow: #1a7f37;
   --modal-bg: #ffffff;
 
   --badge-bg: #dafbe1;       /* Light Green badge */
   --badge-border: #4ac26b;
-  --badge-text: #1a7f37;
+  --badge-text: #116329;
 
   --status-success-bg: #dafbe1;
   --status-success-border: #4ac26b;
-  --status-success-text: #1a7f37;
+  --status-success-text: #116329;
 
   --status-danger-bg: #ffebe9;
   --status-danger-border: #ff897a;

@@ -127,8 +127,8 @@ export function RenameSlugModal({ open, onClose, slug, token }: RenameSlugModalP
             <Globe size={18} />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-bold text-[var(--text-subtle)] uppercase tracking-wider font-mono">Current Workspace</p>
-            <p className="text-xs sm:text-sm font-extrabold text-[var(--text-main)] font-mono truncate">/s/{slug}</p>
+            <p className="text-xs font-bold text-[var(--text-subtle)] uppercase tracking-wider font-mono">Current Workspace</p>
+            <p className="text-sm sm:text-base font-extrabold text-[var(--text-main)] font-mono truncate">/s/{slug}</p>
           </div>
         </div>
 
@@ -154,7 +154,7 @@ export function RenameSlugModal({ open, onClose, slug, token }: RenameSlugModalP
               }}
               placeholder="my-custom-space"
               className={`
-                w-full pl-9 pr-24 py-2 bg-[var(--input-bg)] border rounded-xl text-xs sm:text-sm text-[var(--text-main)] font-mono
+                w-full pl-9 pr-24 py-2.5 bg-[var(--input-bg)] border rounded-xl text-sm text-[var(--text-main)] font-mono min-h-[40px]
                 outline-none transition-all shadow-inner font-bold
                 ${slugError
                   ? "border-[var(--status-danger-border)] focus:ring-2 focus:ring-[var(--status-danger-border)]"
@@ -186,8 +186,8 @@ export function RenameSlugModal({ open, onClose, slug, token }: RenameSlugModalP
 
         {/* Retention Policy Notice */}
         <div className="flex items-start gap-2 p-2.5 rounded-xl bg-[var(--badge-bg)] border border-[var(--badge-border)] text-xs text-[var(--text-muted)]">
-          <Clock size={15} className="text-[var(--accent-indigo)] shrink-0 mt-0.5" />
-          <p className="leading-relaxed text-[11px]">
+          <Clock size={16} className="text-[var(--accent-indigo)] shrink-0 mt-0.5" />
+          <p className="leading-relaxed text-xs">
             <strong className="text-[var(--text-main)]">Data Retention:</strong> Inactive spaces may be pruned after 30 days of inactivity. Please export important notes and files to keep offline copies.
           </p>
         </div>
@@ -196,30 +196,31 @@ export function RenameSlugModal({ open, onClose, slug, token }: RenameSlugModalP
         <div className="flex items-center justify-between p-2.5 rounded-xl bg-red-500/5 border border-red-500/20 text-xs">
           <div>
             <p className="font-bold text-[var(--status-danger-text)]">Delete Workspace</p>
-            <p className="text-[11px] text-[var(--text-muted)]">Permanently erase notes and all files.</p>
+            <p className="text-xs text-[var(--text-muted)]">Permanently erase notes and all files.</p>
           </div>
           <Button
             variant="danger"
-            size="xs"
+            size="sm"
             onClick={() => setShowDeleteConfirm(true)}
-            icon={<Trash2 size={13} />}
+            icon={<Trash2 size={14} />}
           >
             Delete
           </Button>
         </div>
 
         {/* Modal Action Controls */}
-        <div className="flex items-center justify-end gap-2 pt-3 mt-1 border-t border-[var(--border-color)]">
-          <Button variant="secondary" size="sm" onClick={onClose}>
+        <div className="flex items-center justify-end gap-2.5 pt-3 mt-1 border-t border-[var(--border-color)]">
+          <Button variant="secondary" size="md" onClick={onClose} className="font-bold">
             Cancel
           </Button>
           <Button
             variant="primary"
-            size="sm"
+            size="md"
             disabled={!!slugError || !newSlug || newSlug === slug || checking}
             loading={saving}
             onClick={handleSave}
-            icon={available === false ? <ArrowRight size={14} /> : <Check size={14} />}
+            icon={available === false ? <ArrowRight size={15} /> : <Check size={15} />}
+            className="font-bold"
           >
             {available === false ? "Open Existing Space" : "Save New URL"}
           </Button>

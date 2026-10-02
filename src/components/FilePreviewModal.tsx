@@ -135,13 +135,13 @@ export function FilePreviewModal({ file, token, open, onClose }: FilePreviewModa
               </div>
               <div>
                 <p className="text-xs sm:text-sm font-bold text-[var(--text-main)] max-w-md truncate">{file.originalName}</p>
-                <p className="text-[11px] font-mono text-[var(--text-muted)] mt-0.5 font-semibold">
+                <p className="text-xs font-mono text-[var(--text-muted)] mt-0.5 font-semibold">
                   PDF Document · {formatBytes(file.size)}
                 </p>
               </div>
               <div className="w-full flex items-center justify-center gap-2 mt-1">
                 <a href={fullDownloadUrl} target="_blank" rel="noopener noreferrer" className="flex-1 max-w-xs">
-                  <Button variant="primary" size="sm" icon={<ExternalLink size={13} />} className="w-full text-xs font-extrabold">
+                  <Button variant="primary" size="md" icon={<ExternalLink size={15} />} className="w-full font-extrabold">
                     Open PDF Document
                   </Button>
                 </a>
@@ -164,7 +164,7 @@ export function FilePreviewModal({ file, token, open, onClose }: FilePreviewModa
                 <FileText size={28} />
               </div>
               <p className="text-xs sm:text-sm font-bold text-[var(--text-main)] truncate max-w-md">{file.originalName}</p>
-              <p className="text-[11px] font-mono text-[var(--text-muted)] mt-1 px-3 py-0.5 rounded-full bg-[var(--bg-card)] border border-[var(--border-color)]">
+              <p className="text-xs font-mono text-[var(--text-muted)] mt-1 px-3 py-1 rounded-full bg-[var(--bg-card)] border border-[var(--border-color)]">
                 {file.mimetype || "Binary File"} · {formatBytes(file.size)}
               </p>
             </div>
@@ -176,22 +176,22 @@ export function FilePreviewModal({ file, token, open, onClose }: FilePreviewModa
           <input
             readOnly
             value={fullDownloadUrl}
-            className="flex-1 px-2.5 py-1 text-xs text-[var(--text-main)] bg-transparent outline-none font-mono truncate select-all font-bold"
+            className="flex-1 px-3 py-2 text-xs sm:text-sm text-[var(--text-main)] bg-transparent outline-none font-mono truncate select-all font-bold"
           />
-          <Button size="sm" variant={copied ? "success" : "secondary"} icon={copied ? <CheckCheck size={13} /> : <Copy size={13} />} onClick={handleCopyLink}>
+          <Button size="md" variant={copied ? "success" : "secondary"} icon={copied ? <CheckCheck size={15} /> : <Copy size={15} />} onClick={handleCopyLink} className="font-bold">
             {copied ? "Copied" : "Copy Link"}
           </Button>
         </div>
 
         {/* Action Controls */}
-        <div className="flex items-center gap-2 w-full pt-2.5 border-t border-[var(--border-color)]">
+        <div className="flex items-center gap-2.5 w-full pt-2.5 border-t border-[var(--border-color)]">
           <a href={fullDownloadUrl} download={file.originalName} target="_blank" rel="noopener noreferrer" className="flex-1">
-            <Button variant="primary" size="sm" icon={<Download size={14} />} className="w-full font-extrabold">
+            <Button variant="primary" size="md" icon={<Download size={15} />} className="w-full font-extrabold">
               Download File
             </Button>
           </a>
           <a href={fullDownloadUrl} target="_blank" rel="noopener noreferrer">
-            <Button variant="secondary" size="sm" icon={<ExternalLink size={14} />}>
+            <Button variant="secondary" size="md" icon={<ExternalLink size={15} />} className="font-bold">
               Open in New Tab
             </Button>
           </a>

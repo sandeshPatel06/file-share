@@ -160,10 +160,10 @@ export function FileCard({ file, slug, token, layout = "list" }: FileCardProps) 
 
           {/* Middle File Info */}
           <div className="mt-2 min-w-0 cursor-pointer" onClick={() => setShowPreview(true)}>
-            <p className="text-xs font-bold text-[var(--text-main)] truncate group-hover:text-[var(--accent-indigo)] transition-colors">
+            <p className="text-xs sm:text-sm font-bold text-[var(--text-main)] truncate group-hover:text-[var(--accent-indigo)] transition-colors">
               {file.originalName}
             </p>
-            <p className="text-[10px] text-[var(--text-muted)] mt-0.5 font-mono truncate font-semibold">
+            <p className="text-xs text-[var(--text-muted)] mt-0.5 font-mono truncate font-semibold">
               {formatBytes(file.size)}
               {file.uploadedAt && <span> · {timeAgo(file.uploadedAt.seconds)}</span>}
             </p>
@@ -175,16 +175,16 @@ export function FileCard({ file, slug, token, layout = "list" }: FileCardProps) 
               <button
                 onClick={() => setShowPreview(true)}
                 title="Preview"
-                className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                className="p-2 min-h-[34px] min-w-[34px] flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
               >
-                <Eye size={13} />
+                <Eye size={14} />
               </button>
               <button
                 onClick={handleCopyUrl}
                 title="Copy link"
-                className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                className="p-2 min-h-[34px] min-w-[34px] flex items-center justify-center rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
               >
-                {copiedUrl ? <Check size={13} className="text-[var(--status-success-text)]" /> : <Copy size={13} />}
+                {copiedUrl ? <Check size={14} className="text-[var(--status-success-text)]" /> : <Copy size={14} />}
               </button>
             </div>
 
@@ -192,17 +192,17 @@ export function FileCard({ file, slug, token, layout = "list" }: FileCardProps) 
               <a href={fullDownloadUrl} download={file.originalName} target="_blank" rel="noopener noreferrer">
                 <button
                   title="Download"
-                  className="p-1.5 rounded-lg bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] hover:bg-[var(--accent-primary)] hover:text-white transition-all cursor-pointer"
+                  className="p-2 min-h-[34px] min-w-[34px] flex items-center justify-center rounded-lg bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] hover:bg-[var(--accent-primary)] hover:text-white transition-all cursor-pointer"
                 >
-                  <Download size={13} />
+                  <Download size={14} />
                 </button>
               </a>
               <button
                 onClick={() => setShowConfirmDelete(true)}
                 title="Delete"
-                className="p-1.5 rounded-lg text-[var(--status-danger-text)] hover:bg-[var(--status-danger-bg)] transition-colors cursor-pointer"
+                className="p-2 min-h-[34px] min-w-[34px] flex items-center justify-center rounded-lg text-[var(--status-danger-text)] hover:bg-[var(--status-danger-bg)] transition-colors cursor-pointer"
               >
-                <Trash2 size={13} />
+                <Trash2 size={14} />
               </button>
             </div>
           </div>
@@ -210,7 +210,7 @@ export function FileCard({ file, slug, token, layout = "list" }: FileCardProps) 
       ) : (
         /* List Layout Item (Default) */
         <div className="
-          group flex items-center justify-between gap-2.5 p-2.5 rounded-xl
+          group flex items-center justify-between gap-2.5 p-3 rounded-xl min-h-[50px]
           bg-[var(--bg-card)] border border-[var(--border-color)]
           hover:border-[var(--border-glow)] hover:shadow-md
           transition-all duration-200 animate-fade-in min-w-0
@@ -219,7 +219,7 @@ export function FileCard({ file, slug, token, layout = "list" }: FileCardProps) 
           <div className="flex items-center gap-2.5 min-w-0 flex-1">
             <button
               onClick={() => setShowPreview(true)}
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-[var(--badge-bg)] border border-[var(--badge-border)] hover:border-[var(--accent-primary)] flex items-center justify-center shrink-0 shadow-sm transition-all hover:scale-105 cursor-pointer overflow-hidden"
+              className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-[var(--badge-bg)] border border-[var(--badge-border)] hover:border-[var(--accent-primary)] flex items-center justify-center shrink-0 shadow-sm transition-all hover:scale-105 cursor-pointer overflow-hidden"
               title="Click to preview file"
             >
               {isImage && !imgError ? (
@@ -240,7 +240,7 @@ export function FileCard({ file, slug, token, layout = "list" }: FileCardProps) 
               <p className="text-xs sm:text-sm font-bold text-[var(--text-main)] truncate group-hover:text-[var(--accent-indigo)] transition-colors">
                 {file.originalName}
               </p>
-              <p className="text-[10px] sm:text-[11px] text-[var(--text-muted)] mt-0.5 font-mono whitespace-nowrap truncate font-semibold">
+              <p className="text-xs text-[var(--text-muted)] mt-0.5 font-mono whitespace-nowrap truncate font-semibold">
                 {formatBytes(file.size)}
                 {file.uploadedAt && (
                   <span className="text-[var(--text-subtle)]" title={formatUserLocalDateTime(file.uploadedAt.seconds)}>
@@ -252,44 +252,44 @@ export function FileCard({ file, slug, token, layout = "list" }: FileCardProps) 
           </div>
 
           {/* Right Side: Action controls */}
-          <div className="flex items-center gap-1 shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0">
             <button
               onClick={() => setShowPreview(true)}
               title="Preview file"
-              className="p-1.5 rounded-lg bg-[var(--badge-bg)] hover:bg-[var(--border-color)] border border-[var(--border-color)] text-[var(--text-main)] transition-all shadow-sm cursor-pointer"
+              className="p-2 min-h-[36px] min-w-[36px] flex items-center justify-center rounded-lg bg-[var(--badge-bg)] hover:bg-[var(--border-color)] border border-[var(--border-color)] text-[var(--text-main)] transition-all shadow-sm cursor-pointer"
             >
-              <Eye size={13} />
+              <Eye size={14} />
             </button>
 
             <button
               onClick={handleCopyUrl}
               title="Copy download link"
               className={`
-                p-1.5 rounded-lg border transition-all shadow-sm cursor-pointer
+                p-2 min-h-[36px] min-w-[36px] flex items-center justify-center rounded-lg border transition-all shadow-sm cursor-pointer
                 ${copiedUrl
                   ? "bg-[var(--status-success-bg)] text-[var(--status-success-text)] border-[var(--status-success-border)]"
                   : "bg-[var(--badge-bg)] hover:bg-[var(--border-color)] border border-[var(--border-color)] text-[var(--text-main)]"
                 }
               `}
             >
-              {copiedUrl ? <Check size={13} className="text-[var(--status-success-text)]" /> : <Copy size={13} />}
+              {copiedUrl ? <Check size={14} className="text-[var(--status-success-text)]" /> : <Copy size={14} />}
             </button>
 
             <a href={fullDownloadUrl} download={file.originalName} target="_blank" rel="noopener noreferrer">
               <button
                 title="Download file"
-                className="p-1.5 rounded-lg bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white transition-all shadow-sm border border-[var(--border-glow)] flex items-center justify-center cursor-pointer"
+                className="p-2 min-h-[36px] min-w-[36px] flex items-center justify-center rounded-lg bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white transition-all shadow-sm border border-[var(--border-glow)] cursor-pointer"
               >
-                <Download size={13} />
+                <Download size={14} />
               </button>
             </a>
 
             <button
               onClick={() => setShowConfirmDelete(true)}
               title="Delete file"
-              className="p-1.5 rounded-lg bg-[var(--status-danger-bg)] text-[var(--status-danger-text)] border border-[var(--status-danger-border)] hover:opacity-80 transition-all shadow-sm flex items-center justify-center cursor-pointer"
+              className="p-2 min-h-[36px] min-w-[36px] flex items-center justify-center rounded-lg bg-[var(--status-danger-bg)] text-[var(--status-danger-text)] border border-[var(--status-danger-border)] hover:opacity-80 transition-all shadow-sm cursor-pointer"
             >
-              <Trash2 size={13} />
+              <Trash2 size={14} />
             </button>
           </div>
         </div>

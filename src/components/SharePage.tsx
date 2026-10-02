@@ -96,7 +96,7 @@ export function SharePage({ pageData }: SharePageProps) {
   return (
     <div className="flex flex-col h-screen w-full overflow-hidden bg-[var(--bg-main)] text-[var(--text-main)] transition-colors duration-200 relative">
       {/* Top Header Navigation */}
-      <header className="h-10 sm:h-11 px-2 sm:px-3 bg-[var(--header-bg)] backdrop-blur-xl border-b border-[var(--border-color)] flex items-center shrink-0 z-30 transition-colors duration-200">
+      <header className="h-11 sm:h-12 px-2.5 sm:px-3 bg-[var(--header-bg)] backdrop-blur-xl border-b border-[var(--border-color)] flex items-center shrink-0 z-30 transition-colors duration-200">
         <SlugBar
           slug={slug}
           isProtected={isProtected}
@@ -134,10 +134,10 @@ export function SharePage({ pageData }: SharePageProps) {
               <span className="text-xs uppercase tracking-wider font-mono">Explorer</span>
             </div>
             <Button
-              size="xs"
+              size="sm"
               variant="ghost"
               onClick={() => setUserPanelToggle(false)}
-              className="!p-1.5 !rounded-lg hover:bg-black/5 dark:hover:bg-white/10 text-[var(--text-muted)] hover:text-[var(--text-main)]"
+              className="!p-2 !rounded-lg hover:bg-black/5 dark:hover:bg-white/10 text-[var(--text-muted)] hover:text-[var(--text-main)] min-h-[36px] min-w-[36px]"
               aria-label="Close file explorer"
               icon={<PanelRightClose size={16} />}
             />
@@ -180,16 +180,16 @@ export function SharePage({ pageData }: SharePageProps) {
           <div className="relative sm:hidden">
             <button
               onClick={() => setShowLegalMenu(!showLegalMenu)}
-              className="hover:text-[var(--text-main)] transition-colors cursor-pointer inline-flex items-center gap-1 font-semibold"
+              className="hover:text-[var(--text-main)] transition-colors cursor-pointer inline-flex items-center gap-1 font-semibold py-1.5 px-2 min-h-[36px]"
             >
               Legal <ChevronUp size={12} className={`transition-transform duration-200 ${showLegalMenu ? "rotate-180" : ""}`} />
             </button>
             {showLegalMenu && (
-              <div className="absolute right-0 bottom-full mb-2 w-36 rounded-xl bg-[var(--modal-bg)] border border-[var(--border-color)] shadow-2xl p-1 z-30 flex flex-col gap-0.5 text-xs">
-                <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="px-2.5 py-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 text-[var(--text-main)]" onClick={() => setShowLegalMenu(false)}>Privacy Policy</Link>
-                <Link href="/terms" target="_blank" rel="noopener noreferrer" className="px-2.5 py-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 text-[var(--text-main)]" onClick={() => setShowLegalMenu(false)}>Terms of Service</Link>
-                <Link href="/cookies" target="_blank" rel="noopener noreferrer" className="px-2.5 py-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 text-[var(--text-main)]" onClick={() => setShowLegalMenu(false)}>Cookie Policy</Link>
-                <Link href="/refund" target="_blank" rel="noopener noreferrer" className="px-2.5 py-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 text-[var(--text-main)]" onClick={() => setShowLegalMenu(false)}>Refund Policy</Link>
+              <div className="absolute right-0 bottom-full mb-2 w-40 rounded-xl bg-[var(--modal-bg)] border border-[var(--border-color)] shadow-2xl p-1 z-30 flex flex-col gap-0.5 text-xs">
+                <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 text-[var(--text-main)] min-h-[36px] flex items-center" onClick={() => setShowLegalMenu(false)}>Privacy Policy</Link>
+                <Link href="/terms" target="_blank" rel="noopener noreferrer" className="px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 text-[var(--text-main)] min-h-[36px] flex items-center" onClick={() => setShowLegalMenu(false)}>Terms of Service</Link>
+                <Link href="/cookies" target="_blank" rel="noopener noreferrer" className="px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 text-[var(--text-main)] min-h-[36px] flex items-center" onClick={() => setShowLegalMenu(false)}>Cookie Policy</Link>
+                <Link href="/refund" target="_blank" rel="noopener noreferrer" className="px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 text-[var(--text-main)] min-h-[36px] flex items-center" onClick={() => setShowLegalMenu(false)}>Refund Policy</Link>
               </div>
             )}
           </div>

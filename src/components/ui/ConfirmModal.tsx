@@ -36,19 +36,20 @@ export function ConfirmModal({
 
         {/* Message */}
         <div className="mt-2.5">
-          <h3 className="text-sm font-extrabold text-[var(--text-main)] mb-1">{title}</h3>
-          <p className="text-xs text-[var(--text-muted)] font-medium leading-relaxed">{description}</p>
+          <h3 className="text-base font-extrabold text-[var(--text-main)] mb-1.5">{title}</h3>
+          <p className="text-sm text-[var(--text-muted)] font-medium leading-relaxed">{description}</p>
         </div>
 
         {/* Dialog Actions */}
-        <div className="flex items-center justify-end gap-2 pt-3 mt-4 border-t border-[var(--border-color)]">
-          <Button variant="secondary" size="sm" onClick={onClose} disabled={loading}>
+        <div className="flex items-center justify-end gap-2.5 pt-3 mt-4 border-t border-[var(--border-color)]">
+          <Button variant="secondary" size="md" onClick={onClose} disabled={loading} className="font-bold">
             {cancelText}
           </Button>
           <Button
             variant={variant}
-            size="sm"
+            size="md"
             loading={loading}
+            className="font-bold"
             onClick={() => {
               onConfirm();
             }}
