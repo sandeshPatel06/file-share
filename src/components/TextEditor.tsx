@@ -72,7 +72,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
     resolveConflictTakeMine,
     resolveConflictTakeRemote,
     resolveConflictMerge,
-  } = usePageContent(slug, initialContent);
+  } = usePageContent(slug, initialContent, token);
 
   const isDesktop = useSyncExternalStore(subscribeDesktop, getIsDesktop, getServerIsDesktop);
   const [userViewMode, setUserViewMode] = useState<ViewMode | null>(null);

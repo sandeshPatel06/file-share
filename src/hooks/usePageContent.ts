@@ -1,12 +1,21 @@
 "use client";
 import { useEffect, useState, useRef, useCallback } from "react";
+import {
+  subscribePageEvents,
+  isPageEventsClosed,
+  type SSEMessage,
+} from "@/lib/pageEventsClient";
 
 export interface ConflictState {
   remoteContent: string;
   receivedAt: number;
 }
 
-export function usePageContent(slug: string, initialContent?: string) {
+export function usePageContent(
+  slug: string,
+  initialContent?: string,
+  token?: string | null
+) {
   const [content, setContent] = useState<string | null>(initialContent ?? null);
   const [loading, setLoading] = useState(initialContent === undefined);
   const [prevSlug, setPrevSlug] = useState<string>(slug);
@@ -67,7 +76,12 @@ export function usePageContent(slug: string, initialContent?: string) {
       if (Date.now() - lastLocalEditAt.current < 2500) return;
 
       try {
-        const res = await fetch(`/api/pages/${slug}`);
+        const headers: Record<string, string> = {};
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+
+        const res = await fetch(`/api/pages/${slug}`, { headers });
         if (res.ok) {
           const data = await res.json();
           const newText = data.content ?? "";
@@ -86,67 +100,56 @@ export function usePageContent(slug: string, initialContent?: string) {
       fetchContent();
     }
 
-    // Instant Real-time Updates via Server-Sent Events (SSE)
-    let eventSource: EventSource | null = null;
-    try {
-      eventSource = new EventSource(`/api/pages/${slug}/events`);
-
-      eventSource.onopen = () => {
-        if (active) setConnectionStatus("connected");
-      };
-
-      eventSource.onerror = () => {
-        if (active) setConnectionStatus("disconnected");
-      };
-
-      eventSource.onmessage = (event) => {
+    // Instant Real-time Updates via unified Server-Sent Events (SSE) multiplexer
+    const unsubscribeSSE = subscribePageEvents(
+      slug,
+      token,
+      (data: SSEMessage) => {
         if (!active) return;
-        try {
-          const data = JSON.parse(event.data);
 
-          // Handle Presence update
-          if (data.type === "presence_updated" && typeof data.activeCount === "number") {
-            setCollaboratorCount(data.activeCount);
-          }
+        // Handle Presence update
+        if (data.type === "presence_updated" && typeof data.activeCount === "number") {
+          setCollaboratorCount(data.activeCount);
+        }
 
-          // Handle Content update with soft-conflict detection
-          if (data.type === "content_updated" && typeof data.content === "string") {
-            const isLocalDirty = Date.now() - lastLocalEditAt.current < 2500;
-            const isDifferent = data.content !== contentRef.current;
+        // Handle Content update with soft-conflict detection
+        if (data.type === "content_updated" && typeof data.content === "string") {
+          const isLocalDirty = Date.now() - lastLocalEditAt.current < 2500;
+          const isDifferent = data.content !== contentRef.current;
 
-            if (isDifferent) {
-              if (isLocalDirty) {
-                // Soft conflict: remote edit arrived while typing locally
-                setConflict({
-                  remoteContent: data.content,
-                  receivedAt: Date.now(),
-                });
-              } else {
-                // Clean update: apply directly
-                setContent(data.content);
-                setConflict(null);
-              }
+          if (isDifferent) {
+            if (isLocalDirty) {
+              // Soft conflict: remote edit arrived while typing locally
+              setConflict({
+                remoteContent: data.content,
+                receivedAt: Date.now(),
+              });
+            } else {
+              // Clean update: apply directly
+              setContent(data.content);
+              setConflict(null);
             }
           }
-        } catch {}
-      };
-    } catch {
-      // EventSource fallback
-    }
+        }
+      },
+      (status) => {
+        if (active) setConnectionStatus(status);
+      }
+    );
 
     // Fallback polling only if EventSource is disconnected
     const fallbackInterval = setInterval(() => {
-      if (!eventSource || eventSource.readyState === EventSource.CLOSED) {
+      if (isPageEventsClosed(slug, token)) {
         fetchContent();
       }
     }, 12000);
 
     return () => {
       active = false;
-      if (eventSource) eventSource.close();
+      unsubscribeSSE();
       clearInterval(fallbackInterval);
     };
-  }, [slug, initialContent]);
+  }, [slug, initialContent, token]);
 
   return {
     content,

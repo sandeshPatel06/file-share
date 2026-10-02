@@ -73,7 +73,7 @@ function matchCategory(file: FileItem, cat: FileCategory): boolean {
 }
 
 export function FilePanel({ slug, token }: FilePanelProps) {
-  const { files, loading } = useFileList(slug);
+  const { files, loading } = useFileList(slug, token);
   const [dragging,       setDragging]       = useState(false);
   const [searchQuery,    setSearchQuery]    = useState("");
   const [activeCategory, setActiveCategory] = useState<FileCategory>("all");

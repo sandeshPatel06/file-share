@@ -1,5 +1,10 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
+import {
+  subscribePageEvents,
+  isPageEventsClosed,
+  type SSEMessage,
+} from "@/lib/pageEventsClient";
 
 export interface FileItem {
   fileId:       string;
@@ -10,7 +15,7 @@ export interface FileItem {
   uploadedAt:   { seconds: number } | null;
 }
 
-export function useFileList(slug: string) {
+export function useFileList(slug: string, token?: string | null) {
   const [files, setFiles]     = useState<FileItem[]>([]);
   const [loading, setLoading] = useState(true);
   const filesJsonRef          = useRef<string>("");
@@ -21,7 +26,12 @@ export function useFileList(slug: string) {
     async function fetchFiles() {
       if (document.hidden) return;
       try {
-        const res = await fetch(`/api/pages/${slug}/files`);
+        const headers: Record<string, string> = {};
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+
+        const res = await fetch(`/api/pages/${slug}/files`, { headers });
         if (res.ok) {
           const data = await res.json();
           if (active && Array.isArray(data)) {
@@ -43,37 +53,31 @@ export function useFileList(slug: string) {
     // Initial fetch
     fetchFiles();
 
-    // Instant Real-time Updates via Server-Sent Events (SSE)
-    let eventSource: EventSource | null = null;
-    try {
-      eventSource = new EventSource(`/api/pages/${slug}/events`);
-
-      eventSource.onmessage = (event) => {
+    // Instant Real-time Updates via unified Server-Sent Events (SSE) multiplexer
+    const unsubscribeSSE = subscribePageEvents(
+      slug,
+      token,
+      (data: SSEMessage) => {
         if (!active) return;
-        try {
-          const data = JSON.parse(event.data);
-          if (data.type === "files_updated") {
-            fetchFiles();
-          }
-        } catch {}
-      };
-    } catch {
-      // EventSource fallback
-    }
+        if (data.type === "files_updated") {
+          fetchFiles();
+        }
+      }
+    );
 
     // Fallback polling only if EventSource is not connected
     const fallbackInterval = setInterval(() => {
-      if (!eventSource || eventSource.readyState === EventSource.CLOSED) {
+      if (isPageEventsClosed(slug, token)) {
         fetchFiles();
       }
     }, 12000);
 
     return () => {
       active = false;
-      if (eventSource) eventSource.close();
+      unsubscribeSSE();
       clearInterval(fallbackInterval);
     };
-  }, [slug]);
+  }, [slug, token]);
 
   return { files, loading };
 }
