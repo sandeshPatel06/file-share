@@ -20,6 +20,7 @@ import { AdSenseScript } from "@/components/ads/AdSenseScript";
 import { AdBanner } from "@/components/ads/AdBanner";
 import { CookieSettingsButton } from "@/components/ui/CookieConsent";
 import { getAppUrl } from "@/lib/seo";
+import { ADSENSE_SLOTS } from "@/lib/ads";
 
 const appUrl = getAppUrl();
 
@@ -202,7 +203,7 @@ export default function GuidePage() {
         </section>
 
         {/* Safe In-Content Ad Unit 1: Placed after 3 complete editorial sections */}
-        <AdBanner slot="2000000001" position="in-content" className="max-w-3xl mx-auto" />
+        <AdBanner slot={ADSENSE_SLOTS.guideSection1} position="in-content" className="max-w-3xl mx-auto" />
 
         {/* SECTION 4 */}
         <section id="section-4" className="my-10 space-y-4 pt-6 border-t border-[var(--border-color)]">
@@ -351,7 +352,7 @@ sequenceDiagram
         </section>
 
         {/* Safe In-Content Ad Unit 2: Placed deep in editorial reading flow */}
-        <AdBanner slot="2000000002" position="in-content" className="max-w-3xl mx-auto" />
+        <AdBanner slot={ADSENSE_SLOTS.guideSection2} position="in-content" className="max-w-3xl mx-auto" />
 
         {/* SECTION 8 */}
         <section id="section-8" className="my-10 space-y-4 pt-6 border-t border-[var(--border-color)]">
@@ -526,6 +527,8 @@ sequenceDiagram
             <Link href="/" className="hover:text-[var(--text-main)] transition-colors">Home</Link>
             <span>•</span>
             <Link href="/about" className="hover:text-[var(--text-main)] transition-colors">About</Link>
+            <span>•</span>
+            <Link href="/guide" className="hover:text-[var(--text-main)] transition-colors">Guide</Link>
             <span>•</span>
             <Link href="/resources" className="hover:text-[var(--text-main)] transition-colors">Resources</Link>
             <span>•</span>

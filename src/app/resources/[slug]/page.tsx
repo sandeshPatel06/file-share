@@ -17,6 +17,7 @@ import { AdSenseScript } from "@/components/ads/AdSenseScript";
 import { AdBanner } from "@/components/ads/AdBanner";
 import { CookieSettingsButton } from "@/components/ui/CookieConsent";
 import { getAppUrl } from "@/lib/seo";
+import { ADSENSE_SLOTS } from "@/lib/ads";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -232,7 +233,7 @@ export default async function ArticlePage({ params }: Props) {
         </article>
 
         {/* Safe In-Content Ad Unit: Embedded mid-editorial flow after 2-3 full sections */}
-        <AdBanner slot="1234567891" position="in-content" />
+        <AdBanner slot={ADSENSE_SLOTS.resourceArticle} position="in-content" />
 
         {/* Article Body Part 2 */}
         {secondHalf.trim() && (

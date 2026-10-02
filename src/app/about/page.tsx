@@ -15,6 +15,7 @@ import { AdSenseScript } from "@/components/ads/AdSenseScript";
 import { AdBanner } from "@/components/ads/AdBanner";
 import { CookieSettingsButton } from "@/components/ui/CookieConsent";
 import { getAppUrl } from "@/lib/seo";
+import { ADSENSE_SLOTS } from "@/lib/ads";
 
 const appUrl = getAppUrl();
 
@@ -176,7 +177,7 @@ export default function AboutPage() {
           </section>
 
           {/* Safe In-Content Ad Unit: Placed after 3 extensive sections, safely buffered before monetization and CTAs */}
-          <AdBanner slot="3000000001" position="in-content" className="max-w-3xl mx-auto" />
+          <AdBanner slot={ADSENSE_SLOTS.about} position="in-content" className="max-w-3xl mx-auto" />
 
           {/* Section: Ethical Monetization & Ad Transparency */}
           <section className="space-y-4">

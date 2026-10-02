@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { FileText, BookOpen, Clock, Tag, ArrowRight, ShieldCheck, Sparkles, Compass } from "lucide-react";
 import { getAllArticles } from "@/lib/articles";
-import { AdSenseScript } from "@/components/ads/AdSenseScript";
-import { AdBanner } from "@/components/ads/AdBanner";
 import { CookieSettingsButton } from "@/components/ui/CookieConsent";
 import { getAppUrl } from "@/lib/seo";
 
@@ -29,9 +27,6 @@ export default function ResourcesPage() {
 
   return (
     <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col transition-colors duration-200">
-      {/* Conditionally load AdSense on this content-rich publisher page */}
-      <AdSenseScript />
-
       {/* Header */}
       <header className="sticky top-0 z-40 bg-[var(--header-bg)] border-b border-[var(--border-color)]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
@@ -117,9 +112,6 @@ export default function ResourcesPage() {
           ))}
         </div>
 
-        {/* Safe In-Content Ad Unit: Placed after 7 full editorial article summaries */}
-        <AdBanner slot="9876543210" position="in-content" className="max-w-3xl mx-auto" />
-
         {/* CTA Section */}
         <div className="mt-12 bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-2xl p-6 sm:p-8 text-center max-w-2xl mx-auto">
           <Compass className="w-8 h-8 text-[var(--accent-primary)] mx-auto mb-3" />
@@ -147,6 +139,8 @@ export default function ResourcesPage() {
             <Link href="/about" className="hover:text-[var(--text-main)] transition-colors">About</Link>
             <span>•</span>
             <Link href="/guide" className="hover:text-[var(--text-main)] transition-colors">User Guide</Link>
+            <span>•</span>
+            <Link href="/resources" className="hover:text-[var(--text-main)] transition-colors">Resources</Link>
             <span>•</span>
             <Link href="/contact" className="hover:text-[var(--text-main)] transition-colors">Contact</Link>
             <span>•</span>

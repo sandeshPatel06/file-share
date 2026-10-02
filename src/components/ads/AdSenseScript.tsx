@@ -1,6 +1,7 @@
 "use client";
 
 import Script from "next/script";
+import { ADSENSE_CLIENT_ID } from "@/lib/ads";
 
 /**
  * AdSenseScript conditionally loads the Google AdSense library
@@ -14,7 +15,7 @@ export function AdSenseScript() {
     <Script
       id="adsense-script"
       async
-      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4947821599815451"
+      src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT_ID}`}
       crossOrigin="anonymous"
       strategy="afterInteractive"
     />
