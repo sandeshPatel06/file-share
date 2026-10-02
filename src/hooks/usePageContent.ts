@@ -23,6 +23,12 @@ export function usePageContent(
   const [connectionStatus, setConnectionStatus] = useState<"connected" | "connecting" | "disconnected">("connecting");
   const [conflict, setConflict] = useState<ConflictState | null>(null);
 
+  const [clientId] = useState(() =>
+    typeof window !== "undefined"
+      ? Math.random().toString(36).substring(2, 10) + Date.now().toString(36)
+      : ""
+  );
+
   const lastLocalEditAt = useRef<number>(0);
   const contentRef = useRef<string | null>(initialContent ?? null);
 
@@ -35,38 +41,51 @@ export function usePageContent(
     setCollaboratorCount(1);
   }
 
+  // Reset refs when workspace slug or initialContent changes
+  useEffect(() => {
+    contentRef.current = initialContent ?? null;
+    lastLocalEditAt.current = 0;
+  }, [slug, initialContent]);
+
   const touchLocalEdit = useCallback(() => {
+    lastLocalEditAt.current = Date.now();
+  }, []);
+
+  const syncLocalContent = useCallback((newText: string) => {
+    contentRef.current = newText;
     lastLocalEditAt.current = Date.now();
   }, []);
 
   // Keep contentRef in sync for value comparison without triggering effects
   useEffect(() => {
-    contentRef.current = content;
+    if (content !== null) {
+      contentRef.current = content;
+    }
   }, [content]);
 
   const resolveConflictTakeMine = useCallback(() => {
-    touchLocalEdit();
+    lastLocalEditAt.current = 0;
     setConflict(null);
-  }, [touchLocalEdit]);
+  }, []);
 
   const resolveConflictTakeRemote = useCallback(() => {
     if (conflict?.remoteContent !== undefined) {
       setContent(conflict.remoteContent);
+      contentRef.current = conflict.remoteContent;
     }
+    lastLocalEditAt.current = 0;
     setConflict(null);
   }, [conflict]);
 
-  const resolveConflictMerge = useCallback(() => {
-    if (!conflict?.remoteContent) {
-      setConflict(null);
-      return;
+  const resolveConflictMerge = useCallback((mergedText?: string) => {
+    const finalMerged = mergedText ?? (conflict?.remoteContent ? `${contentRef.current || ""}\n\n<!-- ── Collaborator Remote Update ── -->\n${conflict.remoteContent}` : contentRef.current);
+    if (finalMerged !== null && finalMerged !== undefined) {
+      setContent(finalMerged);
+      contentRef.current = finalMerged;
     }
-    const local = contentRef.current || "";
-    const merged = `${local}\n\n<!-- ── Collaborator Remote Update ── -->\n${conflict.remoteContent}`;
-    setContent(merged);
-    touchLocalEdit();
+    lastLocalEditAt.current = 0;
     setConflict(null);
-  }, [conflict, touchLocalEdit]);
+  }, [conflict]);
 
   useEffect(() => {
     let active = true;
@@ -114,21 +133,29 @@ export function usePageContent(
 
         // Handle Content update with soft-conflict detection
         if (data.type === "content_updated" && typeof data.content === "string") {
-          const isLocalDirty = Date.now() - lastLocalEditAt.current < 2500;
-          const isDifferent = data.content !== contentRef.current;
+          // 1. If update was broadcasted by this client tab, ignore self-echo to prevent false conflict
+          if (data.senderId && data.senderId === clientId) {
+            contentRef.current = data.content;
+            return;
+          }
 
-          if (isDifferent) {
-            if (isLocalDirty) {
-              // Soft conflict: remote edit arrived while typing locally
-              setConflict({
-                remoteContent: data.content,
-                receivedAt: Date.now(),
-              });
-            } else {
-              // Clean update: apply directly
-              setContent(data.content);
-              setConflict(null);
-            }
+          // 2. If incoming text matches our current local content, ignore it (already in sync)
+          if (data.content === contentRef.current) {
+            return;
+          }
+
+          const isLocalDirty = Date.now() - lastLocalEditAt.current < 2500;
+          if (isLocalDirty) {
+            // Soft conflict: remote edit arrived from another collaborator while typing locally
+            setConflict({
+              remoteContent: data.content,
+              receivedAt: Date.now(),
+            });
+          } else {
+            // Clean remote update: apply directly
+            setContent(data.content);
+            contentRef.current = data.content;
+            setConflict(null);
           }
         }
       },
@@ -149,13 +176,15 @@ export function usePageContent(
       unsubscribeSSE();
       clearInterval(fallbackInterval);
     };
-  }, [slug, initialContent, token]);
+  }, [slug, initialContent, token, clientId]);
 
   return {
     content,
     setContent,
     loading,
     touchLocalEdit,
+    syncLocalContent,
+    clientId,
     collaboratorCount,
     connectionStatus,
     conflict,

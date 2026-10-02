@@ -62,11 +62,47 @@ const subscribeDesktop = (callback: () => void) => {
 const getIsDesktop = () => (typeof window !== "undefined" ? window.innerWidth >= 640 : true);
 const getServerIsDesktop = () => true;
 
+function smartMerge(local: string, remote: string): string {
+  if (!remote || remote === local) return local;
+  if (!local) return remote;
+  if (local.includes(remote)) return local;
+  if (remote.includes(local)) return remote;
+
+  const localLines = local.split("\n");
+  const remoteLines = remote.split("\n");
+
+  let prefixCount = 0;
+  while (
+    prefixCount < localLines.length &&
+    prefixCount < remoteLines.length &&
+    localLines[prefixCount] === remoteLines[prefixCount]
+  ) {
+    prefixCount++;
+  }
+
+  const remoteRemainder = remoteLines.slice(prefixCount);
+  const localSet = new Set(localLines.map((l) => l.trim()).filter(Boolean));
+  const distinctRemoteLines = remoteRemainder.filter((l) => {
+    const trimmed = l.trim();
+    return !trimmed || !localSet.has(trimmed);
+  });
+
+  const diffText = (distinctRemoteLines.length > 0 ? distinctRemoteLines : remoteRemainder)
+    .join("\n")
+    .trim();
+
+  if (!diffText) return local;
+
+  return `${local.trimEnd()}\n\n<!-- ── Collaborator Remote Update ── -->\n${diffText}\n`;
+}
+
 export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
   const {
     content: serverContent,
     loading,
     touchLocalEdit,
+    syncLocalContent,
+    clientId,
     collaboratorCount,
     conflict,
     resolveConflictTakeMine,
@@ -114,15 +150,64 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
     }
   }, [serverContent, conflict]);
 
+  // Immediate save helper for conflict resolutions
+  const pushImmediate = useCallback(
+    async (val: string) => {
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+        debounceTimer.current = null;
+      }
+      lastPushedRef.current = val;
+      syncLocalContent(val);
+      if (statusEl.current) statusEl.current.setAttribute("data-status", "saving");
+
+      try {
+        const res = await fetch(`/api/pages/${slug}/content`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ content: val, clientId }),
+        });
+
+        if (res.ok) {
+          if (statusEl.current) statusEl.current.setAttribute("data-status", "saved");
+          setTimeout(() => {
+            if (statusEl.current && statusEl.current.getAttribute("data-status") === "saved") {
+              statusEl.current.setAttribute("data-status", "idle");
+            }
+          }, 2000);
+        } else {
+          if (statusEl.current) statusEl.current.setAttribute("data-status", "error");
+        }
+      } catch {
+        if (statusEl.current) statusEl.current.setAttribute("data-status", "error");
+      }
+    },
+    [slug, token, clientId, syncLocalContent]
+  );
+
   const handleTakeMine = () => {
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+      debounceTimer.current = null;
+    }
+    pushImmediate(displayContent);
     resolveConflictTakeMine();
     showToast("Kept your local edits", "success");
   };
 
   const handleTakeRemote = () => {
     if (conflict?.remoteContent !== undefined) {
-      setDisplayContent(conflict.remoteContent);
-      lastPushedRef.current = conflict.remoteContent;
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+        debounceTimer.current = null;
+      }
+      const remote = conflict.remoteContent;
+      setDisplayContent(remote);
+      lastPushedRef.current = remote;
+      syncLocalContent(remote);
       resolveConflictTakeRemote();
       showToast("Applied remote updates", "info");
     }
@@ -130,8 +215,17 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
 
   const handleMerge = () => {
     if (conflict?.remoteContent) {
-      resolveConflictMerge();
-      showToast("Appended collaborator update below notes", "info");
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+        debounceTimer.current = null;
+      }
+      const merged = smartMerge(displayContent, conflict.remoteContent);
+      setDisplayContent(merged);
+      lastPushedRef.current = merged;
+      syncLocalContent(merged);
+      resolveConflictMerge(merged);
+      pushImmediate(merged);
+      showToast("Merged collaborator changes below notes", "info");
     }
   };
 
@@ -157,40 +251,44 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
   }, [zenMode, showExportMenu]);
 
   // Debounced auto-save push to API
-  const pushUpdate = useCallback((val: string) => {
-    touchLocalEdit();
-    if (val === lastPushedRef.current) return;
-    if (statusEl.current) statusEl.current.setAttribute("data-status", "saving");
+  const pushUpdate = useCallback(
+    (val: string) => {
+      touchLocalEdit();
+      syncLocalContent(val);
+      if (val === lastPushedRef.current) return;
+      if (statusEl.current) statusEl.current.setAttribute("data-status", "saving");
 
-    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+      if (debounceTimer.current) clearTimeout(debounceTimer.current);
 
-    debounceTimer.current = setTimeout(async () => {
-      try {
-        const res = await fetch(`/api/pages/${slug}/content`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify({ content: val }),
-        });
+      debounceTimer.current = setTimeout(async () => {
+        try {
+          const res = await fetch(`/api/pages/${slug}/content`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify({ content: val, clientId }),
+          });
 
-        if (res.ok) {
-          lastPushedRef.current = val;
-          if (statusEl.current) statusEl.current.setAttribute("data-status", "saved");
-          setTimeout(() => {
-            if (statusEl.current && statusEl.current.getAttribute("data-status") === "saved") {
-              statusEl.current.setAttribute("data-status", "idle");
-            }
-          }, 2000);
-        } else {
+          if (res.ok) {
+            lastPushedRef.current = val;
+            if (statusEl.current) statusEl.current.setAttribute("data-status", "saved");
+            setTimeout(() => {
+              if (statusEl.current && statusEl.current.getAttribute("data-status") === "saved") {
+                statusEl.current.setAttribute("data-status", "idle");
+              }
+            }, 2000);
+          } else {
+            if (statusEl.current) statusEl.current.setAttribute("data-status", "error");
+          }
+        } catch {
           if (statusEl.current) statusEl.current.setAttribute("data-status", "error");
         }
-      } catch {
-        if (statusEl.current) statusEl.current.setAttribute("data-status", "error");
-      }
-    }, 400);
-  }, [slug, token, touchLocalEdit]);
+      }, 400);
+    },
+    [slug, token, touchLocalEdit, syncLocalContent, clientId]
+  );
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const val = e.target.value;

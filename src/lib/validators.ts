@@ -25,6 +25,7 @@ export const verifyPasswordSchema = z.object({
 
 export const updateContentSchema = z.object({
   content: z.string().max(500_000, "Content too large"),
+  clientId: z.string().max(64).optional(),
 });
 
 export const renameSlugSchema = z.object({

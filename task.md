@@ -40,6 +40,7 @@
   - Active collaborator count badge in `TextEditor.tsx` status bar (`{count} Live`).
   - Soft-conflict handling in `usePageContent.ts`: detects remote edits during active local typing.
   - Interactive conflict resolution banner in `TextEditor.tsx` ("Keep Mine", "Accept Remote", "Append Below").
+  - Fixed conflict false-positives and text duplication: added `clientId` broadcast filtering to ignore self-echoes, cleared pending debounce timers on conflict resolution, and introduced `smartMerge` to prevent repeating entire documents when merging.
 - [x] **#8 Rename breaks old links**:
   - Added `redirects` table schema across PostgreSQL, SQLite, and in-memory store in `src/lib/db.ts`.
   - Saved redirect mapping on slug rename in `src/app/api/pages/[slug]/rename/route.ts`.

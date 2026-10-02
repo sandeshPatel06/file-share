@@ -59,6 +59,7 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
   pageEvents.emit(slug, {
     type: "content_updated",
     content: parsed.data.content,
+    senderId: parsed.data.clientId,
   });
 
   return NextResponse.json({ ok: true });
