@@ -15,7 +15,8 @@ interface PageRow {
 
 // PATCH /api/pages/[slug]/password — set or remove password
 export async function PATCH(req: NextRequest, ctx: RouteContext) {
-  const limited = await rateLimit(req, "general");
+  // "sensitive" budget: setting a password bcrypt-hashes (cost 12).
+  const limited = await rateLimit(req, "sensitive");
   if (limited) return limited;
 
   const { slug } = await ctx.params;

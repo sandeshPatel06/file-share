@@ -142,12 +142,12 @@ export function CookieConsent() {
           aria-describedby="cookie-banner-description"
           className="fixed bottom-0 inset-x-0 z-50 px-3 py-2 sm:px-6 sm:py-3 bg-[var(--header-bg)]/95 backdrop-blur-md border-t border-[var(--border-color)] shadow-2xl animate-fade-in"
         >
-          <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-2.5 sm:gap-4">
-            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-2.5 sm:gap-4 min-w-0">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
               <div className="p-1.5 sm:p-2 rounded-lg bg-[var(--badge-bg)] text-[var(--accent-primary)] shrink-0">
                 <Cookie className="w-4 h-4 sm:w-4.5 sm:h-4.5" aria-hidden="true" />
               </div>
-              <div className="text-xs sm:text-[13px] text-[var(--text-muted)] leading-relaxed">
+              <div className="text-xs sm:text-[13px] text-[var(--text-muted)] leading-relaxed min-w-0 break-words">
                 <span id="cookie-banner-title" className="font-bold text-[var(--text-main)] mr-1">
                   Cookies & Privacy:
                 </span>
@@ -160,25 +160,25 @@ export function CookieConsent() {
               </div>
             </div>
 
-            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 w-full md:w-auto justify-end">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2 shrink-0 w-full md:w-auto sm:justify-end">
               <button
                 type="button"
                 onClick={() => setIsCustomizeOpen(true)}
-                className="px-3 py-2 sm:px-3.5 text-xs font-semibold rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] text-[var(--text-main)] hover:bg-[var(--bg-main)] min-h-[38px] flex items-center justify-center transition-colors focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] cursor-pointer"
+                className="px-3 py-2 sm:px-3.5 text-xs font-semibold rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] text-[var(--text-main)] hover:bg-[var(--bg-main)] min-h-[44px] sm:min-h-[38px] w-full sm:w-auto whitespace-nowrap flex items-center justify-center transition-colors focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] cursor-pointer"
               >
                 Customize
               </button>
               <button
                 type="button"
                 onClick={handleRejectNonEssential}
-                className="px-3 py-2 sm:px-3.5 text-xs font-semibold rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] text-[var(--text-main)] hover:bg-[var(--bg-main)] min-h-[38px] flex items-center justify-center transition-colors focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] cursor-pointer"
+                className="px-3 py-2 sm:px-3.5 text-xs font-semibold rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] text-[var(--text-main)] hover:bg-[var(--bg-main)] min-h-[44px] sm:min-h-[38px] w-full sm:w-auto whitespace-nowrap flex items-center justify-center transition-colors focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] cursor-pointer"
               >
                 Reject Non-Essential
               </button>
               <button
                 type="button"
                 onClick={handleAcceptAll}
-                className="px-4 py-2 sm:px-4.5 text-xs font-semibold rounded-lg bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white shadow-sm min-h-[38px] flex items-center justify-center transition-colors focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] cursor-pointer"
+                className="px-4 py-2 sm:px-4.5 text-xs font-semibold rounded-lg bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white shadow-sm min-h-[44px] sm:min-h-[38px] w-full sm:w-auto whitespace-nowrap flex items-center justify-center transition-colors focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] cursor-pointer"
               >
                 Accept All
               </button>
@@ -191,27 +191,27 @@ export function CookieConsent() {
           role="dialog"
           aria-modal="true"
           aria-labelledby="cookie-preferences-title"
-          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in overflow-y-auto"
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in overflow-hidden"
         >
-          <div className="max-w-2xl w-full bg-[var(--modal-bg)] border border-[var(--border-color)] rounded-2xl shadow-2xl p-4 sm:p-6 space-y-4 my-auto">
-            <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-3">
-              <div className="flex items-center gap-2">
-                <Settings className="w-5 h-5 text-[var(--accent-primary)]" aria-hidden="true" />
-                <h2 id="cookie-preferences-title" className="font-bold text-base sm:text-lg text-[var(--text-main)]">
+          <div className="w-full max-w-[min(42rem,calc(100vw-1.5rem))] min-w-0 bg-[var(--modal-bg)] border border-[var(--border-color)] rounded-2xl shadow-2xl p-4 sm:p-6 space-y-4 my-auto max-h-[calc(100dvh-2rem)] overflow-y-auto overflow-x-hidden overscroll-contain">
+            <div className="flex items-center justify-between gap-3 border-b border-[var(--border-color)] pb-3 shrink-0 min-w-0">
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <Settings className="w-5 h-5 text-[var(--accent-primary)] shrink-0" aria-hidden="true" />
+                <h2 id="cookie-preferences-title" className="font-bold text-sm sm:text-lg text-[var(--text-main)] min-w-0">
                   Manage Cookie & Tracking Preferences
                 </h2>
               </div>
               <button
                 type="button"
                 onClick={() => setIsCustomizeOpen(false)}
-                className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center"
+                className="p-1.5 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors cursor-pointer min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] flex items-center justify-center"
                 aria-label="Close customization modal"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="grid grid-cols-1 gap-3 text-xs">
+            <div className="grid grid-cols-1 gap-3 text-xs min-w-0 max-w-full">
               {/* Category 1: Strictly Necessary */}
               <div className="p-3 sm:p-3.5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] space-y-1">
                 <div className="flex items-center justify-between">
@@ -237,7 +237,7 @@ export function CookieConsent() {
                       className="sr-only peer"
                       aria-label="Toggle analytics cookies"
                     />
-                    <div className="w-8 h-4 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-[var(--accent-primary)]"></div>
+                    <div className="w-8 h-4 bg-[var(--border-color)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[var(--border-color)] after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-[var(--accent-primary)]"></div>
                   </label>
                 </div>
                 <p className="text-[var(--text-muted)] leading-relaxed">
@@ -257,7 +257,7 @@ export function CookieConsent() {
                       className="sr-only peer"
                       aria-label="Toggle advertising cookies"
                     />
-                    <div className="w-8 h-4 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-[var(--accent-primary)]"></div>
+                    <div className="w-8 h-4 bg-[var(--border-color)] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-[var(--border-color)] after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-[var(--accent-primary)]"></div>
                   </label>
                 </div>
                 <p className="text-[var(--text-muted)] leading-relaxed">
@@ -266,22 +266,22 @@ export function CookieConsent() {
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-2 shrink-0 min-w-0">
               <span className="text-xs text-[var(--text-muted)]">
                 You can change these preferences at any time via the &quot;Cookie Preferences&quot; link in the footer.
               </span>
-              <div className="flex items-center gap-2 self-end sm:self-auto">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto self-stretch sm:self-auto">
                 <button
                   type="button"
                   onClick={handleRejectNonEssential}
-                  className="px-3.5 py-2 text-xs font-semibold rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] text-[var(--text-main)] hover:bg-[var(--bg-main)] cursor-pointer min-h-[38px] flex items-center justify-center"
+                  className="px-3.5 py-2 text-xs font-semibold rounded-lg border border-[var(--border-color)] bg-[var(--bg-surface)] text-[var(--text-main)] hover:bg-[var(--bg-main)] cursor-pointer min-h-[44px] sm:min-h-[38px] w-full sm:w-auto whitespace-nowrap flex items-center justify-center"
                 >
                   Reject Non-Essential
                 </button>
                 <button
                   type="button"
                   onClick={handleSaveCustom}
-                  className="px-4.5 py-2 text-xs font-semibold rounded-lg bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-primary-hover)] inline-flex items-center gap-1.5 cursor-pointer shadow-sm min-h-[38px]"
+                  className="px-4.5 py-2 text-xs font-semibold rounded-lg bg-[var(--accent-primary)] text-white hover:bg-[var(--accent-primary-hover)] inline-flex items-center justify-center gap-1.5 cursor-pointer shadow-sm min-h-[44px] sm:min-h-[38px] w-full sm:w-auto whitespace-nowrap"
                 >
                   <Check className="w-3.5 h-3.5" />
                   Save Preferences

@@ -40,8 +40,52 @@ export const metadata: Metadata = {
 };
 
 export default function GuidePage() {
+  // NOTE: must match the visible Section-10 FAQ copy exactly.
+  const guideFaqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How long are files and notes stored on FileShare?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "FileShare is designed as an agile, ephemeral collaboration workspace. Files and active notes remain available while the space is active. To protect storage resources and user privacy, inactive workspaces may be subject to ephemeral lifecycle pruning after 30 days of inactivity. Always export mission-critical documents to permanent git or local archives."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What happens if two people edit the same workspace simultaneously?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Our Server-Sent Events engine pushes debounced text updates in near real-time. To prevent collisions, we recommend working under distinct Markdown headers when multiple team members are typing concurrently."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I rename my workspace slug?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes! If you are the workspace administrator (or the space is unlocked), click the workspace name in the header to trigger the rename dialog. Our database enforces ON UPDATE CASCADE referential integrity, ensuring all uploaded files stay linked to the new workspace name seamlessly."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Are there any file type restrictions?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "FileShare accepts virtually all standard media, archive, and code formats including ZIP, TAR, PDF, PNG, JPG, MP4, MP3, TXT, JSON, CSV, and code files. However, our Acceptable Use Policy strictly forbids malicious executables, ransomware, phishing scripts, and illegal material. Violating content is permanently deleted upon detection."
+        }
+      }
+    ]
+  };
+
   return (
-    <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col transition-colors duration-200">
+    <div className="min-h-dvh bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col transition-colors duration-200">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(guideFaqSchema) }}
+      />
       {/* Conditionally load AdSense on this comprehensive publisher guide */}
       <AdSenseScript />
 
@@ -54,7 +98,7 @@ export default function GuidePage() {
             </div>
             <span>FileShare</span>
           </Link>
-          <nav className="flex items-center gap-4 text-xs font-medium text-[var(--text-muted)]">
+          <nav className="hidden sm:flex items-center gap-4 text-xs font-medium text-[var(--text-muted)]">
             <Link href="/resources" className="hover:text-[var(--text-main)] transition-colors">Resources</Link>
             <Link href="/about" className="hover:text-[var(--text-main)] transition-colors">About</Link>
             <Link href="/contact" className="hover:text-[var(--text-main)] transition-colors">Contact</Link>
@@ -78,16 +122,16 @@ export default function GuidePage() {
           </p>
           <div className="mt-4 flex flex-wrap gap-4 text-xs font-mono text-[var(--text-subtle)]">
             <span>Version: 2.4.0 (2026 Edition)</span>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <span>Reading Time: ~12 minutes</span>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <span>Word Count: ~2,100 words</span>
           </div>
         </div>
 
         {/* Quick Table of Contents */}
         <nav aria-label="Table of Contents" className="mb-10 p-5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)]">
-          <h2 className="text-xs uppercase font-mono tracking-wider text-[var(--text-subtle)] mb-3 flex items-center gap-2">
+          <h2 className="text-xs uppercase font-mono tracking-wider text-[var(--text-subtle)] dark:text-[var(--text-muted)] mb-3 flex items-center gap-2">
             <Layers className="w-4 h-4 text-[var(--accent-primary)]" />
             Table of Contents
           </h2>
@@ -108,10 +152,10 @@ export default function GuidePage() {
         {/* SECTION 1 */}
         <section id="section-1" className="my-10 space-y-4">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-[var(--accent-primary)] text-white font-bold flex items-center justify-center text-sm">
+            <div className="w-8 h-8 rounded-lg bg-[var(--accent-primary)] text-white font-bold flex shrink-0 items-center justify-center text-sm">
               1
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-main)]">
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-main)] min-w-0">
               Workspace Architecture & URL Slug Topology
             </h2>
           </div>
@@ -140,10 +184,10 @@ export default function GuidePage() {
         {/* SECTION 2 */}
         <section id="section-2" className="my-10 space-y-4 pt-6 border-t border-[var(--border-color)]">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-[var(--accent-primary)] text-white font-bold flex items-center justify-center text-sm">
+            <div className="w-8 h-8 rounded-lg bg-[var(--accent-primary)] text-white font-bold flex shrink-0 items-center justify-center text-sm">
               2
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-main)]">
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-main)] min-w-0">
               Markdown Syntax & Rich Text Capabilities
             </h2>
           </div>
@@ -177,10 +221,10 @@ export default function GuidePage() {
         {/* SECTION 3 */}
         <section id="section-3" className="my-10 space-y-4 pt-6 border-t border-[var(--border-color)]">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-[var(--accent-primary)] text-white font-bold flex items-center justify-center text-sm">
+            <div className="w-8 h-8 rounded-lg bg-[var(--accent-primary)] text-white font-bold flex shrink-0 items-center justify-center text-sm">
               3
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-main)]">
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-main)] min-w-0">
               AI Copilot Formatting Engine
             </h2>
           </div>
@@ -189,7 +233,7 @@ export default function GuidePage() {
           </p>
           <div className="p-5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] space-y-3">
             <div className="flex items-center gap-2 font-semibold text-sm text-[var(--text-main)]">
-              <Sparkles className="w-4 h-4 text-amber-400" />
+              <Sparkles className="w-4 h-4 text-[var(--accent-primary)]" />
               What the AI Copilot Formatter Normalizes:
             </div>
             <ul className="list-disc pl-5 space-y-2 text-xs sm:text-sm text-[var(--text-muted)]">
@@ -208,10 +252,10 @@ export default function GuidePage() {
         {/* SECTION 4 */}
         <section id="section-4" className="my-10 space-y-4 pt-6 border-t border-[var(--border-color)]">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-[var(--accent-primary)] text-white font-bold flex items-center justify-center text-sm">
+            <div className="w-8 h-8 rounded-lg bg-[var(--accent-primary)] text-white font-bold flex shrink-0 items-center justify-center text-sm">
               4
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-main)]">
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-main)] min-w-0">
               Declarative Technical Diagrams with Mermaid.js
             </h2>
           </div>
@@ -221,10 +265,10 @@ export default function GuidePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
             <div className="p-4 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)]">
               <h3 className="font-semibold text-xs sm:text-sm mb-2 text-[var(--text-main)] flex items-center gap-1.5">
-                <Workflow className="w-4 h-4 text-blue-400" />
+                <Workflow className="w-4 h-4 text-[var(--accent-primary)]" />
                 Flowchart Example
               </h3>
-              <pre className="p-3 rounded bg-[var(--bg-main)] border border-[var(--border-color)] text-[11px] font-mono text-[var(--text-muted)] overflow-x-auto">
+              <pre className="p-3 rounded bg-[var(--bg-main)] border border-[var(--border-color)] text-[11px] font-mono text-[var(--text-muted)] dark:text-[var(--text-main)] overflow-x-auto">
 {`\`\`\`mermaid
 flowchart TD
     Client[Web Browser] -->|SSE Stream| Edge[Edge Server]
@@ -235,10 +279,10 @@ flowchart TD
             </div>
             <div className="p-4 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)]">
               <h3 className="font-semibold text-xs sm:text-sm mb-2 text-[var(--text-main)] flex items-center gap-1.5">
-                <Code2 className="w-4 h-4 text-purple-400" />
+                <Code2 className="w-4 h-4 text-[var(--accent-primary)]" />
                 Sequence Diagram Example
               </h3>
-              <pre className="p-3 rounded bg-[var(--bg-main)] border border-[var(--border-color)] text-[11px] font-mono text-[var(--text-muted)] overflow-x-auto">
+              <pre className="p-3 rounded bg-[var(--bg-main)] border border-[var(--border-color)] text-[11px] font-mono text-[var(--text-muted)] dark:text-[var(--text-main)] overflow-x-auto">
 {`\`\`\`mermaid
 sequenceDiagram
     User->>Gateway: POST /login
@@ -257,10 +301,10 @@ sequenceDiagram
         {/* SECTION 5 */}
         <section id="section-5" className="my-10 space-y-4 pt-6 border-t border-[var(--border-color)]">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-[var(--accent-primary)] text-white font-bold flex items-center justify-center text-sm">
+            <div className="w-8 h-8 rounded-lg bg-[var(--accent-primary)] text-white font-bold flex shrink-0 items-center justify-center text-sm">
               5
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-main)]">
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-main)] min-w-0">
               Real-Time Synchronization Engine (Server-Sent Events)
             </h2>
           </div>
@@ -269,11 +313,11 @@ sequenceDiagram
           </p>
           <div className="bg-[var(--bg-surface)] p-5 rounded-xl border border-[var(--border-color)] space-y-3">
             <h3 className="font-semibold text-sm text-[var(--text-main)] flex items-center gap-2">
-              <Zap className="w-4 h-4 text-amber-400" />
+              <Zap className="w-4 h-4 text-[var(--accent-primary)]" />
               How Real-Time Sync Works Under the Hood:
             </h3>
             <ol className="list-decimal pl-5 space-y-2 text-xs sm:text-sm text-[var(--text-muted)]">
-              <li><strong>Connection Establishment:</strong> When a user opens a workspace, the browser subscribes to <code className="font-mono text-xs">/api/pages/[slug]/events</code> via the native <code className="font-mono text-xs">EventSource</code> API.</li>
+              <li><strong>Connection Establishment:</strong> When a user opens a workspace, the browser subscribes to <code className="font-mono text-xs break-all">/api/pages/[slug]/events</code> via the native <code className="font-mono text-xs">EventSource</code> API.</li>
               <li><strong>Debounced Typing Invalidation:</strong> As a user types, edits are buffered and transmitted over an authenticated POST request with debounced timing to eliminate network congestion.</li>
               <li><strong>Central Event Hub:</strong> The server commits the updated text atomically to the database and emits an event through our centralized event hub singleton.</li>
               <li><strong>Broadcast Fan-Out:</strong> All active subscribers to that specific workspace receive the update in under 50 milliseconds, updating the client editor smoothly without cursor jumps.</li>
@@ -284,10 +328,10 @@ sequenceDiagram
         {/* SECTION 6 */}
         <section id="section-6" className="my-10 space-y-4 pt-6 border-t border-[var(--border-color)]">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-[var(--accent-primary)] text-white font-bold flex items-center justify-center text-sm">
+            <div className="w-8 h-8 rounded-lg bg-[var(--accent-primary)] text-white font-bold flex shrink-0 items-center justify-center text-sm">
               6
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-main)]">
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-main)] min-w-0">
               High-Performance File Vault & Media Handling
             </h2>
           </div>
@@ -296,21 +340,21 @@ sequenceDiagram
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-4">
             <div className="p-4 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)]">
-              <HardDrive className="w-5 h-5 text-emerald-400 mb-2" />
+              <HardDrive className="w-5 h-5 text-[var(--accent-primary)] mb-2" />
               <h3 className="font-semibold text-sm mb-1 text-[var(--text-main)]">500MB Upload Limit</h3>
               <p className="text-xs text-[var(--text-muted)] leading-relaxed">
                 Upload large video recordings, zip archives, high-resolution design assets, PDFs, and code tarballs effortlessly.
               </p>
             </div>
             <div className="p-4 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)]">
-              <Sparkles className="w-5 h-5 text-blue-400 mb-2" />
+              <Sparkles className="w-5 h-5 text-[var(--accent-primary)] mb-2" />
               <h3 className="font-semibold text-sm mb-1 text-[var(--text-main)]">In-Browser Previews</h3>
               <p className="text-xs text-[var(--text-muted)] leading-relaxed">
                 Click any file to preview high-resolution images, stream MP4/WebM videos, listen to audio files, or view PDF documents directly.
               </p>
             </div>
             <div className="p-4 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)]">
-              <Shield className="w-5 h-5 text-purple-400 mb-2" />
+              <Shield className="w-5 h-5 text-[var(--accent-primary)] mb-2" />
               <h3 className="font-semibold text-sm mb-1 text-[var(--text-main)]">S3 & B2 Cloud Storage</h3>
               <p className="text-xs text-[var(--text-muted)] leading-relaxed">
                 Files are backed by Backblaze B2 S3-compatible cloud storage with high bandwidth and local disk fallback redundancy.
@@ -322,10 +366,10 @@ sequenceDiagram
         {/* SECTION 7 */}
         <section id="section-7" className="my-10 space-y-4 pt-6 border-t border-[var(--border-color)]">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-[var(--accent-primary)] text-white font-bold flex items-center justify-center text-sm">
+            <div className="w-8 h-8 rounded-lg bg-[var(--accent-primary)] text-white font-bold flex shrink-0 items-center justify-center text-sm">
               7
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-main)]">
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-main)] min-w-0">
               Security, Access Control & Passphrase Protection
             </h2>
           </div>
@@ -334,7 +378,7 @@ sequenceDiagram
           </p>
           <div className="bg-[var(--bg-surface)] p-5 rounded-xl border border-[var(--border-color)] space-y-4">
             <div className="flex items-center gap-2 font-semibold text-sm text-[var(--text-main)]">
-              <Lock className="w-4 h-4 text-emerald-400" />
+              <Lock className="w-4 h-4 text-[var(--accent-primary)]" />
               How Workspace Security Is Enforced:
             </div>
             <div className="space-y-3 text-xs sm:text-sm text-[var(--text-muted)] leading-relaxed">
@@ -357,10 +401,10 @@ sequenceDiagram
         {/* SECTION 8 */}
         <section id="section-8" className="my-10 space-y-4 pt-6 border-t border-[var(--border-color)]">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-[var(--accent-primary)] text-white font-bold flex items-center justify-center text-sm">
+            <div className="w-8 h-8 rounded-lg bg-[var(--accent-primary)] text-white font-bold flex shrink-0 items-center justify-center text-sm">
               8
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-main)]">
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-main)] min-w-0">
               Cross-Device Mobility & Instant QR Code Transfer
             </h2>
           </div>
@@ -385,19 +429,19 @@ sequenceDiagram
         {/* SECTION 9 */}
         <section id="section-9" className="my-10 space-y-4 pt-6 border-t border-[var(--border-color)]">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-[var(--accent-primary)] text-white font-bold flex items-center justify-center text-sm">
+            <div className="w-8 h-8 rounded-lg bg-[var(--accent-primary)] text-white font-bold flex shrink-0 items-center justify-center text-sm">
               9
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-main)]">
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-main)] min-w-0">
               Keyboard Shortcuts & Hotkey Reference
             </h2>
           </div>
           <p className="text-sm leading-relaxed text-[var(--text-muted)]">
             Power users can navigate and format text rapidly using standard keyboard shortcuts:
           </p>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border border-[var(--border-color)] rounded-xl overflow-hidden">
-              <thead className="bg-[var(--bg-surface)] font-mono text-[var(--text-subtle)] border-b border-[var(--border-color)]">
+          <div className="overflow-x-auto max-w-full">
+            <table className="w-full min-w-[640px] text-left text-xs border border-[var(--border-color)] rounded-xl overflow-hidden">
+              <thead className="bg-[var(--bg-surface)] font-mono text-[var(--text-subtle)] dark:text-[var(--text-muted)] border-b border-[var(--border-color)]">
                 <tr>
                   <th className="p-3">Action</th>
                   <th className="p-3">Shortcut (Mac)</th>
@@ -408,32 +452,32 @@ sequenceDiagram
               <tbody className="divide-y divide-[var(--border-color)] text-[var(--text-muted)]">
                 <tr>
                   <td className="p-3 font-semibold text-[var(--text-main)]">AI Copilot Format</td>
-                  <td className="p-3 font-mono">Cmd + Shift + F</td>
-                  <td className="p-3 font-mono">Ctrl + Shift + F</td>
+                  <td className="p-3 font-mono whitespace-nowrap">Cmd + Shift + F</td>
+                  <td className="p-3 font-mono whitespace-nowrap">Ctrl + Shift + F</td>
                   <td className="p-3">Cleans and normalizes document markdown syntax</td>
                 </tr>
                 <tr>
                   <td className="p-3 font-semibold text-[var(--text-main)]">Bold Text</td>
-                  <td className="p-3 font-mono">Cmd + B</td>
-                  <td className="p-3 font-mono">Ctrl + B</td>
+                  <td className="p-3 font-mono whitespace-nowrap">Cmd + B</td>
+                  <td className="p-3 font-mono whitespace-nowrap">Ctrl + B</td>
                   <td className="p-3">Encloses selected text in double asterisks</td>
                 </tr>
                 <tr>
                   <td className="p-3 font-semibold text-[var(--text-main)]">Italic Text</td>
-                  <td className="p-3 font-mono">Cmd + I</td>
-                  <td className="p-3 font-mono">Ctrl + I</td>
+                  <td className="p-3 font-mono whitespace-nowrap">Cmd + I</td>
+                  <td className="p-3 font-mono whitespace-nowrap">Ctrl + I</td>
                   <td className="p-3">Encloses selected text in single underscores</td>
                 </tr>
                 <tr>
                   <td className="p-3 font-semibold text-[var(--text-main)]">Insert Code Block</td>
-                  <td className="p-3 font-mono">Cmd + Shift + C</td>
-                  <td className="p-3 font-mono">Ctrl + Shift + C</td>
+                  <td className="p-3 font-mono whitespace-nowrap">Cmd + Shift + C</td>
+                  <td className="p-3 font-mono whitespace-nowrap">Ctrl + Shift + C</td>
                   <td className="p-3">Wraps text in fenced code backticks</td>
                 </tr>
                 <tr>
                   <td className="p-3 font-semibold text-[var(--text-main)]">Toggle File Panel</td>
-                  <td className="p-3 font-mono">Cmd + \</td>
-                  <td className="p-3 font-mono">Ctrl + \</td>
+                  <td className="p-3 font-mono whitespace-nowrap">Cmd + \</td>
+                  <td className="p-3 font-mono whitespace-nowrap">Ctrl + \</td>
                   <td className="p-3">Opens or closes the right-hand file vault drawer</td>
                 </tr>
               </tbody>
@@ -444,10 +488,10 @@ sequenceDiagram
         {/* SECTION 10 */}
         <section id="section-10" className="my-10 space-y-4 pt-6 border-t border-[var(--border-color)]">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-[var(--accent-primary)] text-white font-bold flex items-center justify-center text-sm">
+            <div className="w-8 h-8 rounded-lg bg-[var(--accent-primary)] text-white font-bold flex shrink-0 items-center justify-center text-sm">
               10
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-main)]">
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-main)] min-w-0">
               Frequently Asked Questions & Troubleshooting
             </h2>
           </div>
@@ -495,8 +539,8 @@ sequenceDiagram
         </section>
 
         {/* CTA Footer Box (safely separated without ad interference) */}
-        <div className="my-12 p-8 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-color)] text-center max-w-2xl mx-auto">
-          <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto mb-3" />
+        <div className="my-8 sm:my-12 p-6 sm:p-8 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-color)] text-center max-w-2xl mx-auto">
+          <CheckCircle2 className="w-8 h-8 text-[var(--status-success-text)] mx-auto mb-3" />
           <h2 className="text-xl font-bold mb-2">Ready to Experience FileShare?</h2>
           <p className="text-xs sm:text-sm text-[var(--text-muted)] mb-5 leading-relaxed">
             Put this guide to work. Launch a collaborative space in seconds without registering or filling out forms.
@@ -523,25 +567,25 @@ sequenceDiagram
       <footer className="border-t border-[var(--border-color)] py-8 bg-[var(--header-bg)]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--text-muted)]">
           <p>© 2026 FileShare (SHP Technology). Complete technical manual &amp; collaborative platform.</p>
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center justify-center gap-3">
             <Link href="/" className="hover:text-[var(--text-main)] transition-colors">Home</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/about" className="hover:text-[var(--text-main)] transition-colors">About</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/guide" className="hover:text-[var(--text-main)] transition-colors">Guide</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/resources" className="hover:text-[var(--text-main)] transition-colors">Resources</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/contact" className="hover:text-[var(--text-main)] transition-colors">Contact</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/privacy" className="hover:text-[var(--text-main)] transition-colors">Privacy Policy</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/terms" className="hover:text-[var(--text-main)] transition-colors">Terms &amp; Conditions</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/cookies" className="hover:text-[var(--text-main)] transition-colors">Cookie Policy</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/refund" className="hover:text-[var(--text-main)] transition-colors">Refund Policy</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <CookieSettingsButton />
           </div>
         </div>

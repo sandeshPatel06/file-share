@@ -103,38 +103,40 @@ export function FilePreviewModal({ file, token, open, onClose }: FilePreviewModa
 
   return (
     <Modal open={open} onClose={onClose} title={file.originalName} maxWidth="max-w-lg sm:max-w-xl md:max-w-2xl">
-      <div className="flex flex-col items-center gap-3.5 text-center pt-0.5">
-        {/* Preview Frame */}
-        <div className="w-full min-h-[180px] max-h-[380px] rounded-xl bg-[var(--bg-main)] border border-[var(--border-color)] flex items-center justify-center overflow-hidden p-3 relative shadow-inner">
+      <div className="flex flex-col items-center gap-3.5 text-center pt-0.5 w-full min-w-0 max-w-full overflow-x-hidden">
+        {/* Preview Frame — single bounded media area */}
+        <div className="w-full min-w-0 max-w-full min-h-[180px] max-h-[50vh] rounded-xl bg-[var(--bg-main)] border border-[var(--border-color)] flex items-center justify-center overflow-hidden p-3 relative shadow-inner shrink-0">
           {isImage ? (
             /* eslint-disable-next-line @next/next/no-img-element */
             <img
               src={previewUrl}
               alt={file.originalName}
-              className="max-h-[350px] w-auto max-w-full object-contain rounded-lg shadow-md"
+              decoding="async"
+              loading="lazy"
+              className="max-h-[46vh] w-auto max-w-full object-contain rounded-lg shadow-md"
             />
           ) : isVideo ? (
             <video
               src={previewUrl}
               controls
               autoPlay={false}
-              className="max-h-[350px] w-full rounded-lg"
+              className="max-h-[46vh] w-full h-auto max-w-full rounded-lg"
             />
           ) : isAudio ? (
-            <div className="w-full p-4 sm:p-6 flex flex-col items-center justify-center gap-3 bg-[var(--bg-card)] rounded-lg">
-              <div className="w-14 h-14 rounded-xl bg-[var(--badge-bg)] border border-[var(--badge-border)] flex items-center justify-center text-[var(--accent-indigo)] animate-pulse">
+            <div className="w-full min-w-0 p-3 sm:p-6 flex flex-col items-center justify-center gap-3 bg-[var(--bg-card)] rounded-lg">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-[var(--badge-bg)] border border-[var(--badge-border)] flex items-center justify-center text-[var(--accent-indigo)] animate-pulse">
                 <FileCode size={28} />
               </div>
-              <p className="text-xs sm:text-sm font-bold text-[var(--text-main)] font-mono truncate max-w-md">{file.originalName}</p>
+              <p className="text-xs sm:text-sm font-bold text-[var(--text-main)] font-mono w-full max-w-full truncate text-center min-w-0">{file.originalName}</p>
               <audio src={previewUrl} controls className="w-full max-w-md" />
             </div>
           ) : isPDF ? (
-            <div className="w-full p-4 sm:p-6 flex flex-col items-center justify-center gap-2.5 bg-[var(--bg-card)] rounded-lg border border-[var(--border-color)]">
-              <div className="w-14 h-14 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 shadow-sm">
+            <div className="w-full min-w-0 p-3 sm:p-6 flex flex-col items-center justify-center gap-2.5 bg-[var(--bg-card)] rounded-lg border border-[var(--border-color)]">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 dark:text-amber-400 shadow-sm">
                 <FileText size={30} />
               </div>
-              <div>
-                <p className="text-xs sm:text-sm font-bold text-[var(--text-main)] max-w-md truncate">{file.originalName}</p>
+              <div className="w-full min-w-0">
+                <p className="text-xs sm:text-sm font-bold text-[var(--text-main)] w-full max-w-full truncate text-center min-w-0">{file.originalName}</p>
                 <p className="text-xs font-mono text-[var(--text-muted)] mt-0.5 font-semibold">
                   PDF Document · {formatBytes(file.size)}
                 </p>
@@ -148,23 +150,23 @@ export function FilePreviewModal({ file, token, open, onClose }: FilePreviewModa
               </div>
             </div>
           ) : isTextLike ? (
-            <div className="w-full h-[300px] overflow-auto p-3 sm:p-4 font-mono text-xs text-[var(--text-main)] bg-[var(--bg-card)] rounded-lg border border-[var(--border-color)] text-left leading-relaxed select-text">
+            <div className="w-full min-w-0 max-w-full h-[40vh] min-h-[180px] max-h-[300px] overflow-y-auto overflow-x-hidden overscroll-contain p-3 sm:p-4 font-mono text-xs text-[var(--text-main)] bg-[var(--bg-card)] rounded-lg border border-[var(--border-color)] text-left leading-relaxed select-text">
               {loadingText ? (
                 <div className="h-full flex flex-col items-center justify-center text-[var(--text-muted)] gap-2">
                   <Loader2 size={20} className="animate-spin text-[var(--accent-indigo)]" />
                   <span>Loading text content…</span>
                 </div>
               ) : (
-                <pre className="whitespace-pre-wrap break-words">{textContent}</pre>
+                <pre className="whitespace-pre-wrap break-words break-all max-w-full min-w-0">{textContent}</pre>
               )}
             </div>
           ) : (
-            <div className="text-center p-4 sm:p-6 flex flex-col items-center justify-center">
-              <div className="w-14 h-14 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] flex items-center justify-center text-[var(--accent-indigo)] mb-2 shadow-inner">
+            <div className="w-full min-w-0 text-center p-3 sm:p-6 flex flex-col items-center justify-center">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] flex items-center justify-center text-[var(--accent-indigo)] mb-2 shadow-inner">
                 <FileText size={28} />
               </div>
-              <p className="text-xs sm:text-sm font-bold text-[var(--text-main)] truncate max-w-md">{file.originalName}</p>
-              <p className="text-xs font-mono text-[var(--text-muted)] mt-1 px-3 py-1 rounded-full bg-[var(--bg-card)] border border-[var(--border-color)]">
+              <p className="text-xs sm:text-sm font-bold text-[var(--text-main)] w-full max-w-full truncate text-center min-w-0">{file.originalName}</p>
+              <p className="text-xs font-mono text-[var(--text-muted)] mt-1 px-3 py-1 rounded-full bg-[var(--bg-card)] border border-[var(--border-color)] max-w-full truncate text-center">
                 {file.mimetype || "Binary File"} · {formatBytes(file.size)}
               </p>
             </div>
@@ -172,27 +174,27 @@ export function FilePreviewModal({ file, token, open, onClose }: FilePreviewModa
         </div>
 
         {/* Direct Link Input Bar */}
-        <div className="w-full flex items-center bg-[var(--input-bg)] border border-[var(--border-color)] rounded-xl p-1">
+        <div className="w-full min-w-0 max-w-full flex items-center bg-[var(--input-bg)] border border-[var(--border-color)] rounded-xl p-1 shrink-0">
           <input
             readOnly
             value={fullDownloadUrl}
-            className="flex-1 px-3 py-2 text-xs sm:text-sm text-[var(--text-main)] bg-transparent outline-none font-mono truncate select-all font-bold"
+            className="flex-1 min-w-0 w-full px-3 py-2 text-sm text-[var(--text-main)] bg-transparent outline-none font-mono truncate select-all font-bold"
           />
-          <Button size="md" variant={copied ? "success" : "secondary"} icon={copied ? <CheckCheck size={15} /> : <Copy size={15} />} onClick={handleCopyLink} className="font-bold">
+          <Button size="md" variant={copied ? "success" : "secondary"} icon={copied ? <CheckCheck size={15} /> : <Copy size={15} />} onClick={handleCopyLink} className="font-bold shrink-0 whitespace-nowrap">
             {copied ? "Copied" : "Copy Link"}
           </Button>
         </div>
 
         {/* Action Controls */}
-        <div className="flex items-center gap-2.5 w-full pt-2.5 border-t border-[var(--border-color)]">
-          <a href={fullDownloadUrl} download={file.originalName} target="_blank" rel="noopener noreferrer" className="flex-1">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full min-w-0 max-w-full pt-2.5 border-t border-[var(--border-color)] shrink-0">
+          <a href={fullDownloadUrl} download={file.originalName} target="_blank" rel="noopener noreferrer" className="w-full sm:flex-1">
             <Button variant="primary" size="md" icon={<Download size={15} />} className="w-full font-extrabold">
-              Download File
+              Download<span className="hidden sm:inline"> File</span>
             </Button>
           </a>
-          <a href={fullDownloadUrl} target="_blank" rel="noopener noreferrer">
-            <Button variant="secondary" size="md" icon={<ExternalLink size={15} />} className="font-bold">
-              Open in New Tab
+          <a href={fullDownloadUrl} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
+            <Button variant="secondary" size="md" icon={<ExternalLink size={15} />} className="font-bold w-full">
+              Open<span className="hidden sm:inline"> in New Tab</span>
             </Button>
           </a>
         </div>

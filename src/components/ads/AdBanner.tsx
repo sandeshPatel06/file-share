@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ADSENSE_CLIENT_ID } from "@/lib/ads";
+import { ADSENSE_CLIENT_ID, isAdsEnabled } from "@/lib/ads";
 
 declare global {
   interface Window {
@@ -20,13 +20,18 @@ interface AdBannerProps {
 /**
  * AdBanner renders a policy-compliant Google AdSense ad unit.
  *
- * Compliance & Policy Safeguards (AdSense Navigation Policy):
- * - Clear, unambiguous "SPONSORED ADVERTISEMENT" badge adhering to Google Publisher Policies.
- * - Distinct visual separation with dashed border, muted tinted background, and generous padding so it cannot be mistaken for site navigation or editorial cards.
- * - Enforces minimum vertical separation (~150-200px) from navigation menus, TOCs, and call-to-actions.
- * - Auto-collapses completely when an ad fails to fill (data-ad-status="unfilled" or timeout), preventing large empty clickable shells.
- * - Only rendered mid-body on substantial editorial pages (Guide, About, Resource Articles).
- * - Marked with role="complementary", aria-label="Advertisement", and data-nosnippet.
+ * Compliance & Policy Safeguards (AdSense Site Behavior: Navigation):
+ * - Clear, unambiguous "Advertisement" badge adhering to Google Publisher Policies.
+ * - Distinct visual separation with dashed border, muted tinted background, and generous padding.
+ * - Never rendered inside workspace editor, file vault, download/export menus, sticky
+ *   headers, TOC navigation, CTA button groups, or related-article grids. Callers must
+ *   keep at least one full editorial section (~300px+) between the unit and any
+ *   navigation menu, CTA, or download link.
+ * - Enforces compact vertical separation (my-8 sm:my-12) from navigation menus, TOCs,
+ *   CTAs, and download links so ads cannot be mistaken for site navigation.
+ * - Never sticky, floating, or overlapping content; static in-content flow only.
+ * - Auto-collapses completely when an ad fails to fill or if slot is invalid (data-ad-status="unfilled" or timeout).
+ * - Marked with role="complementary", aria-label="Advertisement", and data-nosnippet="true".
  */
 export function AdBanner({
   slot,
@@ -39,7 +44,11 @@ export function AdBanner({
   const isPushed = useRef(false);
   const [isUnfilled, setIsUnfilled] = useState(false);
 
+  const enabled = isAdsEnabled(slot);
+
   useEffect(() => {
+    if (!enabled) return;
+
     const el = adRef.current;
     if (!el) return;
 
@@ -63,7 +72,7 @@ export function AdBanner({
       }
     }, 3500);
 
-    // Push ad request if not already pushed
+    // Push ad request if valid slot and not already pushed
     if (typeof window !== "undefined" && !isPushed.current) {
       try {
         (window.adsbygoogle = window.adsbygoogle || []).push({});
@@ -82,45 +91,48 @@ export function AdBanner({
       observer.disconnect();
       clearTimeout(timer);
     };
-  }, []);
+  }, [enabled]);
 
-  // Collapse height completely if ad is unfilled or blocked, removing any dead clickable space
-  if (isUnfilled) {
+  // Collapse completely if slot is invalid/disabled or unfilled
+  if (!enabled || isUnfilled) {
     return null;
   }
 
-  // Safe position-based margin enforcement (ensures ≥150–200px clearance from interactive controls & TOC)
+  // Compact vertical clearance away from navigation, TOCs, CTAs, and download links.
+  // my-8 = 32px top + 32px bottom; sm:my-12 = 48px each side.
+  // Callers additionally buffer with a full editorial section so the visual
+  // gap to the nearest menu / button stays clear without faltu scroll.
   const positionClasses =
     position === "bottom"
-      ? "my-36 sm:my-48"
-      : "my-32 sm:my-44";
+      ? "my-8 sm:my-12"
+      : "my-8 sm:my-12";
 
   return (
     <aside
       aria-label="Advertisement"
       role="complementary"
       data-nosnippet="true"
-      className={`w-full clear-both select-none transition-all duration-200 ${positionClasses} ${className}`}
+      className={`w-full max-w-3xl mx-auto clear-both select-none transition-all duration-200 ${positionClasses} ${className}`}
     >
-      <div className="w-full mx-auto p-4 sm:p-6 rounded-2xl bg-neutral-500/[0.03] dark:bg-neutral-400/[0.02] border-2 border-dashed border-[var(--border-color)] text-center relative overflow-hidden">
-        {/* Unambiguous sponsored label with visual dividers */}
+      <div className="w-full mx-auto p-4 sm:p-6 rounded-2xl bg-[var(--bg-surface)] border-2 border-dashed border-[var(--border-color)] text-center relative overflow-hidden">
+        {/* Unambiguous advertisement badge */}
         <div
           className="flex items-center justify-center gap-3 mb-3 select-none"
           aria-hidden="true"
         >
           <span className="h-px flex-1 max-w-[40px] sm:max-w-[80px] bg-[var(--border-color)]" />
-          <span className="inline-flex items-center px-2.5 py-0.5 rounded text-[11px] font-mono font-bold uppercase tracking-wider text-[var(--text-muted)] bg-[var(--bg-main)] border border-[var(--border-color)]">
-            Sponsored Advertisement
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-mono font-bold uppercase tracking-wider text-[var(--text-muted)] bg-[var(--bg-main)] border border-[var(--border-color)]">
+            Advertisement
           </span>
           <span className="h-px flex-1 max-w-[40px] sm:max-w-[80px] bg-[var(--border-color)]" />
         </div>
 
-        {/* Ad container with minimum dimensions preventing layout shifts */}
-        <div className="min-h-[100px] w-full flex items-center justify-center overflow-hidden">
+        {/* Ad container */}
+        <div className="min-h-[100px] w-full flex items-center justify-center overflow-hidden [&_ins]:max-w-full [&_iframe]:max-w-full [&_iframe]:w-full">
           <ins
             ref={adRef}
             className="adsbygoogle"
-            style={{ display: "block", minWidth: "250px", minHeight: "100px" }}
+            style={{ display: "block" }}
             data-ad-client={ADSENSE_CLIENT_ID}
             data-ad-slot={slot}
             data-ad-format={format}
@@ -128,12 +140,12 @@ export function AdBanner({
           />
         </div>
 
-        {/* Explicit disclaimer confirming non-navigation status */}
+        {/* Caption */}
         <p
-          className="mt-2 text-[10px] text-[var(--text-subtle)] font-mono select-none"
+          className="mt-2 text-xs text-[var(--text-muted)] font-mono select-none"
           aria-hidden="true"
         >
-          Third-party advertisement • Not an editorial link or site navigation control
+          Third-party ad • Not a site menu or download link
         </p>
       </div>
     </aside>

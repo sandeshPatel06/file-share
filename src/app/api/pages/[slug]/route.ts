@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
 import { rateLimit } from "@/lib/rateLimiter";
 import { verifyPageToken } from "@/lib/jwt";
+import { deleteFromB2, hasB2Storage } from "@/lib/b2";
+import path from "path";
+import fs from "fs";
 
 interface RouteContext {
   params: Promise<{ slug: string }>;
@@ -11,6 +14,10 @@ interface PageRow {
   slug: string;
   content: string | null;
   isProtected: number;
+}
+
+interface FileRow {
+  storedName: string;
 }
 
 // GET /api/pages/[slug] — fetch page metadata (withholds content if protected & unauthenticated)
@@ -70,12 +77,34 @@ export async function DELETE(req: NextRequest, ctx: RouteContext) {
   }
 
   try {
+    const files = (await db.prepare("SELECT storedName FROM files WHERE slug = ?").all(slug)) as FileRow[];
+
     await db.prepare("DELETE FROM files WHERE slug = ?").run(slug);
     await db.prepare("DELETE FROM pages WHERE slug = ?").run(slug);
 
+    // Metadata deletion must not leave inaccessible local or B2 objects behind.
+    const b2Enabled = hasB2Storage();
+    await Promise.all(files.map(async ({ storedName }) => {
+      const safeName = path.basename(storedName);
+      const filePath = path.join(process.cwd(), "uploads", safeName);
+      try {
+        await fs.promises.unlink(filePath);
+      } catch (error: unknown) {
+        const code = error && typeof error === "object" && "code" in error
+          ? (error as { code?: string }).code
+          : undefined;
+        if (code !== "ENOENT") {
+          console.warn("Failed to remove local file during workspace deletion:", safeName);
+        }
+      }
+      if (b2Enabled) {
+        await deleteFromB2(safeName);
+      }
+    }));
+
     return NextResponse.json({ success: true, message: "Workspace deleted permanently" });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Failed to delete workspace";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("Failed to delete workspace:", err);
+    return NextResponse.json({ error: "Failed to delete workspace" }, { status: 500 });
   }
 }

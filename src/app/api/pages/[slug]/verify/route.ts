@@ -35,9 +35,14 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
     return NextResponse.json({ error: "Invalid password" }, { status: 401 });
   }
 
-  const match = await bcrypt.compare(parsed.data.password, page.passwordHash);
+  // Constant-time response shape: the delay applies to BOTH outcomes so
+  // success isn't measurably faster than failure (timing oracle). Brute
+  // force is already braked by the strict verify limiter above.
+  const [match] = await Promise.all([
+    bcrypt.compare(parsed.data.password, page.passwordHash),
+    new Promise((r) => setTimeout(r, 200)),
+  ]);
   if (!match) {
-    await new Promise((r) => setTimeout(r, 200));
     return NextResponse.json({ error: "Invalid password" }, { status: 401 });
   }
 

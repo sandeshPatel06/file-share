@@ -5,11 +5,20 @@ meta {
 }
 
 get {
-  url: {{baseUrl}}/api/pages/{{slug}}/events
+  url: {{baseUrl}}/api/pages/{{slug}}/events?token={{token}}
   body: none
   auth: none
 }
 
 headers {
   Accept: text/event-stream
+}
+
+docs {
+  GET /api/pages/:slug/events — Server-Sent Events stream. First frame is
+  `event: connected`, updates arrive as `event: message` + JSON
+  (`content_updated` | `files_updated` | `presence_updated`), plus a comment
+  ping every 10s. Pass the JWT as `?token=` because EventSource cannot set
+  headers (a Bearer header also works via fetch). No rate limiter here —
+  do not hammer this endpoint; one stream per tab.
 }

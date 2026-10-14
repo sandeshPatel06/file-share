@@ -12,10 +12,26 @@ patch {
 
 headers {
   Content-Type: application/json
+  Authorization: Bearer {{token}}
 }
 
 body:json {
   {
     "newSlug": "welcome-renamed"
+  }
+}
+
+docs {
+  PATCH /api/pages/:slug/rename — rename to `{"newSlug": "..."}`.
+  Writes a redirects row (old slug 301s to new), files stay linked via
+  ON UPDATE CASCADE, no SSE emit, no fresh token in the response.
+  Bearer token required when the page is password-protected.
+  The post-response script moves {{slug}} to the new slug automatically.
+}
+
+script:post-response {
+  const body = res.getBody();
+  if (body && body.newSlug) {
+    bru.setEnvVar("slug", body.newSlug);
   }
 }

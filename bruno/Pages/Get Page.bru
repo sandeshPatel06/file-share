@@ -9,3 +9,13 @@ get {
   body: none
   auth: none
 }
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+docs {
+  GET /api/pages/:slug — page meta + content. `content` is "" when the page
+  is locked and no (or wrong-slug) token is sent; 404 if the page is missing.
+  Bearer token required only for password-protected pages.
+}

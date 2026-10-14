@@ -26,7 +26,7 @@ export default function ResourcesPage() {
   const articles = getAllArticles();
 
   return (
-    <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col transition-colors duration-200">
+    <div className="min-h-dvh bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col transition-colors duration-200">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-[var(--header-bg)] border-b border-[var(--border-color)]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
@@ -36,7 +36,7 @@ export default function ResourcesPage() {
             </div>
             <span>FileShare</span>
           </Link>
-          <nav className="flex items-center gap-4 text-xs font-medium text-[var(--text-muted)]">
+          <nav className="hidden sm:flex items-center gap-4 text-xs font-medium text-[var(--text-muted)]">
             <Link href="/guide" className="hover:text-[var(--text-main)] transition-colors">Guide</Link>
             <Link href="/about" className="hover:text-[var(--text-main)] transition-colors">About</Link>
             <Link href="/contact" className="hover:text-[var(--text-main)] transition-colors">Contact</Link>
@@ -58,11 +58,11 @@ export default function ResourcesPage() {
             In-depth architectural analysis, security frameworks, and productivity blueprints for distributed software teams, educators, and privacy-conscious collaborators.
           </p>
           <div className="mt-4 flex flex-wrap gap-2 text-xs">
-            <span className="px-2.5 py-1 rounded-full bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-subtle)] flex items-center gap-1">
-              <ShieldCheck className="w-3 h-3 text-emerald-500" /> Peer-reviewed technical practices
+            <span className="px-2.5 py-1 rounded-full bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-subtle)] dark:text-[var(--text-muted)] flex items-center gap-1">
+              <ShieldCheck className="w-3 h-3 text-[var(--status-success-text)]" /> Peer-reviewed technical practices
             </span>
-            <span className="px-2.5 py-1 rounded-full bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-subtle)] flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-amber-400" /> Practical workflows & templates
+            <span className="px-2.5 py-1 rounded-full bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-subtle)] dark:text-[var(--text-muted)] flex items-center gap-1">
+              <Sparkles className="w-3 h-3 text-[var(--accent-primary)]" /> Practical workflows & templates
             </span>
           </div>
         </div>
@@ -80,7 +80,7 @@ export default function ResourcesPage() {
                     <Tag className="w-3 h-3" />
                     {article.category}
                   </span>
-                  <span className="flex items-center gap-1 text-[var(--text-subtle)]">
+                  <span className="flex items-center gap-1 text-[var(--text-subtle)] dark:text-[var(--text-muted)]">
                     <Clock className="w-3 h-3" />
                     {article.readTime}
                   </span>
@@ -98,7 +98,7 @@ export default function ResourcesPage() {
               </div>
 
               <div className="pt-4 border-t border-[var(--border-color)] flex items-center justify-between text-xs">
-                <span className="text-[var(--text-subtle)] font-mono">
+                <span className="text-[var(--text-subtle)] dark:text-[var(--text-muted)] font-mono">
                   {article.date}
                 </span>
                 <Link
@@ -113,7 +113,7 @@ export default function ResourcesPage() {
         </div>
 
         {/* CTA Section */}
-        <div className="mt-12 bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-2xl p-6 sm:p-8 text-center max-w-2xl mx-auto">
+        <div className="mt-8 sm:mt-12 bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-2xl p-6 sm:p-8 text-center max-w-2xl mx-auto">
           <Compass className="w-8 h-8 text-[var(--accent-primary)] mx-auto mb-3" />
           <h2 className="text-xl font-bold mb-2">Put These Workflows Into Practice</h2>
           <p className="text-xs sm:text-sm text-[var(--text-muted)] mb-5 max-w-lg mx-auto leading-relaxed">
@@ -133,25 +133,25 @@ export default function ResourcesPage() {
       <footer className="border-t border-[var(--border-color)] py-8 bg-[var(--header-bg)]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--text-muted)]">
           <p>© 2026 FileShare (SHP Technology). High-velocity collaborative workspaces &amp; secure file vaults.</p>
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center justify-center gap-3">
             <Link href="/" className="hover:text-[var(--text-main)] transition-colors">Home</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/about" className="hover:text-[var(--text-main)] transition-colors">About</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/guide" className="hover:text-[var(--text-main)] transition-colors">User Guide</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/resources" className="hover:text-[var(--text-main)] transition-colors">Resources</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/contact" className="hover:text-[var(--text-main)] transition-colors">Contact</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/privacy" className="hover:text-[var(--text-main)] transition-colors">Privacy Policy</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/terms" className="hover:text-[var(--text-main)] transition-colors">Terms &amp; Conditions</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/cookies" className="hover:text-[var(--text-main)] transition-colors">Cookie Policy</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/refund" className="hover:text-[var(--text-main)] transition-colors">Refund Policy</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <CookieSettingsButton />
           </div>
         </div>

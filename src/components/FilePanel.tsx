@@ -247,7 +247,7 @@ export function FilePanel({ slug, token }: FilePanelProps) {
   ];
 
   return (
-    <div className="flex flex-col h-full bg-[var(--bg-surface)] transition-colors duration-200 select-none">
+    <div className="flex flex-col h-full min-h-0 min-w-0 overflow-hidden bg-[var(--bg-surface)] transition-colors duration-200 select-none">
       {/* Hidden File Input */}
       <input
         ref={inputRef}
@@ -263,23 +263,25 @@ export function FilePanel({ slug, token }: FilePanelProps) {
 
       {/* Header Toolbar */}
       <div className="flex items-center justify-between px-3 py-2 border-b border-[var(--border-color)] bg-[var(--bg-surface)] shrink-0 transition-colors duration-200 gap-2 min-h-[44px]">
-        <div className="flex items-center gap-1.5 text-[var(--text-main)] font-extrabold shrink-0">
+        <div className="flex items-center gap-1.5 text-[var(--text-main)] font-extrabold min-w-0 flex-1 truncate">
           <FolderOpen size={16} className="text-[var(--accent-indigo)]" />
           <span className="text-xs uppercase tracking-wider font-mono">Explorer</span>
           {files.length > 0 && (
-            <span className="px-2 py-0.5 rounded-full bg-[var(--badge-bg)] border border-[var(--badge-border)] text-[var(--badge-text)] text-xs font-extrabold ml-1">
+            <span className="px-2 py-0.5 rounded-full bg-[var(--badge-bg)] border border-[var(--badge-border)] text-[var(--badge-text)] text-xs font-extrabold ml-1 shrink-0 whitespace-nowrap">
               {files.length}
             </span>
           )}
         </div>
 
         {/* Actions: Download All as ZIP & View Layout */}
-        <div className="flex items-center gap-1.5 shrink-0">
+        <div className="flex items-center gap-1.5 shrink-0 max-sm:[&_button]:min-h-[36px] max-sm:[&_button]:min-w-[36px]">
           {files.length > 0 && (
             <button
+              type="button"
               onClick={handleDownloadAllZip}
               disabled={downloadingZip}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 min-h-[36px] rounded-lg bg-[var(--badge-bg)] hover:bg-[var(--accent-primary)]/15 border border-[var(--badge-border)] text-[var(--accent-primary)] transition-all text-xs font-bold cursor-pointer disabled:opacity-50"
+              aria-label="Download all files as ZIP archive"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 min-h-[36px] rounded-lg bg-[var(--badge-bg)] hover:bg-[var(--accent-primary)]/15 border border-[var(--badge-border)] text-[var(--accent-primary)] transition-all text-xs font-bold cursor-pointer disabled:opacity-70"
               title="Download all files as ZIP archive"
             >
               {downloadingZip ? (
@@ -293,8 +295,11 @@ export function FilePanel({ slug, token }: FilePanelProps) {
 
           <div className="flex items-center p-0.5 rounded-lg bg-[var(--badge-bg)] border border-[var(--border-color)]">
             <button
+              type="button"
               onClick={() => setViewLayout("list")}
-              className={`min-h-[32px] min-w-[32px] p-1.5 flex items-center justify-center rounded-md transition-colors cursor-pointer ${
+              aria-label="List view"
+              aria-pressed={viewLayout === "list"}
+               className={`min-h-[36px] min-w-[36px] p-1.5 flex items-center justify-center rounded-md transition-colors cursor-pointer ${
                 viewLayout === "list" ? "bg-[var(--accent-primary)] text-white shadow-sm" : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
               }`}
               title="List View"
@@ -302,8 +307,11 @@ export function FilePanel({ slug, token }: FilePanelProps) {
               <LayoutList size={14} />
             </button>
             <button
+              type="button"
               onClick={() => setViewLayout("grid")}
-              className={`min-h-[32px] min-w-[32px] p-1.5 flex items-center justify-center rounded-md transition-colors cursor-pointer ${
+              aria-label="Grid view"
+              aria-pressed={viewLayout === "grid"}
+              className={`min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] p-1.5 flex items-center justify-center rounded-md transition-colors cursor-pointer ${
                 viewLayout === "grid" ? "bg-[var(--accent-primary)] text-white shadow-sm" : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
               }`}
               title="Grid View"
@@ -318,17 +326,19 @@ export function FilePanel({ slug, token }: FilePanelProps) {
       {files.length > 0 && (
         <div className="px-2.5 pt-2 pb-1.5 shrink-0 space-y-2 border-b border-[var(--border-color)]/40">
           <div className="relative flex items-center">
-            <Search size={14} className="absolute left-2.5 text-[var(--text-subtle)] pointer-events-none" />
+            <Search size={14} className="absolute left-2.5 text-[var(--text-muted)] pointer-events-none" />
             <input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search files…"
-              className="w-full pl-8 pr-7 py-2 bg-[var(--input-bg)] border border-[var(--border-color)] focus:border-[var(--accent-primary)] rounded-lg text-xs sm:text-sm font-mono text-[var(--text-main)] placeholder-[var(--text-subtle)] outline-none transition-all font-semibold min-h-[38px]"
+              className="w-full pl-8 pr-10 py-2 bg-[var(--input-bg)] border border-[var(--border-color)] focus:border-[var(--accent-primary)] rounded-lg text-base sm:text-sm font-mono text-[var(--text-main)] placeholder-[var(--text-subtle)] outline-none transition-all font-semibold min-h-[44px]"
             />
             {searchQuery && (
               <button
+                type="button"
                 onClick={() => setSearchQuery("")}
-                className="absolute right-2 text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer p-1"
+                aria-label="Clear search"
+                className="absolute right-1.5 text-[var(--text-muted)] hover:text-[var(--text-main)] cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center rounded-md"
               >
                 <X size={13} />
               </button>
@@ -339,10 +349,12 @@ export function FilePanel({ slug, token }: FilePanelProps) {
           <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
             {categories.map((cat) => (
               <button
+                type="button"
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
+                aria-pressed={activeCategory === cat.id}
                 className={`
-                  px-2.5 py-1 rounded-md text-xs font-bold transition-all cursor-pointer whitespace-nowrap border min-h-[30px] flex items-center
+                  px-3 py-1 rounded-md text-xs font-bold transition-all cursor-pointer whitespace-nowrap border min-h-[44px] sm:min-h-[36px] flex items-center
                   ${activeCategory === cat.id
                     ? "bg-[var(--accent-primary)] text-white border-[var(--accent-primary)] shadow-sm"
                     : "bg-[var(--badge-bg)] text-[var(--text-muted)] hover:text-[var(--text-main)] border-[var(--border-color)]"
@@ -356,8 +368,8 @@ export function FilePanel({ slug, token }: FilePanelProps) {
         </div>
       )}
 
-      {/* Panel Scrollable Content */}
-      <div className="flex-1 overflow-y-auto p-2.5 space-y-2.5 min-h-0">
+      {/* Panel Scrollable Content — single scroll node */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden overscroll-contain p-2.5 space-y-2.5 min-h-0 min-w-0 max-w-full">
         {/* Compact drop zone container (only when files already exist in space) */}
         {files.length > 0 && (
           <div
@@ -390,11 +402,11 @@ export function FilePanel({ slug, token }: FilePanelProps) {
 
         {/* Real-time Upload Progress Items */}
         {Object.values(uploadProgress).map((item) => (
-          <div key={item.id} className="flex flex-col gap-2 p-3 rounded-xl bg-[var(--bg-card)] border border-[var(--accent-primary)] animate-fade-in shadow-md">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 min-w-0">
+          <div key={item.id} className="flex flex-col gap-2 p-3 rounded-xl bg-[var(--bg-card)] border border-[var(--accent-primary)] animate-fade-in shadow-md min-w-0 max-w-full overflow-hidden">
+            <div className="flex items-center justify-between gap-2 min-w-0 max-w-full">
+              <div className="flex items-center gap-2 min-w-0 flex-1">
                 <FileUp size={15} className="text-[var(--accent-primary)] animate-bounce shrink-0" />
-                <span className="text-xs font-bold text-[var(--text-main)] truncate">{item.name}</span>
+                <span className="text-xs font-bold text-[var(--text-main)] truncate min-w-0 max-w-full flex-1">{item.name}</span>
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <span className="text-xs font-mono font-extrabold text-[var(--accent-primary)]">
@@ -404,7 +416,7 @@ export function FilePanel({ slug, token }: FilePanelProps) {
                   type="button"
                   onClick={() => cancelUpload(item.id)}
                   title="Cancel upload"
-                  className="p-1 rounded text-[var(--text-muted)] hover:text-red-400 hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                  className="p-2 min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] flex items-center justify-center shrink-0 rounded text-[var(--text-muted)] hover:text-[var(--status-danger-text)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
                 >
                   <X size={13} />
                 </button>
@@ -418,9 +430,9 @@ export function FilePanel({ slug, token }: FilePanelProps) {
               />
             </div>
 
-            <div className="flex items-center justify-between text-xs font-mono text-[var(--text-muted)]">
-              <span>{item.loadedFormatted} / {item.totalFormatted}</span>
-              <span className="font-bold text-[var(--accent-primary)]">{item.speedFormatted}</span>
+            <div className="flex items-center justify-between gap-2 text-xs font-mono text-[var(--text-muted)]">
+              <span className="truncate min-w-0">{item.loadedFormatted} / {item.totalFormatted}</span>
+              <span className="font-bold text-[var(--accent-primary)] shrink-0 whitespace-nowrap">{item.speedFormatted}</span>
             </div>
           </div>
         ))}
@@ -441,7 +453,7 @@ export function FilePanel({ slug, token }: FilePanelProps) {
               onDrop={onDrop}
               onClick={() => inputRef.current?.click()}
               className={`
-                text-center py-10 px-4 border-2 border-dashed rounded-2xl transition-all cursor-pointer group shadow-sm
+                text-center py-8 sm:py-10 px-4 border-2 border-dashed rounded-2xl transition-all cursor-pointer group shadow-sm
                 ${dragging
                   ? "border-[var(--accent-primary)] bg-[var(--badge-bg)] scale-[1.01]"
                   : "border-[var(--border-color)] hover:border-[var(--accent-primary)] bg-[var(--bg-card)] hover:bg-[var(--bg-card-hover)]"
@@ -463,14 +475,14 @@ export function FilePanel({ slug, token }: FilePanelProps) {
               <p className="text-xs text-[var(--text-muted)] mt-1 font-medium max-w-xs mx-auto">
                 Upload documents, images, audio, video or code up to 500 MB per file
               </p>
-              <span className="inline-block mt-3.5 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white shadow-sm transition-colors">
+              <span className="inline-flex items-center min-h-[40px] mt-3.5 px-4 py-2.5 rounded-lg text-xs font-bold bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white shadow-sm transition-colors">
                 Select Files to Upload
               </span>
             </div>
           ) : (
             /* Filter/Search empty state (files exist, but none match filter) */
             <div className="text-center py-8 px-4 border border-dashed border-[var(--border-color)] rounded-xl bg-[var(--bg-card)]">
-              <FolderOpen size={24} className="mx-auto text-[var(--text-subtle)] mb-2 opacity-60" />
+              <FolderOpen size={24} className="mx-auto text-[var(--text-muted)] mb-2" />
               <p className="text-xs font-bold text-[var(--text-main)]">No matching files found</p>
               <p className="text-xs text-[var(--text-muted)] mt-1 font-medium max-w-xs mx-auto">
                 Try clearing your search or category filters
@@ -478,7 +490,7 @@ export function FilePanel({ slug, token }: FilePanelProps) {
             </div>
           )
         ) : (
-          <div className={viewLayout === "grid" ? "grid grid-cols-2 gap-2" : "space-y-2"}>
+          <div className={viewLayout === "grid" ? "grid grid-cols-1 min-[420px]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-2 min-w-0 max-w-full" : "space-y-2 min-w-0 max-w-full"}>
             {filteredFiles.map((f) => (
               <FileCard key={f.fileId} file={f} slug={slug} token={token} layout={viewLayout} />
             ))}

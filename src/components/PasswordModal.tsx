@@ -78,15 +78,15 @@ export function PasswordModal({ open, onClose, slug, isProtected, token, onSucce
 
   return (
     <Modal open={open} onClose={onClose} title={isProtected ? "Change Password" : "Set Password"} maxWidth="max-w-sm sm:max-w-md">
-      <div className="flex flex-col gap-3.5 pt-0.5">
+      <div className="flex flex-col gap-3.5 pt-0.5 min-w-0 max-w-full overflow-x-hidden">
         {isProtected && (
-          <div className="p-2.5 rounded-xl bg-[var(--badge-bg)] border border-[var(--badge-border)] flex items-center gap-2">
+          <div className="p-2.5 rounded-xl bg-[var(--badge-bg)] border border-[var(--badge-border)] flex items-center gap-2 min-w-0 max-w-full">
             <Lock size={14} className="text-[var(--accent-indigo)] shrink-0" />
-            <span className="text-xs font-bold text-[var(--badge-text)]">This page is currently password-protected.</span>
+            <span className="text-xs font-bold text-[var(--badge-text)] min-w-0 break-words">This page is currently password-protected.</span>
           </div>
         )}
 
-        <form onSubmit={handleSet} className="space-y-3.5">
+        <form onSubmit={handleSet} className="space-y-3.5 min-w-0 max-w-full">
           <div>
             <label htmlFor="new-password-input" className="block text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">
               New Password
@@ -100,13 +100,13 @@ export function PasswordModal({ open, onClose, slug, isProtected, token, onSucce
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Min. 6 characters"
-                className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] focus:border-[var(--accent-primary)] focus:ring-2 focus:ring-[var(--border-glow)] rounded-xl px-3.5 py-2.5 pr-10 text-sm text-[var(--text-main)] placeholder-[var(--text-subtle)] outline-none transition-all font-mono font-bold min-h-[40px]"
+                className="w-full bg-[var(--input-bg)] border border-[var(--border-color)] focus:border-[var(--accent-primary)] focus:ring-2 focus:ring-[var(--border-glow)] rounded-xl px-3.5 py-2.5 pr-12 text-base sm:text-sm text-[var(--text-main)] placeholder-[var(--text-subtle)] dark:placeholder-[var(--text-muted)] outline-none transition-all font-mono font-bold min-h-[44px] sm:min-h-[40px]"
               />
               <button
                 type="button"
                 onClick={() => setShowPw(!showPw)}
                 aria-label={showPw ? "Hide password" : "Show password"}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors cursor-pointer p-1.5 rounded-lg min-h-[36px] min-w-[36px] flex items-center justify-center"
+                className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors cursor-pointer p-2 rounded-lg min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] flex items-center justify-center"
               >
                 {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
@@ -124,14 +124,14 @@ export function PasswordModal({ open, onClose, slug, isProtected, token, onSucce
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
               placeholder="Re-enter password"
-              className="mt-1 w-full bg-[var(--input-bg)] border border-[var(--border-color)] focus:border-[var(--accent-primary)] focus:ring-2 focus:ring-[var(--border-glow)] rounded-xl px-3.5 py-2.5 text-sm text-[var(--text-main)] placeholder-[var(--text-subtle)] outline-none transition-all font-mono font-bold min-h-[40px]"
+              className="mt-1 w-full bg-[var(--input-bg)] border border-[var(--border-color)] focus:border-[var(--accent-primary)] focus:ring-2 focus:ring-[var(--border-glow)] rounded-xl px-3.5 py-2.5 text-base sm:text-sm text-[var(--text-main)] placeholder-[var(--text-subtle)] dark:placeholder-[var(--text-muted)] outline-none transition-all font-mono font-bold min-h-[44px] sm:min-h-[40px]"
             />
           </div>
 
-          {error && <p className="text-xs font-bold text-[var(--status-danger-text)] flex items-center gap-1.5 pt-0.5">{error}</p>}
+          {error && <p className="text-xs font-bold text-[var(--status-danger-text)] flex items-center gap-1.5 pt-0.5 break-words min-w-0 max-w-full">{error}</p>}
 
-          <div className="flex gap-2.5 pt-2 border-t border-[var(--border-color)] mt-2">
-            <Button type="submit" size="md" icon={<KeyRound size={16} />} loading={loading} className="flex-1 font-bold">
+          <div className="flex flex-col-reverse sm:flex-row gap-2.5 pt-2 border-t border-[var(--border-color)] mt-2 shrink-0">
+            <Button type="submit" size="md" icon={<KeyRound size={16} />} loading={loading} className="flex-1 font-bold w-full sm:w-auto">
               Set Password
             </Button>
             {isProtected && (
@@ -142,7 +142,7 @@ export function PasswordModal({ open, onClose, slug, isProtected, token, onSucce
                 icon={<Unlock size={16} />}
                 loading={loading}
                 onClick={handleRemove}
-                className="font-bold"
+                className="font-bold w-full sm:w-auto"
               >
                 Remove
               </Button>

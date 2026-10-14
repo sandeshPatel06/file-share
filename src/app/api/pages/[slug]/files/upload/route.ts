@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
 import { verifyPageToken } from "@/lib/jwt";
 import { rateLimit } from "@/lib/rateLimiter";
+import { ALLOWED_MIME_TYPES } from "@/lib/validators";
 import { pageEvents } from "@/lib/events";
 import { hasB2Storage, uploadToB2 } from "@/lib/b2";
 import { randomUUID } from "crypto";
@@ -34,8 +35,13 @@ const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500 MB limit
 
 // POST /api/pages/[slug]/files/upload — stream file upload up to 500 MB
 export async function POST(req: NextRequest, ctx: RouteContext) {
-  const limited = await rateLimit(req, "general");
+  const limited = await rateLimit(req, "upload");
   if (limited) return limited;
+
+  const requestLength = Number(req.headers.get("content-length") ?? "0");
+  if (Number.isFinite(requestLength) && requestLength > MAX_FILE_SIZE + 1024 * 1024) {
+    return NextResponse.json({ error: "Upload exceeds the 500 MB limit" }, { status: 413 });
+  }
 
   const { slug } = await ctx.params;
 
@@ -83,10 +89,37 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
       mimetype: string;
       size: number;
     }>((resolve, reject) => {
+      // Single-settlement guard: stream 'error' events after a reject would
+      // otherwise surface as uncaughtExceptions and crash the process.
+      let settled = false;
+      const fail = (err: unknown) => {
+        if (settled) return;
+        settled = true;
+        try {
+          bb.destroy();
+        } catch {}
+        if (pendingWriteStream) {
+          try { pendingWriteStream.destroy(); } catch {}
+        }
+        reject(err instanceof Error ? err : new Error("File upload failed"));
+      };
+      const done = (
+        value: { fileId: string; originalName: string; storedName: string; mimetype: string; size: number }
+      ) => {
+        if (settled) return;
+        settled = true;
+        resolve(value);
+      };
+
       bb.on("file", (_name, fileStream, info) => {
         fileFound = true;
-        originalName = info.filename || "file";
+        originalName = (info.filename || "file").slice(0, 255);
         mimetype = info.mimeType || "application/octet-stream";
+        if (!ALLOWED_MIME_TYPES.has(mimetype)) {
+          fileStream.resume();
+          fail(new Error("File type not allowed"));
+          return;
+        }
         const safeName = originalName.replace(/[^a-zA-Z0-9._-]/g, "_");
         storedName = `${fileId}-${safeName}`;
         filePath = path.join(uploadsDir, storedName);
@@ -100,19 +133,23 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
 
         fileStream.on("limit", () => {
           limitExceeded = true;
+          fileStream.unpipe(writeStream);
+          writeStream.destroy();
           fileStream.resume();
         });
+
+        fileStream.on("error", (err) => fail(err));
 
         fileStream.pipe(writeStream);
 
         writeStream.on("error", (err) => {
-          reject(err);
+          fail(err);
         });
       });
 
       bb.on("finish", () => {
         if (!fileFound) {
-          reject(new Error("No file provided"));
+          fail(new Error("No file provided"));
           return;
         }
 
@@ -121,10 +158,10 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
             if (filePath && fs.existsSync(filePath)) {
               try { fs.unlinkSync(filePath); } catch {}
             }
-            reject(new Error("File size exceeds the 500 MB limit"));
+            fail(new Error("File size exceeds the 500 MB limit"));
             return;
           }
-          resolve({
+          done({
             fileId,
             originalName,
             storedName,
@@ -140,11 +177,18 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
         }
       });
 
-      bb.on("error", (err) => reject(err));
+      bb.on("error", (err) => fail(err));
     });
 
     if (req.body) {
       const nodeStream = Readable.fromWeb(req.body as import("stream/web").ReadableStream);
+      // A request-stream error after busboy already failed would otherwise
+      // escape as an uncaughtException — route it into the same settlement.
+      nodeStream.on("error", () => {
+        try {
+          bb.destroy();
+        } catch {}
+      });
       nodeStream.pipe(bb);
     } else {
       return NextResponse.json({ error: "Empty request body" }, { status: 400 });
@@ -152,6 +196,15 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
 
     const uploadedInfo = await parsePromise;
     const downloadURL = `/api/uploads/${uploadedInfo.storedName}`;
+
+    // Enforce the MIME allowlist (declared multipart content type). Files
+    // outside the set are deleted before any DB row is written → 422.
+    if (!ALLOWED_MIME_TYPES.has(uploadedInfo.mimetype)) {
+      if (filePath && fs.existsSync(filePath)) {
+        try { fs.unlinkSync(filePath); } catch {}
+      }
+      return NextResponse.json({ error: "File type not allowed" }, { status: 422 });
+    }
 
     // Upload to Backblaze B2 Object Storage if B2 credentials are set
     const b2Active = hasB2Storage();
@@ -199,8 +252,16 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
     }, { status: 201 });
 
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "File upload failed";
-    const status = message.includes("exceeds") ? 413 : 500;
-    return NextResponse.json({ error: message }, { status });
+    // Only expose stable client errors. Busboy/DB/B2 messages can leak
+    // internals and are not safe to reflect to an attacker.
+    const message = err instanceof Error ? err.message : "";
+    if (message === "File type not allowed") {
+      return NextResponse.json({ error: message }, { status: 422 });
+    }
+    if (message.includes("exceeds")) {
+      return NextResponse.json({ error: "Upload exceeds the 500 MB limit" }, { status: 413 });
+    }
+    console.error("[Upload] request failed", err);
+    return NextResponse.json({ error: "File upload failed" }, { status: 500 });
   }
 }

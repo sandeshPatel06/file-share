@@ -9,3 +9,13 @@ get {
   body: none
   auth: none
 }
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+docs {
+  GET /api/pages/:slug/files — vault listing, newest first.
+  `uploadedAt` is `{seconds: <unix>}`. Bearer token required only when the
+  page is password-protected.
+}

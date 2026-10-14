@@ -62,7 +62,7 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
   const featuredArticles = ARTICLES.slice(0, 4);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[var(--bg-main)] text-[var(--text-main)] transition-colors duration-200">
+    <div className="min-h-dvh flex flex-col bg-[var(--bg-main)] text-[var(--text-main)] transition-colors duration-200">
       {/* Header / Navbar */}
       <header className="sticky top-0 z-40 bg-[var(--header-bg)] border-b border-[var(--border-color)]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
@@ -90,7 +90,7 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
             <Button
               onClick={() => handleCreateSpace()}
               disabled={Boolean(activeSlug)}
-              className="!px-3 !py-1.5 !rounded-md text-xs !font-semibold bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white disabled:opacity-60"
+              className="!px-3 !py-1.5 !rounded-md text-xs !font-semibold bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white"
               icon={activeSlug && !customSlug ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
             >
               {activeSlug && !customSlug ? "Opening..." : "New Space"}
@@ -106,11 +106,11 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
           <div className="max-w-4xl mx-auto px-4 text-center">
             {/* Value Proposition Badges */}
             <div className="inline-flex flex-wrap items-center justify-center gap-2 px-3 py-1.5 rounded-full text-xs font-mono bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-muted)] mb-6">
-              <span className="text-emerald-500 flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5" /> Zero Registration</span>
+              <span className="text-[var(--status-success-text)] flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5" /> Zero Registration</span>
               <span>•</span>
               <span className="text-[var(--accent-primary)] flex items-center gap-1"><Zap className="w-3.5 h-3.5" /> Real-Time SSE Sync</span>
               <span>•</span>
-              <span className="text-blue-400 flex items-center gap-1"><Shield className="w-3.5 h-3.5" /> 500MB Encrypted Vault</span>
+              <span className="text-[var(--accent-sky)] flex items-center gap-1"><Shield className="w-3.5 h-3.5" /> 500MB Encrypted Vault</span>
             </div>
 
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-[var(--text-main)] mb-6 leading-tight">
@@ -139,14 +139,14 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
                     onChange={(e) => setCustomSlug(e.target.value)}
                     placeholder={defaultSlug}
                     aria-label="Enter custom workspace name"
-                    className="w-full pl-8 pr-3 py-2.5 text-xs sm:text-sm rounded-lg bg-[var(--input-bg)] border border-[var(--border-color)] text-[var(--text-main)] placeholder-[var(--text-subtle)] focus:outline-none focus:border-[var(--accent-primary)] font-mono"
+                    className="w-full pl-8 pr-3 py-2.5 text-xs sm:text-sm rounded-lg bg-[var(--input-bg)] border border-[var(--border-color)] text-[var(--text-main)] placeholder-[var(--text-subtle)] dark:placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--accent-primary)] font-mono"
                   />
                 </div>
                 <Button
                   type="submit"
                   disabled={Boolean(activeSlug)}
                   aria-label="Open or create instant workspace"
-                  className="!px-5 !py-2.5 !rounded-lg !font-semibold text-xs sm:text-sm bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white disabled:opacity-60"
+                  className="!px-5 !py-2.5 !rounded-lg !font-semibold text-xs sm:text-sm bg-[var(--accent-primary)] hover:bg-[var(--accent-primary-hover)] text-white"
                   icon={activeSlug ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : undefined}
                   iconRight={!activeSlug ? <ArrowRight className="w-3.5 h-3.5" /> : undefined}
                 >
@@ -154,14 +154,14 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
                 </Button>
               </form>
 
-              <div className="mt-3 pt-3 border-t border-[var(--border-color)] flex items-center justify-between text-xs text-[var(--text-subtle)]">
+              <div className="mt-3 pt-3 border-t border-[var(--border-color)] flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--text-subtle)] dark:text-[var(--text-muted)]">
                 <Button
                   type="button"
                   size="xs"
                   variant="ghost"
                   disabled={Boolean(activeSlug)}
                   onClick={() => handleCreateSpace(defaultSlug)}
-                  className="!p-0 !rounded-lg inline-flex items-center gap-1 text-[var(--text-subtle)] hover:text-[var(--text-main)] disabled:opacity-50"
+                  className="!p-0 !rounded-lg inline-flex items-center gap-1 text-[var(--text-subtle)] dark:text-[var(--text-muted)] hover:text-[var(--text-main)] disabled:opacity-50"
                   icon={activeSlug === defaultSlug ? <Loader2 className="w-3.5 h-3.5 animate-spin text-[var(--accent-primary)]" /> : <Compass className="w-3.5 h-3.5" />}
                 >
                   Random Space (/s/{defaultSlug})
@@ -173,14 +173,14 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
               {recentSpaces.length > 0 && (
                 <div className="mt-3.5 pt-3 border-t border-[var(--border-color)] text-left">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-bold text-[var(--text-subtle)] uppercase tracking-wider flex items-center gap-1.5">
+                    <span className="text-xs font-bold text-[var(--text-subtle)] dark:text-[var(--text-muted)] uppercase tracking-wider flex items-center gap-1.5">
                       <Clock className="w-3.5 h-3.5 text-[var(--accent-indigo)]" />
                       Recent Spaces
                     </span>
                     <button
                       type="button"
                       onClick={clearRecentSpaces}
-                      className="text-xs text-[var(--text-subtle)] hover:text-red-400 transition-colors cursor-pointer"
+                      className="text-xs text-[var(--text-subtle)] dark:text-[var(--text-muted)] hover:text-[var(--status-danger-text)] transition-colors cursor-pointer min-h-[32px] px-1 flex items-center"
                       title="Clear recent workspaces"
                     >
                       Clear all
@@ -203,8 +203,9 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
                           type="button"
                           onClick={() => togglePin(item.slug)}
                           title={item.pinned ? "Unpin workspace" : "Pin workspace"}
-                          className={`p-0.5 rounded hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer ${
-                            item.pinned ? "text-amber-400" : "text-[var(--text-subtle)] opacity-40 group-hover:opacity-100"
+                          aria-label={item.pinned ? "Unpin workspace" : "Pin workspace"}
+                          className={`min-h-[32px] min-w-[32px] p-1 rounded flex items-center justify-center hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer ${
+                            item.pinned ? "text-[var(--accent-primary)]" : "text-[var(--text-subtle)] dark:text-[var(--text-muted)] hover:text-[var(--text-main)]"
                           }`}
                         >
                           <Pin className={`w-3 h-3 ${item.pinned ? "fill-current" : ""}`} />
@@ -213,7 +214,8 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
                           type="button"
                           onClick={() => removeRecentSpace(item.slug)}
                           title="Remove from history"
-                          className="p-0.5 rounded text-[var(--text-subtle)] hover:text-red-400 opacity-40 group-hover:opacity-100 transition-all cursor-pointer"
+                          aria-label="Remove from history"
+                          className="min-h-[32px] min-w-[32px] p-1 rounded flex items-center justify-center text-[var(--text-subtle)] dark:text-[var(--text-muted)] hover:text-[var(--status-danger-text)] transition-all cursor-pointer"
                         >
                           <X className="w-3 h-3" />
                         </button>
@@ -242,7 +244,7 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
             </div>
 
             {/* Quick Link to Knowledge Base */}
-            <div className="mt-6 text-xs text-[var(--text-muted)] flex items-center justify-center gap-3">
+            <div className="mt-6 text-xs text-[var(--text-muted)] flex flex-wrap items-center justify-center gap-3 text-center">
               <span>New to FileShare?</span>
               <Link href="/guide" className="text-[var(--accent-primary)] hover:underline inline-flex items-center gap-1 font-medium">
                 Read the Complete User Guide <ArrowRight className="w-3 h-3" />
@@ -370,50 +372,50 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
             </p>
           </div>
 
-          <div className="overflow-x-auto bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl shadow-sm">
-            <table className="w-full text-left text-xs sm:text-sm">
+          <div className="overflow-x-auto max-w-full bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl shadow-sm">
+            <table className="w-full min-w-[640px] text-left text-xs sm:text-sm">
               <thead>
                 <tr className="border-b border-[var(--border-color)] bg-[var(--bg-main)]">
                   <th className="p-3 sm:p-4 font-bold text-[var(--text-main)]">Key Capability</th>
                   <th className="p-3 sm:p-4 font-bold text-[var(--accent-primary)]">FileShare</th>
-                  <th className="p-3 sm:p-4 font-medium text-[var(--text-subtle)]">Cloud Drives (Google Drive)</th>
-                  <th className="p-3 sm:p-4 font-medium text-[var(--text-subtle)]">Standard Pastebin</th>
+                  <th className="p-3 sm:p-4 font-medium text-[var(--text-subtle)] dark:text-[var(--text-muted)]">Cloud Drives (Google Drive)</th>
+                  <th className="p-3 sm:p-4 font-medium text-[var(--text-subtle)] dark:text-[var(--text-muted)]">Standard Pastebin</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--border-color)] text-xs text-[var(--text-muted)]">
                 <tr>
                   <td className="p-3 sm:p-4 font-medium text-[var(--text-main)]">Registration &amp; Login</td>
-                  <td className="p-3 sm:p-4 font-bold text-emerald-500">Zero (Anonymous)</td>
+                  <td className="p-3 sm:p-4 font-bold text-[var(--status-success-text)]">Zero (Anonymous)</td>
                   <td className="p-3 sm:p-4">Mandatory Account</td>
                   <td className="p-3 sm:p-4">Optional / Limited</td>
                 </tr>
                 <tr>
                   <td className="p-3 sm:p-4 font-medium text-[var(--text-main)]">Real-Time Collaborative Editing</td>
-                  <td className="p-3 sm:p-4 font-bold text-emerald-500">Live SSE Sync (Milliseconds)</td>
+                  <td className="p-3 sm:p-4 font-bold text-[var(--status-success-text)]">Live SSE Sync (Milliseconds)</td>
                   <td className="p-3 sm:p-4">Document Delay</td>
-                  <td className="p-3 sm:p-4 text-rose-400">Static (No Live Sync)</td>
+                  <td className="p-3 sm:p-4 text-[var(--status-danger-text)]">Static (No Live Sync)</td>
                 </tr>
                 <tr>
                   <td className="p-3 sm:p-4 font-medium text-[var(--text-main)]">File Attachment Capacity</td>
-                  <td className="p-3 sm:p-4 font-bold text-emerald-500">500 MB Free per file</td>
+                  <td className="p-3 sm:p-4 font-bold text-[var(--status-success-text)]">500 MB Free per file</td>
                   <td className="p-3 sm:p-4">Consumes Account Quota</td>
-                  <td className="p-3 sm:p-4 text-rose-400">None (Text Only)</td>
+                  <td className="p-3 sm:p-4 text-[var(--status-danger-text)]">None (Text Only)</td>
                 </tr>
                 <tr>
                   <td className="p-3 sm:p-4 font-medium text-[var(--text-main)]">Markdown &amp; Mermaid Diagrams</td>
-                  <td className="p-3 sm:p-4 font-bold text-emerald-500">Native Inline Rendering</td>
+                  <td className="p-3 sm:p-4 font-bold text-[var(--status-success-text)]">Native Inline Rendering</td>
                   <td className="p-3 sm:p-4">Requires Third-Party Extensions</td>
-                  <td className="p-3 sm:p-4 text-rose-400">Plain Raw Text Only</td>
+                  <td className="p-3 sm:p-4 text-[var(--status-danger-text)]">Plain Raw Text Only</td>
                 </tr>
                 <tr>
                   <td className="p-3 sm:p-4 font-medium text-[var(--text-main)]">Instant Device Handoff</td>
-                  <td className="p-3 sm:p-4 font-bold text-emerald-500">Dynamic Vector QR Code</td>
+                  <td className="p-3 sm:p-4 font-bold text-[var(--status-success-text)]">Dynamic Vector QR Code</td>
                   <td className="p-3 sm:p-4">Requires App Install</td>
                   <td className="p-3 sm:p-4">Manual URL Copying</td>
                 </tr>
                 <tr>
                   <td className="p-3 sm:p-4 font-medium text-[var(--text-main)]">Security &amp; Encryption</td>
-                  <td className="p-3 sm:p-4 font-bold text-emerald-500">Bcrypt Password Lock &amp; JWT</td>
+                  <td className="p-3 sm:p-4 font-bold text-[var(--status-success-text)]">Bcrypt Password Lock &amp; JWT</td>
                   <td className="p-3 sm:p-4">Account Permissions</td>
                   <td className="p-3 sm:p-4">Public / Unprotected</td>
                 </tr>
@@ -452,7 +454,7 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
                 className="bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl p-6 flex flex-col justify-between hover:border-[var(--border-glow)] transition-all group"
               >
                 <div>
-                  <div className="flex items-center justify-between text-xs text-[var(--text-subtle)] font-mono mb-2">
+                  <div className="flex items-center justify-between text-xs text-[var(--text-subtle)] dark:text-[var(--text-muted)] font-mono mb-2">
                     <span className="text-[var(--accent-primary)]">{article.category}</span>
                     <span>{article.readTime}</span>
                   </div>
@@ -466,7 +468,7 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
                   </p>
                 </div>
                 <div className="pt-3 border-t border-[var(--border-color)] flex items-center justify-between text-xs">
-                  <span className="text-[var(--text-subtle)] font-mono">{article.date}</span>
+                  <span className="text-[var(--text-subtle)] dark:text-[var(--text-muted)] font-mono">{article.date}</span>
                   <Link
                     href={`/resources/${article.slug}`}
                     className="font-semibold text-[var(--accent-primary)] inline-flex items-center gap-1 group-hover:gap-1.5 transition-all"
@@ -482,7 +484,7 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
         {/* Featured Public Workspaces */}
         <section className="py-8 bg-[var(--bg-surface)] border-t border-b border-[var(--border-color)]">
           <div className="max-w-4xl mx-auto px-4 sm:px-6">
-            <h3 className="text-xs font-bold text-[var(--text-subtle)] uppercase tracking-wider text-center mb-4">Starter Public Workspaces</h3>
+            <h3 className="text-xs font-bold text-[var(--text-subtle)] dark:text-[var(--text-muted)] uppercase tracking-wider text-center mb-4">Starter Public Workspaces</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {featuredWorkspaces.map((item) => {
                 const isItemActive = activeSlug === item.slug;
@@ -494,13 +496,13 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
                     onClick={() => handleCreateSpace(item.slug)}
                     className="!justify-start !items-center gap-2.5 !p-3 !rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] hover:border-[var(--accent-primary)] !text-left !font-semibold disabled:opacity-50"
                     icon={<span className="text-lg">{item.icon}</span>}
-                    iconRight={isItemActive ? <Loader2 className="w-3.5 h-3.5 animate-spin text-[var(--accent-primary)]" /> : <ArrowRight className="w-3.5 h-3.5 text-[var(--text-subtle)]" />}
+                    iconRight={isItemActive ? <Loader2 className="w-3.5 h-3.5 animate-spin text-[var(--accent-primary)]" /> : <ArrowRight className="w-3.5 h-3.5 text-[var(--text-subtle)] dark:text-[var(--text-muted)]" />}
                   >
                     <div className="flex-1 min-w-0">
                       <div className="font-semibold text-xs truncate text-[var(--text-main)]">
                         {item.title}
                       </div>
-                      <div className="text-[11px] font-mono text-[var(--text-subtle)]">/s/{item.slug}</div>
+                      <div className="text-[11px] font-mono text-[var(--text-subtle)] dark:text-[var(--text-main)]">/s/{item.slug}</div>
                     </div>
                   </Button>
                 );
@@ -557,7 +559,7 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
                 Can I protect my workspace with a password?
               </h3>
               <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                Yes! Click the &quot;Lock Space&quot; button inside any workspace to set a password. Passwords are securely hashed with bcrypt (10 rounds) and access is verified via JWT tokens.
+                Yes! Click the &quot;Lock Space&quot; button inside any workspace to set a password. Passwords are securely hashed with bcrypt (12 rounds) and access is verified via JWT tokens.
               </p>
             </div>
 
@@ -633,7 +635,7 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
             </div>
           </div>
 
-          <div className="pt-3 border-t border-[var(--border-color)] flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-[var(--text-muted)]">
+          <div className="pt-3 border-t border-[var(--border-color)] flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-center sm:text-left text-[var(--text-muted)]">
             <p>Operated by <strong>SHP Technology</strong> • Founder: Sandesh Patel • Jabalpur, Madhya Pradesh 482001, India</p>
             <p>GDPR &amp; India DPDP Act 2023 Compliant • Free Web Utility</p>
           </div>

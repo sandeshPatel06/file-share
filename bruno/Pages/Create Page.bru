@@ -1,0 +1,36 @@
+meta {
+  name: Create Page
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{baseUrl}}/api/pages/create
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "slug": "my-new-space"
+  }
+}
+
+docs {
+  POST /api/pages/create — explicit create `{"slug": "...", "password?": "..."}`.
+  201 on creation, 200 `{exists: true}` if the slug is taken, 422 on Zod failure.
+  Optional `password` (min 6 chars) creates the page already protected.
+  Note: workspaces also auto-provision on first visit, so this is optional.
+  The post-response script points {{slug}} at the created slug.
+}
+
+script:post-response {
+  const body = res.getBody();
+  if (body && body.slug) {
+    bru.setEnvVar("slug", body.slug);
+  }
+}

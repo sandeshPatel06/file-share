@@ -1,28 +1,55 @@
 /**
- * Google AdSense Configuration
+ * Google AdSense — manual in-content units only.
  *
- * Publisher ID: ca-pub-4947821599815451
+ * REQUIRED dashboard settings (Site Behavior: Navigation compliance):
+ * - Auto ads: OFF (all formats)
+ * - Anchor ads: OFF (never overlay sticky header / bottom nav)
+ * - Vignette / full-screen: OFF
+ * - Multiplex / Matched content / Related search: OFF (these mimic
+ *   site navigation grids and trigger "mistaken for menu" flags)
+ * - In-page auto-insert: OFF — only the explicit <AdBanner> units below
+ *   may serve. Auto-insertion would place ads next to Download / Upload /
+ *   Export / Copy-Link buttons in workspaces, which is exactly what the
+ *   "Publishers may not place ads where they might be mistaken for menu,
+ *   navigation or download links" policy prohibits.
  *
- * Policy Compliance Note (Site Behavior: Navigation):
- * - Ads are strictly placed in substantial editorial reading flows (Guide, About, and Resource Articles).
- * - No ads are placed on the homepage (/), workspace app (/s/*), or resource index (/resources).
- * - All ad units are manual in-article responsive Display units with clear "Sponsored Advertisement" badges.
- * - Ad slot IDs can be configured via environment variables or set directly below once real ad units
- *   are generated in the Google AdSense dashboard (Ads -> By ad unit -> Display ads).
+ * Placement allowlist: guide + about (+ substantial resource articles only).
+ * NEVER mount ads on `/`, `/s/[slug]`, or any vault / download / export flow.
  */
-
 export const ADSENSE_CLIENT_ID = "ca-pub-4947821599815451";
 
+const guideMid = process.env.NEXT_PUBLIC_ADS_SLOT_GUIDE || "7002682101";
+const aboutMid = process.env.NEXT_PUBLIC_ADS_SLOT_ABOUT || "4278561824";
+/** Keep empty during review — no ads on article pages yet */
+const articleMid = process.env.NEXT_PUBLIC_ADS_SLOT_ARTICLE || "";
+
 export const ADSENSE_SLOTS = {
-  // Guide page: Mid-article ad slot (after Section 3: AI Copilot Formatter)
-  guideSection1: process.env.NEXT_PUBLIC_ADS_SLOT_GUIDE_1 || "2000000001",
-
-  // Guide page: In-content ad slot (after Section 7: Security & Encryption)
-  guideSection2: process.env.NEXT_PUBLIC_ADS_SLOT_GUIDE_2 || "2000000002",
-
-  // About page: Mid-manifesto in-content ad slot (after Section 3: Architecture)
-  about: process.env.NEXT_PUBLIC_ADS_SLOT_ABOUT || "3000000001",
-
-  // Resource article page: Mid-body in-article ad slot (between section splits)
-  resourceArticle: process.env.NEXT_PUBLIC_ADS_SLOT_RESOURCE_ARTICLE || "1234567891",
+  guideMid,
+  aboutMid,
+  articleMid,
+  /**
+   * Backward-compat aliases for pre-rename slot keys.
+   * guide/page.tsx uses guideSection1/guideSection2, about/page.tsx uses
+   * about, resources/[slug]/page.tsx uses resourceArticle.
+   */
+  guideSection1: guideMid,
+  guideSection2: guideMid,
+  about: aboutMid,
+  resourceArticle: articleMid,
 } as const;
+
+/** Real AdSense unit IDs are 9–12 digit numbers */
+export function isValidSlot(slot: string | undefined | null): boolean {
+  if (!slot) return false;
+  const s = slot.trim();
+  if (!/^\d{9,12}$/.test(s)) return false;
+  // Reject obvious placeholders
+  if (/^123456789/.test(s) || /^200000000/.test(s) || /^300000000/.test(s)) {
+    return false;
+  }
+  return true;
+}
+
+export function isAdsEnabled(slot?: string): boolean {
+  return Boolean(ADSENSE_CLIENT_ID) && isValidSlot(slot);
+}

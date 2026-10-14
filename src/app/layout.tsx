@@ -1,23 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { AdaptiveFontLoader } from "@/components/AdaptiveFontLoader";
 import { ToastProvider } from "@/components/ui/Toast";
 import { CookieConsent } from "@/components/ui/CookieConsent";
 import { getAppUrl } from "@/lib/seo";
-
-const plusJakartaSans = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  variable: "--font-sans",
-  weight: ["400", "500", "600", "700", "800"],
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
-  weight: ["400", "500", "600", "700"],
-});
 
 const appUrl = getAppUrl();
 
@@ -209,8 +197,30 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="en" className={`${plusJakartaSans.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Font origins: preconnect once (cheap). Tier stylesheets are
+            injected at runtime by the bootstrap below + AdaptiveFontLoader. */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
+        {/*
+          Network-aware font bootstrap — runs synchronously pre-paint:
+          1. Reuses the cached tier (24h TTL) when fresh.
+          2. Else classifies via Network Information API (sync, zero bytes).
+          3. Top tier ("full") first when the network allows it.
+          4. Non-blocking stylesheet fetch (media=print trick) so slow
+             networks never block first paint on fonts.
+          Keep in sync with src/lib/fonts.ts (TIER_STYLESHEETS + TTL).
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var FULL="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap";var BAL="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800&family=JetBrains+Mono:wght@400;700&display=swap";var c=navigator.connection||{};var t=null;try{var s=localStorage.getItem("fs-font-tier"),ts=+localStorage.getItem("fs-font-tier-ts");if((s==="full"||s==="balanced"||s==="lite")&&Date.now()-ts<864e5)t=s;}catch(e){}var tier=t;if(!tier){if(c.saveData||c.effectiveType==="slow-2g"||c.effectiveType==="2g"||(typeof c.downlink==="number"&&c.downlink<0.8))tier="lite";else if(c.effectiveType==="3g"||(typeof c.downlink==="number"&&c.downlink<2.5)||(typeof c.rtt==="number"&&c.rtt>400)||(typeof navigator.deviceMemory==="number"&&navigator.deviceMemory<=2)||(typeof navigator.hardwareConcurrency==="number"&&navigator.hardwareConcurrency<=2))tier="balanced";else tier="full";}document.documentElement.dataset.fontTier=tier;var url=tier==="full"?FULL:(tier==="balanced"?BAL:null);if(url){var l=document.createElement("link");l.id="adaptive-font-css";l.rel="stylesheet";l.href=url;l.media="print";l.onload=function(){l.media="all";};document.head.appendChild(l);setTimeout(function(){l.media="all";},3000);}}catch(e){}})();`,
+          }}
+        />
         <Script
           id="json-ld"
           type="application/ld+json"
@@ -264,6 +274,7 @@ export default function RootLayout({
           <div id="main-content" tabIndex={-1} className="outline-none min-h-dvh flex flex-col">
             {children}
           </div>
+          <AdaptiveFontLoader />
           <ToastProvider />
           <CookieConsent />
         </ThemeProvider>

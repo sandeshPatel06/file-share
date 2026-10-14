@@ -27,6 +27,7 @@ export async function GET(req: NextRequest, ctx: RouteContext) {
   const limited = await rateLimit(req, "general");
   if (limited) return limited;
 
+  try {
   const { filename } = await ctx.params;
   const safeFilename = path.basename(filename);
   const uploadsDir = path.join(process.cwd(), "uploads");
@@ -38,28 +39,43 @@ export async function GET(req: NextRequest, ctx: RouteContext) {
   }
 
   const fileRecord = (await db.prepare("SELECT slug, mimetype, originalName, size FROM files WHERE storedName = ?").get(safeFilename)) as FileRow | undefined;
-  
+
+  // Fail closed: a storedName with no DB row skips auth below, so never
+  // serve bytes for it (orphan disk/B2 objects stay unreachable).
+  if (!fileRecord) {
+    return NextResponse.json({ error: "File not found" }, { status: 404 });
+  }
+
   // Detect PDF or fallback MIME types
-  let contentType = fileRecord?.mimetype || "application/octet-stream";
+  let contentType = fileRecord.mimetype || "application/octet-stream";
   if (safeFilename.toLowerCase().endsWith(".pdf")) {
     contentType = "application/pdf";
   }
 
   // Auth check if page is protected
-  if (fileRecord?.slug) {
-    const page = (await db.prepare("SELECT isProtected FROM pages WHERE slug = ?").get(fileRecord.slug)) as PageRow | undefined;
-    if (page?.isProtected) {
-      const authHeader = req.headers.get("authorization") ?? "";
-      const tokenParam = req.nextUrl.searchParams.get("token") ?? "";
-      const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : tokenParam;
+  const page = (await db.prepare("SELECT isProtected FROM pages WHERE slug = ?").get(fileRecord.slug)) as PageRow | undefined;
+  if (page?.isProtected) {
+    const authHeader = req.headers.get("authorization") ?? "";
+    const tokenParam = req.nextUrl.searchParams.get("token") ?? "";
+    const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : tokenParam;
 
-      if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-      const payload = await verifyPageToken(token);
-      if (payload?.slug !== fileRecord.slug) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-      }
+    if (!token) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const payload = await verifyPageToken(token);
+    if (payload?.slug !== fileRecord.slug) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
   }
+
+  // Authenticated bytes must never land in shared caches under the same URL.
+  const cacheControl = page?.isProtected
+    ? "private, no-store"
+    : "public, max-age=31536000, immutable";
+
+  // RFC 5987 encoding: ASCII fallback in `filename`, real name in `filename*`.
+  const asciiFallback = ((fileRecord.originalName || safeFilename).replace(/[^\x20-\x7E]/g, "_").replace(/["\\]/g, "_").slice(0, 120) || "download");
+  const dangerousInlineType = /^(text\/html|application\/x?html|image\/svg\+xml|application\/javascript|text\/javascript|application\/xml)/i.test(contentType);
+  const contentDisposition = `${dangerousInlineType ? "attachment" : "inline"}; filename="${asciiFallback}"; filename*=UTF-8''${encodeURIComponent(fileRecord.originalName || safeFilename)}`;
+  const fileCsp = dangerousInlineType ? "sandbox" : "frame-ancestors 'self'";
 
   const rangeHeader = req.headers.get("range");
 
@@ -70,10 +86,12 @@ export async function GET(req: NextRequest, ctx: RouteContext) {
       const b2Headers: Record<string, string> = {
         "Accept-Ranges": "bytes",
         "Content-Type": contentType,
-        "Content-Disposition": `inline; filename="${encodeURIComponent(fileRecord?.originalName || safeFilename)}"`,
+        "Content-Disposition": contentDisposition,
         "X-Frame-Options": "SAMEORIGIN",
-        "Content-Security-Policy": "frame-ancestors 'self'",
-        "Cache-Control": "public, max-age=31536000, immutable",
+        "X-Content-Type-Options": "nosniff",
+        "Content-Security-Policy": fileCsp,
+        "Cross-Origin-Resource-Policy": "same-origin",
+        "Cache-Control": cacheControl,
       };
       if (b2Data.contentLength) b2Headers["Content-Length"] = b2Data.contentLength.toString();
       if (b2Data.contentRange) b2Headers["Content-Range"] = b2Data.contentRange;
@@ -93,25 +111,35 @@ export async function GET(req: NextRequest, ctx: RouteContext) {
     return NextResponse.json({ error: "File not found" }, { status: 404 });
   }
 
-  const stat = fs.statSync(filePath);
+  const stat = await fs.promises.stat(filePath);
   const fileSize = stat.size;
 
   const commonHeaders = {
     "Accept-Ranges": "bytes",
     "Content-Type": contentType,
-    "Content-Disposition": `inline; filename="${encodeURIComponent(fileRecord?.originalName || safeFilename)}"`,
+    "Content-Disposition": contentDisposition,
     "X-Frame-Options": "SAMEORIGIN",
-    "Content-Security-Policy": "frame-ancestors 'self'",
-    "Cache-Control": "public, max-age=31536000, immutable",
+    "X-Content-Type-Options": "nosniff",
+    "Content-Security-Policy": fileCsp,
+    "Cross-Origin-Resource-Policy": "same-origin",
+    "Cache-Control": cacheControl,
   };
 
-  // HTTP Range request processing for PDF & Media viewers
+  // HTTP Range request processing for PDF & Media viewers (strict RFC 7233:
+  // single `bytes=start-end` only; suffix/multi ranges get 416).
   if (rangeHeader) {
-    const parts = rangeHeader.replace(/bytes=/, "").split("-");
-    const start = parseInt(parts[0], 10);
-    const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+    const match = /^bytes=(\d+)-(\d*)$/.exec(rangeHeader.trim());
+    if (!match) {
+      return new NextResponse(null, {
+        status: 416,
+        headers: { "Content-Range": `bytes */${fileSize}` },
+      });
+    }
+    const start = parseInt(match[1], 10);
+    let end = match[2] === "" ? fileSize - 1 : parseInt(match[2], 10);
+    if (end >= fileSize) end = fileSize - 1;
 
-    if (start >= fileSize || end >= fileSize) {
+    if (start >= fileSize || start > end) {
       return new NextResponse(null, {
         status: 416,
         headers: { "Content-Range": `bytes */${fileSize}` },
@@ -142,4 +170,9 @@ export async function GET(req: NextRequest, ctx: RouteContext) {
       "Content-Length": fileSize.toString(),
     },
   });
+  } catch {
+    // Generic message: statSync/B2/stream throws would otherwise leak
+    // internals or crash mid-flight as unhandled 500s.
+    return NextResponse.json({ error: "Failed to serve file" }, { status: 500 });
+  }
 }

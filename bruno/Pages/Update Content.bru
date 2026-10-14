@@ -5,17 +5,26 @@ meta {
 }
 
 patch {
-  url: {{baseUrl}}/api/pages/{{slug}}
+  url: {{baseUrl}}/api/pages/{{slug}}/content
   body: json
   auth: none
 }
 
 headers {
   Content-Type: application/json
+  Authorization: Bearer {{token}}
 }
 
 body:json {
   {
-    "content": "# Welcome to FileShare\n\nThis is live updated content from Bruno API client!"
+    "content": "# Welcome to FileShare\n\nThis is live updated content from Bruno API client!",
+    "clientId": "bruno-manual-test"
   }
+}
+
+docs {
+  PATCH /api/pages/:slug/content — debounced editor save (max 500,000 chars).
+  Include `clientId` so your own SSE echo is suppressed server-side.
+  `Authorization: Bearer <JWT>` required only when the page is password-protected.
+  Emits `content_updated` to all SSE subscribers. 422 on validation failure.
 }

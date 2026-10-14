@@ -64,10 +64,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ];
 
   // Add all comprehensive high-value engineering resources and articles
+  // with their real publish dates (not "today" — noisy lastmods are ignored).
   for (const article of articles) {
+    const published = new Date(article.date);
     routes.push({
       url: `${appUrl}/resources/${article.slug}`,
-      lastModified: new Date(),
+      lastModified: Number.isNaN(published.getTime()) ? new Date() : published,
       changeFrequency: "weekly",
       priority: 0.85,
     });

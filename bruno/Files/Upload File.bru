@@ -10,6 +10,30 @@ post {
   auth: none
 }
 
+headers {
+  Authorization: Bearer {{token}}
+}
+
 body:multipart-form {
   file: @file()
+}
+
+docs {
+  POST /api/pages/:slug/files/upload — busboy-streamed multipart upload,
+  single file per request, max 500 MB, MIME allowlist enforced (see
+  `src/lib/validators.ts`). Auth is Bearer header ONLY (no ?token= here).
+  Emits `files_updated` over SSE on success. 413 over the limit, 422 bad MIME.
+  Tip: replace @file() with a real path, e.g. file: @/tmp/demo.pdf
+  The post-response script saves `fileId` + `storedName` for Delete/Serve.
+}
+
+script:post-response {
+  const body = res.getBody();
+  if (body && body.fileId) {
+    bru.setEnvVar("fileId", body.fileId);
+  }
+  if (body && body.downloadURL) {
+    const parts = String(body.downloadURL).split("/");
+    bru.setEnvVar("storedName", parts[parts.length - 1]);
+  }
 }

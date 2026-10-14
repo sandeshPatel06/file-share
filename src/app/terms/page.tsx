@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 
 export default function TermsPage() {
   return (
-    <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col transition-colors duration-200">
+    <div className="min-h-dvh bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col transition-colors duration-200">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-[var(--header-bg)] border-b border-[var(--border-color)]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
@@ -32,7 +32,7 @@ export default function TermsPage() {
             </div>
             <span>FileShare</span>
           </Link>
-          <nav className="flex items-center gap-4 text-xs font-medium text-[var(--text-muted)]">
+          <nav className="hidden sm:flex items-center gap-4 text-xs font-medium text-[var(--text-muted)]">
             <Link href="/privacy" className="hover:text-[var(--text-main)] transition-colors">Privacy</Link>
             <Link href="/cookies" className="hover:text-[var(--text-main)] transition-colors">Cookies</Link>
             <Link href="/refund" className="hover:text-[var(--text-main)] transition-colors">Refund Policy</Link>
@@ -45,7 +45,7 @@ export default function TermsPage() {
       <main className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 py-10 w-full">
         <div className="mb-8 border-b border-[var(--border-color)] pb-6">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-mono bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-muted)] mb-3">
-            <Scale className="w-3.5 h-3.5 text-blue-500" />
+            <Scale className="w-3.5 h-3.5 text-[var(--accent-primary)]" />
             <span>Legal Framework &amp; Intermediary Guidelines</span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-2">
@@ -58,13 +58,13 @@ export default function TermsPage() {
 
         <div className="text-sm leading-relaxed space-y-8">
           {/* Section 1: Agreement to Terms */}
-          <section className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--border-color)] space-y-3">
+          <section className="bg-[var(--bg-surface)] p-4 sm:p-6 rounded-xl border border-[var(--border-color)] space-y-3">
             <h2 className="text-lg font-bold flex items-center gap-2 text-[var(--text-main)]">
-              <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+              <CheckCircle2 className="w-5 h-5 shrink-0 text-[var(--status-success-text)]" />
               1. Acceptance of Terms &amp; Entity Information
             </h2>
             <p className="text-[var(--text-muted)]">
-              These Terms and Conditions (&quot;Terms&quot;) constitute a legally binding agreement between you (&quot;User&quot;, &quot;you&quot;) and <strong>SHP Technology</strong> (&quot;we&quot;, &quot;us&quot;, &quot;our&quot;), the owner and operator of the FileShare web platform at <code className="font-mono text-xs">{appUrl}</code>.
+              These Terms and Conditions (&quot;Terms&quot;) constitute a legally binding agreement between you (&quot;User&quot;, &quot;you&quot;) and <strong>SHP Technology</strong> (&quot;we&quot;, &quot;us&quot;, &quot;our&quot;), the owner and operator of the FileShare web platform at <code className="font-mono text-xs break-all">{appUrl}</code>.
             </p>
             <div className="p-4 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] text-xs font-mono space-y-1">
               <div><strong>Operating Entity:</strong> SHP Technology</div>
@@ -78,9 +78,9 @@ export default function TermsPage() {
           </section>
 
           {/* Section 2: Intermediary Status (India IT Act Section 79) */}
-          <section className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--border-color)] space-y-3">
+          <section className="bg-[var(--bg-surface)] p-4 sm:p-6 rounded-xl border border-[var(--border-color)] space-y-3">
             <h2 className="text-lg font-bold flex items-center gap-2 text-[var(--text-main)]">
-              <Globe className="w-5 h-5 text-[var(--accent-primary)]" />
+              <Globe className="w-5 h-5 shrink-0 text-[var(--accent-primary)]" />
               2. Intermediary Status under the Indian IT Act, 2000
             </h2>
             <p className="text-[var(--text-muted)]">
@@ -92,9 +92,9 @@ export default function TermsPage() {
           </section>
 
           {/* Section 3: Acceptable Use Policy & Content Restrictions (Rule 3[1][b]) */}
-          <section className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--border-color)] space-y-4">
+          <section className="bg-[var(--bg-surface)] p-4 sm:p-6 rounded-xl border border-[var(--border-color)] space-y-4">
             <div className="flex items-center gap-2 text-lg font-bold text-[var(--text-main)]">
-              <AlertTriangle className="w-5 h-5 text-amber-500" />
+              <AlertTriangle className="w-5 h-5 shrink-0 text-[var(--status-danger-text)]" />
               3. Acceptable Use Policy (Mandatory Statutory Prohibitions)
             </div>
             <p className="text-[var(--text-muted)]">
@@ -102,42 +102,42 @@ export default function TermsPage() {
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
               <div className="p-3.5 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] space-y-1">
-                <div className="font-bold text-red-400">Malware &amp; Software Exploits</div>
+                <div className="font-bold text-[var(--status-danger-text)]">Malware &amp; Software Exploits</div>
                 <p className="text-[var(--text-muted)]">
                   Contains software viruses, trojans, ransomware, spyware, keyloggers, botnets, or any computer code designed to interrupt, destroy, or limit the functionality of any computer resource.
                 </p>
               </div>
 
               <div className="p-3.5 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] space-y-1">
-                <div className="font-bold text-red-400">Copyright &amp; IP Infringement</div>
+                <div className="font-bold text-[var(--status-danger-text)]">Copyright &amp; IP Infringement</div>
                 <p className="text-[var(--text-muted)]">
                   Infringes any patent, trademark, copyright, trade secret, or other proprietary rights of third parties without explicit authorization.
                 </p>
               </div>
 
               <div className="p-3.5 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] space-y-1">
-                <div className="font-bold text-red-400">Child Harm &amp; Exploitation (CSAM)</div>
+                <div className="font-bold text-[var(--status-danger-text)]">Child Harm &amp; Exploitation (CSAM)</div>
                 <p className="text-[var(--text-muted)]">
                   Is harmful to child welfare, depicts child sexual abuse or exploitation. We maintain a zero-tolerance policy and report incidents directly to law enforcement authorities.
                 </p>
               </div>
 
               <div className="p-3.5 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] space-y-1">
-                <div className="font-bold text-red-400">Fraud, Phishing &amp; Impersonation</div>
+                <div className="font-bold text-[var(--status-danger-text)]">Fraud, Phishing &amp; Impersonation</div>
                 <p className="text-[var(--text-muted)]">
                   Deceives or misleads the addressee about the origin of messages, impersonates another person, or spreads financial scams and credential phishing traps.
                 </p>
               </div>
 
               <div className="p-3.5 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] space-y-1">
-                <div className="font-bold text-red-400">Threats to Sovereignty &amp; Security</div>
+                <div className="font-bold text-[var(--status-danger-text)]">Threats to Sovereignty &amp; Security</div>
                 <p className="text-[var(--text-muted)]">
                   Threatens the unity, integrity, defense, security, or sovereignty of India, friendly relations with foreign States, or public order, or incites violence.
                 </p>
               </div>
 
               <div className="p-3.5 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] space-y-1">
-                <div className="font-bold text-red-400">Defamation &amp; Invasive Content</div>
+                <div className="font-bold text-[var(--status-danger-text)]">Defamation &amp; Invasive Content</div>
                 <p className="text-[var(--text-muted)]">
                   Is defamatory, obscene, pornographic, pedophilic, invasive of another&apos;s privacy, bodily privacy, or encouraging gambling, hate speech, or harassment.
                 </p>
@@ -149,9 +149,9 @@ export default function TermsPage() {
           </section>
 
           {/* Section 4: Notice and Takedown Procedure */}
-          <section className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--border-color)] space-y-3">
+          <section className="bg-[var(--bg-surface)] p-4 sm:p-6 rounded-xl border border-[var(--border-color)] space-y-3">
             <h2 className="text-lg font-bold flex items-center gap-2 text-[var(--text-main)]">
-              <ShieldAlert className="w-5 h-5 text-[var(--accent-primary)]" />
+              <ShieldAlert className="w-5 h-5 shrink-0 text-[var(--accent-primary)]" />
               4. Notice, Takedown &amp; Grievance Redressal (24-36h SLA)
             </h2>
             <p className="text-[var(--text-muted)]">
@@ -161,7 +161,7 @@ export default function TermsPage() {
               <li>We will act within <strong>twenty-four to thirty-six hours</strong> to disable access to unlawful or infringing material.</li>
               <li>Takedown notices and copyright infringement complaints should be directed to our designated Grievance Officer:</li>
             </ul>
-            <div className="p-3.5 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] text-xs font-mono space-y-1">
+            <div className="p-3.5 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] text-xs font-mono space-y-1 break-all">
               <div><strong>Grievance &amp; Abuse Officer:</strong> Sandesh Patel</div>
               <div><strong>Email:</strong> grievance@fileshare.shptechnology.online / abuse@fileshare.shptechnology.online</div>
               <div><strong>Address:</strong> 1st floor, SHP Technology, Near Underground Bridge, Madan Mahal Station, Jabalpur, Madhya Pradesh 482001, India</div>
@@ -169,7 +169,7 @@ export default function TermsPage() {
           </section>
 
           {/* Section 5: Ephemeral Nature and Storage Caps */}
-          <section className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--border-color)] space-y-3">
+          <section className="bg-[var(--bg-surface)] p-4 sm:p-6 rounded-xl border border-[var(--border-color)] space-y-3">
             <h2 className="text-lg font-bold text-[var(--text-main)]">5. Ephemeral Architecture &amp; Service Limits</h2>
             <p className="text-[var(--text-muted)]">
               FileShare enforces an individual upload cap of <strong>500 MB per file</strong>. Workspaces and file vaults are engineered for agile, collaborative, and temporary usage.
@@ -180,7 +180,7 @@ export default function TermsPage() {
           </section>
 
           {/* Section 6: Disclaimers and Limitation of Liability */}
-          <section className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--border-color)] space-y-3">
+          <section className="bg-[var(--bg-surface)] p-4 sm:p-6 rounded-xl border border-[var(--border-color)] space-y-3">
             <h2 className="text-lg font-bold text-[var(--text-main)]">6. Disclaimers of Warranties &amp; Limitation of Liability</h2>
             <div className="p-4 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] text-xs space-y-2 text-[var(--text-muted)] leading-relaxed uppercase">
               <p>
@@ -193,7 +193,7 @@ export default function TermsPage() {
           </section>
 
           {/* Section 7: Indemnification */}
-          <section className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--border-color)] space-y-3">
+          <section className="bg-[var(--bg-surface)] p-4 sm:p-6 rounded-xl border border-[var(--border-color)] space-y-3">
             <h2 className="text-lg font-bold text-[var(--text-main)]">7. User Indemnification</h2>
             <p className="text-[var(--text-muted)]">
               You agree to defend, indemnify, and hold harmless SHP Technology, Sandesh Patel, and associated contributors from and against any claims, liabilities, damages, losses, and expenses (including reasonable legal and accounting fees) arising out of or in any way connected with your violation of these Terms, your upload of unauthorized content, or your infringement of any intellectual property or privacy rights of any third party.
@@ -201,9 +201,9 @@ export default function TermsPage() {
           </section>
 
           {/* Section 8: Dispute Resolution & Jurisdiction */}
-          <section className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--border-color)] space-y-3">
+          <section className="bg-[var(--bg-surface)] p-4 sm:p-6 rounded-xl border border-[var(--border-color)] space-y-3">
             <h2 className="text-lg font-bold flex items-center gap-2 text-[var(--text-main)]">
-              <Building2 className="w-5 h-5 text-[var(--accent-primary)]" />
+              <Building2 className="w-5 h-5 shrink-0 text-[var(--accent-primary)]" />
               8. Governing Law &amp; Exclusive Jurisdiction
             </h2>
             <p className="text-[var(--text-muted)]">
@@ -220,17 +220,17 @@ export default function TermsPage() {
       <footer className="border-t border-[var(--border-color)] py-8 bg-[var(--header-bg)]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--text-muted)]">
           <p>© 2026 FileShare (SHP Technology). Compliant with Indian Information Technology Act, 2000.</p>
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center justify-center gap-3">
             <Link href="/" className="hover:text-[var(--text-main)] transition-colors">Home</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/privacy" className="hover:text-[var(--text-main)] transition-colors">Privacy</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/terms" className="hover:text-[var(--text-main)] transition-colors">Terms</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/cookies" className="hover:text-[var(--text-main)] transition-colors">Cookies</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/refund" className="hover:text-[var(--text-main)] transition-colors">Refund Policy</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/contact" className="hover:text-[var(--text-main)] transition-colors">Contact</Link>
           </div>
         </div>

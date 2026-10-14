@@ -86,3 +86,65 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 - **Storage**: Backblaze B2 S3 SDK (`@aws-sdk/client-s3`) & local disk fallback
 - **Streaming Engine**: Node.js `EventEmitter` + Server-Sent Events (SSE)
 - **CI/CD**: GitHub Actions workflow (`.github/workflows/ci.yml`)
+
+---
+
+## 🔌 API Reference
+
+Base URL: `http://localhost:3000` (local) · `https://fileshare.shptechnology.online` (prod).
+
+**Auth model:** public pages need no auth. Password-protected pages require `Authorization: Bearer <JWT>` whose payload `slug` matches the path slug. Get a token via `POST /api/pages/:slug/verify`. SSE and file-download also accept `?token=` since `EventSource`/`<a download>` can't set headers. Slugs: 3–48 chars, `^[a-z0-9]+(-[a-z0-9]+)*$`.
+
+| Method | Endpoint | Auth (if protected) | Notes |
+|--------|----------|---------------------|-------|
+| GET | `/api/health` | — | `{status, timestamp, uptime}` |
+| GET | `/api/pages/:slug` | Bearer (optional) | `content` is `""` when locked without token |
+| DELETE | `/api/pages/:slug` | Bearer | Deletes workspace + file rows (irreversible) |
+| PATCH | `/api/pages/:slug/content` | Bearer | `{content (≤500k chars), clientId?}` → emits `content_updated` |
+| GET | `/api/pages/:slug/events` | Bearer or `?token=` | SSE: `connected` → `message` JSON, 10s ping |
+| GET | `/api/pages/:slug/files` | Bearer | Newest first, `uploadedAt: {seconds}` |
+| DELETE | `/api/pages/:slug/files/:fileId` | Bearer | Scoped delete + B2/local cleanup → `files_updated` |
+| POST | `/api/pages/:slug/files/upload` | Bearer header only | Multipart `file` field, single file, ≤500 MB, MIME allowlist |
+| PATCH | `/api/pages/:slug/password` | Bearer if already protected | Set `{password}` (min 6) / clear `{password: null}` |
+| POST | `/api/pages/:slug/verify` | — (5/60s per IP) | `{password}` → JWT (HS256, 24h, `{slug}`) |
+| PATCH | `/api/pages/:slug/rename` | Bearer | `{newSlug}`; old slug 307-redirects to new |
+| POST | `/api/pages/create` | — | `{slug, password?}` → 201 (200 `{exists:true}` if taken) |
+| GET | `/api/pages/create?slug=` | — | `{available}` live check |
+| GET | `/api/uploads/:storedName` | Bearer or `?token=` | Local → B2 fallback, `Range` support |
+
+Rate limits: general 300/60s per IP; verify 5/60s per IP. Error shape: `{error: "..."}` with 400/401/404/413/422/429 as appropriate.
+
+### Quickstart (curl)
+
+```bash
+# 1. Create + write
+curl -X POST localhost:3000/api/pages/create -H 'Content-Type: application/json' -d '{"slug":"demo"}'
+curl -X PATCH localhost:3000/api/pages/demo/content -H 'Content-Type: application/json' -d '{"content":"# hi"}'
+
+# 2. Lock + unlock (token auto-flows in the Bruno collection)
+curl -X PATCH localhost:3000/api/pages/demo/password -H 'Content-Type: application/json' -d '{"password":"secret12345"}'
+TOKEN=$(curl -s -X POST localhost:3000/api/pages/demo/verify -H 'Content-Type: application/json' -d '{"password":"secret12345"}' | python3 -c "import sys,json;print(json.load(sys.stdin)['token'])")
+curl localhost:3000/api/pages/demo -H "Authorization: Bearer $TOKEN"
+
+# 3. Vault
+curl -X POST localhost:3000/api/pages/demo/files/upload -F "file=@notes.pdf"
+curl localhost:3000/api/pages/demo/files | python3 -m json.tool
+
+# 4. Live stream (stays open)
+curl -N -H "Accept: text/event-stream" "localhost:3000/api/pages/demo/events?token=$TOKEN"
+```
+
+### Bruno collection (`bruno/`)
+
+Import `bruno/` into [Bruno](https://www.usebruno.com). Two environments included — pick one from the environment selector:
+
+- **Local** → `http://localhost:3000`
+- **Production** → `https://fileshare.shptechnology.online`
+
+Suggested run order: `Get Page → Update Content → Check Slug → Create Page → Rename → Set Password → Verify → SSE → Files (List → Upload → Delete → Serve) → Delete Workspace`.
+
+**Automation scripts included** (no manual copy-paste):
+- `Verify Password` post-response saves the JWT into the `token` env var.
+- `Rename Workspace` post-response moves `slug` to the new slug.
+- `Create Page` post-response sets `slug` to the created slug.
+- `Upload File` post-response saves `fileId` + `storedName` (Delete/Serve reuse them via variables).

@@ -51,40 +51,26 @@ export const metadata: Metadata = {
 export default function Home() {
   const defaultSlug = generateSlug();
 
+  // NOTE: questions/answers must match the visible FAQ copy in
+  // LandingPage.tsx exactly — mismatched FAQ schema risks rich-result removal.
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
     "mainEntity": [
       {
         "@type": "Question",
-        "name": "What is FileShare and how does it work?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "FileShare is a free, instant web utility that merges an anonymous collaborative Markdown notepad with a 500MB secure file sharing vault. You do not need to register or install software. Simply visit a custom URL like /s/project-notes and all edits and file uploads sync across all connected browsers in milliseconds using Server-Sent Events (SSE)."
-        }
-      },
-      {
-        "@type": "Question",
         "name": "Is FileShare free to use, and do I need to register?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Yes, FileShare is 100% free with zero registration required. There are no forms to fill out, no email confirmations, and no subscriptions. You can start typing notes or uploading files immediately."
+          "text": "Yes, FileShare is 100% free with zero registration required. There are no forms to fill out, no email confirmations, and no subscriptions. You can start typing or uploading immediately."
         }
       },
       {
         "@type": "Question",
-        "name": "What is the file size upload limit on FileShare?",
+        "name": "What is the file size upload limit?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "You can upload files up to 500 MB each. FileShare supports multi-file uploads including videos, zip archives, images, PDFs, datasets, and code repositories with streaming cloud storage backing."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "How is FileShare different from Pastebin, Google Drive, or WeTransfer?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Unlike Pastebin, FileShare offers real-time live typing synchronization, rich Markdown, Mermaid diagram rendering, and 500MB file attachments. Unlike Google Drive or WeTransfer, FileShare requires zero logins, no recipient emails, and creates instant workspaces accessible by custom URL slug or QR code."
+          "text": "You can upload files up to 500 MB each. FileShare supports multi-file uploads including videos, zip archives, images, PDFs, and code repositories with streaming cloud storage backing."
         }
       },
       {
@@ -92,7 +78,7 @@ export default function Home() {
         "name": "How does real-time synchronization work?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "FileShare utilizes Server-Sent Events (SSE) to broadcast changes across all connected clients in milliseconds. Text edits, Markdown formatting, and file uploads appear automatically across all screens without any page refresh."
+          "text": "FileShare utilizes Server-Sent Events (SSE) to broadcast changes across all connected clients in milliseconds. Edits and file uploads show up automatically without any page refresh needed."
         }
       },
       {
@@ -100,15 +86,23 @@ export default function Home() {
         "name": "Can I protect my workspace with a password?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Yes! Click the 'Lock Space' button inside any workspace to set an encrypted password. Passwords are securely hashed with bcrypt (10 rounds) and access is verified via stateless JWT tokens."
+          "text": "Yes! Click the \"Lock Space\" button inside any workspace to set a password. Passwords are securely hashed with bcrypt (12 rounds) and access is verified via JWT tokens."
         }
       },
       {
         "@type": "Question",
-        "name": "How do I share files between PC and mobile phone using FileShare?",
+        "name": "How do I open my workspace on mobile devices?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Click the QR code button in the top navigation bar of your workspace to generate a high-resolution QR code. Scan it with your phone's camera to immediately continue editing notes or downloading files on mobile without installing an app."
+          "text": "Click the QR code button in the top navigation bar of your workspace to generate a high-resolution QR code. Scan it with your phone's camera to immediately continue editing on mobile."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How is FileShare different from Pastebin, Google Drive, or WeTransfer?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Unlike Pastebin, FileShare offers real-time live typing synchronization, rich Markdown formatting, Mermaid diagram rendering, and 500MB multi-file uploads. Unlike Google Drive or WeTransfer, FileShare requires zero registration, no recipient email addresses, and creates instant workspaces accessible by custom URL slug or QR code."
         }
       },
       {
@@ -116,7 +110,7 @@ export default function Home() {
         "name": "Can I write Markdown and render Mermaid diagrams?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Yes. FileShare natively parses GitHub Flavored Markdown (headings, tables, task lists, code blocks with syntax highlighting) and automatically renders Mermaid sequence, flowchart, and class diagrams inline."
+          "text": "Yes! FileShare natively parses GitHub Flavored Markdown (headings, task lists, code blocks with syntax highlighting) and automatically renders Mermaid sequence, flowchart, and class diagrams inline with live synchronization."
         }
       }
     ]
@@ -133,29 +127,25 @@ export default function Home() {
         "@type": "HowToStep",
         "position": 1,
         "name": "Choose or enter a workspace slug",
-        "text": "Enter your preferred custom workspace name (such as /s/my-project) in the launcher or click 'Random Space' to auto-generate a private slug.",
-        "url": `${appUrl}/#launcher`
+        "text": "Enter your preferred custom workspace name (such as /s/my-project) in the launcher or click 'Random Space' to auto-generate a private slug."
       },
       {
         "@type": "HowToStep",
         "position": 2,
         "name": "Collaborate on live Markdown notes",
-        "text": "Write and edit text simultaneously with collaborators. Format with Markdown, code syntax highlighting, task checkboxes, and Mermaid diagrams.",
-        "url": `${appUrl}/#editor`
+        "text": "Write and edit text simultaneously with collaborators. Format with Markdown, code syntax highlighting, task checkboxes, and Mermaid diagrams."
       },
       {
         "@type": "HowToStep",
         "position": 3,
         "name": "Upload files up to 500MB",
-        "text": "Drag and drop archives, PDFs, videos, or code folders into the file vault. Files sync live across all active participants.",
-        "url": `${appUrl}/#vault`
+        "text": "Drag and drop archives, PDFs, videos, or code folders into the file vault. Files sync live across all active participants."
       },
       {
         "@type": "HowToStep",
         "position": 4,
         "name": "Share or lock your space",
-        "text": "Share the URL, scan the dynamic QR code on mobile devices, or set a bcrypt password lock for confidential collaboration.",
-        "url": `${appUrl}/#security`
+        "text": "Share the URL, scan the dynamic QR code on mobile devices, or set a bcrypt password lock for confidential collaboration."
       }
     ]
   };

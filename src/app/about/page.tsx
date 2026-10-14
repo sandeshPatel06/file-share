@@ -36,7 +36,7 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col transition-colors duration-200">
+    <div className="min-h-dvh bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col transition-colors duration-200">
       {/* Conditionally load AdSense on this comprehensive publisher about page */}
       <AdSenseScript />
 
@@ -49,7 +49,7 @@ export default function AboutPage() {
             </div>
             <span>FileShare</span>
           </Link>
-          <nav className="flex items-center gap-4 text-xs font-medium text-[var(--text-muted)]">
+          <nav className="hidden sm:flex items-center gap-4 text-xs font-medium text-[var(--text-muted)]">
             <Link href="/resources" className="hover:text-[var(--text-main)] transition-colors">Resources</Link>
             <Link href="/guide" className="hover:text-[var(--text-main)] transition-colors">Guide</Link>
             <Link href="/contact" className="hover:text-[var(--text-main)] transition-colors">Contact</Link>
@@ -62,7 +62,7 @@ export default function AboutPage() {
         {/* Hero Title */}
         <div className="mb-10 border-b border-[var(--border-color)] pb-8">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-mono bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-muted)] mb-3">
-            <Globe className="w-3.5 h-3.5 text-indigo-500" />
+            <Globe className="w-3.5 h-3.5 text-[var(--accent-primary)]" />
             <span>Platform Manifesto & Infrastructure</span>
           </div>
           <h1 className="text-3xl sm:text-5xl font-bold tracking-tight mb-4">
@@ -101,7 +101,7 @@ export default function AboutPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 my-6">
               <div className="p-5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)]">
-                <div className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center mb-3">
+                <div className="w-8 h-8 rounded-lg bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] flex items-center justify-center mb-3">
                   <Code2 className="w-4 h-4" />
                 </div>
                 <h3 className="font-bold text-base mb-1 text-[var(--text-main)]">Engineers & DevOps Teams</h3>
@@ -111,7 +111,7 @@ export default function AboutPage() {
               </div>
 
               <div className="p-5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)]">
-                <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center mb-3">
+                <div className="w-8 h-8 rounded-lg bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] flex items-center justify-center mb-3">
                   <Users className="w-4 h-4" />
                 </div>
                 <h3 className="font-bold text-base mb-1 text-[var(--text-main)]">Educators & Workshop Leads</h3>
@@ -121,7 +121,7 @@ export default function AboutPage() {
               </div>
 
               <div className="p-5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)]">
-                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center mb-3">
+                <div className="w-8 h-8 rounded-lg bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] flex items-center justify-center mb-3">
                   <Shield className="w-4 h-4" />
                 </div>
                 <h3 className="font-bold text-base mb-1 text-[var(--text-main)]">Privacy Advocates & Sources</h3>
@@ -131,7 +131,7 @@ export default function AboutPage() {
               </div>
 
               <div className="p-5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)]">
-                <div className="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-500 flex items-center justify-center mb-3">
+                <div className="w-8 h-8 rounded-lg bg-[var(--accent-primary)]/10 text-[var(--accent-primary)] flex items-center justify-center mb-3">
                   <HardDrive className="w-4 h-4" />
                 </div>
                 <h3 className="font-bold text-base mb-1 text-[var(--text-main)]">Freelancers & Creators</h3>
@@ -145,8 +145,8 @@ export default function AboutPage() {
           {/* Section: Architectural Transparency */}
           <section className="bg-[var(--bg-surface)] p-6 sm:p-8 rounded-2xl border border-[var(--border-color)] space-y-4">
             <div className="flex items-center gap-2">
-              <Cpu className="w-5 h-5 text-[var(--accent-primary)]" />
-              <h2 className="text-xl sm:text-2xl font-bold text-[var(--text-main)]">
+              <Cpu className="w-5 h-5 shrink-0 text-[var(--accent-primary)]" />
+              <h2 className="text-xl sm:text-2xl font-bold text-[var(--text-main)] min-w-0">
                 Under the Hood: Transparent Architecture
               </h2>
             </div>
@@ -182,8 +182,8 @@ export default function AboutPage() {
           {/* Section: Ethical Monetization & Ad Transparency */}
           <section className="space-y-4">
             <div className="flex items-center gap-2">
-              <HeartHandshake className="w-5 h-5 text-emerald-400" />
-              <h2 className="text-xl sm:text-2xl font-bold text-[var(--text-main)]">
+              <HeartHandshake className="w-5 h-5 shrink-0 text-[var(--accent-primary)]" />
+              <h2 className="text-xl sm:text-2xl font-bold text-[var(--text-main)] min-w-0">
                 Our Values & Sustainable Monetization
               </h2>
             </div>
@@ -205,7 +205,7 @@ export default function AboutPage() {
           </section>
 
           {/* Call to action (safely buffered without ad interference) */}
-          <section className="bg-[var(--bg-surface)] p-8 rounded-2xl border border-[var(--border-color)] text-center">
+          <section className="bg-[var(--bg-surface)] p-6 sm:p-8 rounded-2xl border border-[var(--border-color)] text-center">
             <h2 className="text-xl sm:text-2xl font-bold mb-2 text-[var(--text-main)]">
               Experience Collaboration Without Barriers
             </h2>
@@ -235,23 +235,23 @@ export default function AboutPage() {
       <footer className="border-t border-[var(--border-color)] py-8 bg-[var(--header-bg)]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--text-muted)]">
           <p>© 2026 FileShare (SHP Technology). Engineered for speed, privacy, and accessibility.</p>
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center justify-center gap-3">
             <Link href="/" className="hover:text-[var(--text-main)] transition-colors">Home</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/guide" className="hover:text-[var(--text-main)] transition-colors">Guide</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/resources" className="hover:text-[var(--text-main)] transition-colors">Resources</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/contact" className="hover:text-[var(--text-main)] transition-colors">Contact</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/privacy" className="hover:text-[var(--text-main)] transition-colors">Privacy Policy</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/terms" className="hover:text-[var(--text-main)] transition-colors">Terms &amp; Conditions</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/cookies" className="hover:text-[var(--text-main)] transition-colors">Cookie Policy</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/refund" className="hover:text-[var(--text-main)] transition-colors">Refund Policy</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <CookieSettingsButton />
           </div>
         </div>

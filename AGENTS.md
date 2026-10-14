@@ -76,7 +76,7 @@ src/
     slugGenerator.ts      # adj-noun-NN
     seo.ts                # canonical production host lock
     caret.ts|clipboard.ts|articles.ts
-  middleware.ts           # 301 old onrender host → canonical domain
+  middleware.ts           # DEPRECATED in Next 16 → see src/proxy.ts (301 old onrender host → canonical domain)
 ```
 
 Config: `next.config.ts` (security headers, `allowedDevOrigins`), `deploy.sh`, `render.yaml`, `.github/workflows/ci.yml`.
@@ -113,7 +113,7 @@ Config: `next.config.ts` (security headers, `allowedDevOrigins`), `deploy.sh`, `
   - `event: message` + JSON body
   - comment ping every 10s
 - Client: `EventSource` in `usePageContent` / `useFileList`.
-- **Local-edit guard:** ignore remote content if user typed within ~1.5–2s (`lastLocalEditAt` + `touchLocalEdit`).
+- **Local-edit guard:** ignore remote content if user typed within 2500ms (`lastLocalEditAt` + `touchLocalEdit`).
 - Fallback poll every 12s if EventSource closed.
 - Protected spaces: SSE requires Bearer or `?token=` JWT matching slug.
 
@@ -138,11 +138,11 @@ Config: `next.config.ts` (security headers, `allowedDevOrigins`), `deploy.sh`, `
 
 | Concern | Implementation |
 |---------|----------------|
-| Password hash | `bcryptjs` 10 rounds (`passwordHash` on pages) |
+| Password hash | `bcryptjs` 12 rounds (`passwordHash` on pages) |
 | Session | `jose` JWT, HS256, **24h**, payload `{ slug }`, secret `JWT_SECRET` |
 | Client storage | `sessionStorage` key `token:${slug}` (cleared on tab close) |
 | API auth | `Authorization: Bearer <token>`; slug must match |
-| Rate limit | In-memory: verify **5/60s/IP**, general **300/60s/IP** |
+| Rate limit | In-memory: verify **5/60s/IP**, sensitive bcrypt routes **30/60s/IP**, uploads **12/10m/IP**, general **300/60s/IP** |
 | Headers | `X-Content-Type-Options`, `X-Frame-Options`, CSP `frame-ancestors 'self'`, etc. in `next.config.ts` |
 | Domain | Middleware 301 from `fileshare-live.onrender.com` → canonical host |
 
@@ -172,19 +172,24 @@ Config: `next.config.ts` (security headers, `allowedDevOrigins`), `deploy.sh`, `
 
 ## 3. API surface (agents)
 
-| Method | Path | Purpose |
-|--------|------|---------|
-| GET | `/api/health` | Health |
-| GET | `/api/pages/[slug]` | Page meta/content (empty content if locked without token) |
-| PATCH | `/api/pages/[slug]/content` | Update notes + emit SSE |
-| GET | `/api/pages/[slug]/events` | SSE |
-| GET/DELETE | `/api/pages/[slug]/files` | List / delete file |
-| POST | `/api/pages/[slug]/files/upload` | Multipart upload |
-| POST | `/api/pages/[slug]/password` | Set/clear password |
-| POST | `/api/pages/[slug]/verify` | Password → JWT |
-| POST | `/api/pages/[slug]/rename` | Rename slug |
-| POST | `/api/pages/create` | Explicit create (if used) |
-| GET | `/api/uploads/[filename]` | Download/stream |
+Source of truth is the route handler in `src/app/api/**/route.ts` — this table is verified against it. `Bearer` = `Authorization: Bearer <JWT>` with `payload.slug` matching the path slug.
+
+| Method | Path | Purpose | Auth (protected pages) | Rate limit |
+|--------|------|---------|------------------------|------------|
+| GET | `/api/health` | Health (`{status,timestamp,uptime}`, no-store) | none | none |
+| GET | `/api/pages/[slug]` | Page meta/content (content `""` if locked without token; 404 if missing) | Bearer (optional) | general 300/60s |
+| DELETE | `/api/pages/[slug]` | Delete workspace + all files (404 if missing) | Bearer if protected | general 300/60s |
+| PATCH | `/api/pages/[slug]/content` | Update notes + emit `content_updated` (Zod `updateContentSchema`, max 500_000 chars) | Bearer if protected | general 300/60s |
+| GET | `/api/pages/[slug]/events` | SSE stream (`event: connected`, `event: message`, 10s ping; accepts `?token=` since EventSource can't set headers) | Bearer or `?token=` if protected | ⚠️ none (no limiter on this route) |
+| GET | `/api/pages/[slug]/files` | List files (`uploadedAt: {seconds}`) | Bearer if protected | general 300/60s |
+| DELETE | `/api/pages/[slug]/files/[id]` | Delete one file (scoped `fileId + slug`) + emit `files_updated` + B2/local cleanup | Bearer if protected | general 300/60s |
+| POST | `/api/pages/[slug]/files/upload` | `busboy` multipart upload ≤500 MB (MIME allowlist enforced in route, 422 + staged-file cleanup; Bearer header only, no `?token=`) | Bearer if protected | general 300/60s |
+| PATCH | `/api/pages/[slug]/password` | Set (`{password}`) / clear (`{password: null}`); token required only if page already protected; 404 if page missing | Bearer if protected | general 300/60s |
+| POST | `/api/pages/[slug]/verify` | Password → JWT (HS256, 24h, payload `{slug}`); uniform 401 (no existence oracle) | none | verify 5/60s/IP (strict) |
+| PATCH | `/api/pages/[slug]/rename` | Rename slug (`{newSlug}`); writes `redirects` row, old slug 307-redirects via `s/[slug]/page.tsx` (never catch `redirect()`); no SSE emit, no fresh token in response | Bearer if protected | general 300/60s |
+| POST | `/api/pages/create` | Explicit create `{slug,password?}` → 201 (200 `{exists:true}` if taken; 422 on Zod fail) | none | general 300/60s |
+| GET | `/api/pages/create?slug=` | Slug availability `{available}` (used by rename-modal live check) | none | general 300/60s |
+| GET | `/api/uploads/[filename]` | Download/stream by `storedName`: DB lookup → auth if page protected → local file then B2 fallback; Range support; `?token=` or Bearer | Bearer or `?token=` if protected | general 300/60s |
 
 Always: rate-limit where existing routes do; authorize protected pages consistently with `verifyPageToken` + slug match.
 

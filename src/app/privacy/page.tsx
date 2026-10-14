@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col transition-colors duration-200">
+    <div className="min-h-dvh bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col transition-colors duration-200">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-[var(--header-bg)] border-b border-[var(--border-color)]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
@@ -33,7 +33,7 @@ export default function PrivacyPage() {
             </div>
             <span>FileShare</span>
           </Link>
-          <nav className="flex items-center gap-4 text-xs font-medium text-[var(--text-muted)]">
+          <nav className="hidden sm:flex items-center gap-4 text-xs font-medium text-[var(--text-muted)]">
             <Link href="/cookies" className="hover:text-[var(--text-main)] transition-colors">Cookie Policy</Link>
             <Link href="/terms" className="hover:text-[var(--text-main)] transition-colors">Terms</Link>
             <Link href="/refund" className="hover:text-[var(--text-main)] transition-colors">Refund Policy</Link>
@@ -46,7 +46,7 @@ export default function PrivacyPage() {
       <main className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 py-10 w-full">
         <div className="mb-8 border-b border-[var(--border-color)] pb-6">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-mono bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-muted)] mb-3">
-            <Shield className="w-3.5 h-3.5 text-emerald-500" />
+            <Shield className="w-3.5 h-3.5 text-[var(--status-success-text)]" />
             <span>GDPR (EU) &amp; DPDP Act 2023 (India) Compliant</span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-2">
@@ -59,9 +59,9 @@ export default function PrivacyPage() {
 
         <div className="text-sm leading-relaxed space-y-8">
           {/* Section 1: Data Fiduciary Identity */}
-          <section className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--border-color)] space-y-3">
+          <section className="bg-[var(--bg-surface)] p-4 sm:p-6 rounded-xl border border-[var(--border-color)] space-y-3">
             <h2 className="text-lg font-bold flex items-center gap-2 text-[var(--text-main)]">
-              <Globe className="w-5 h-5 text-[var(--accent-primary)]" />
+              <Globe className="w-5 h-5 shrink-0 text-[var(--accent-primary)]" />
               1. Identity of the Data Fiduciary &amp; Overview
             </h2>
             <p className="text-[var(--text-muted)]">
@@ -70,7 +70,7 @@ export default function PrivacyPage() {
             <p className="text-[var(--text-muted)]">
               The Data Fiduciary (or &quot;Data Controller&quot;) responsible for the processing of your personal data is:
             </p>
-            <div className="p-4 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] text-xs font-mono space-y-1">
+            <div className="p-4 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] text-xs font-mono space-y-1 break-all">
               <div><strong>Entity:</strong> SHP Technology (Operating &quot;FileShare&quot;)</div>
               <div><strong>Registered Address:</strong> 1st floor, SHP Technology, Near Underground Bridge, Madan Mahal Station, Jabalpur, Madhya Pradesh 482001, India</div>
               <div><strong>Official Email:</strong> support@fileshare.shptechnology.online</div>
@@ -82,9 +82,9 @@ export default function PrivacyPage() {
           </section>
 
           {/* Section 2: Grounds for Processing */}
-          <section className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--border-color)] space-y-3">
+          <section className="bg-[var(--bg-surface)] p-4 sm:p-6 rounded-xl border border-[var(--border-color)] space-y-3">
             <h2 className="text-lg font-bold flex items-center gap-2 text-[var(--text-main)]">
-              <Scale className="w-5 h-5 text-blue-400" />
+              <Scale className="w-5 h-5 shrink-0 text-[var(--accent-primary)]" />
               2. Lawful Grounds and Specified Purpose of Processing
             </h2>
             <p className="text-[var(--text-muted)]">
@@ -107,9 +107,9 @@ export default function PrivacyPage() {
           </section>
 
           {/* Section 3: Data Categories Collected */}
-          <section className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--border-color)] space-y-3">
+          <section className="bg-[var(--bg-surface)] p-4 sm:p-6 rounded-xl border border-[var(--border-color)] space-y-3">
             <h2 className="text-lg font-bold flex items-center gap-2 text-[var(--text-main)]">
-              <Database className="w-5 h-5 text-[var(--accent-primary)]" />
+              <Database className="w-5 h-5 shrink-0 text-[var(--accent-primary)]" />
               3. Data Collected &amp; Data Minimization Audit
             </h2>
             <p className="text-[var(--text-muted)]">
@@ -147,9 +147,9 @@ export default function PrivacyPage() {
           </section>
 
           {/* Section 4: Rights of Data Principals (DPDP & GDPR) */}
-          <section className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--border-color)] space-y-4">
+          <section className="bg-[var(--bg-surface)] p-4 sm:p-6 rounded-xl border border-[var(--border-color)] space-y-4">
             <h2 className="text-lg font-bold flex items-center gap-2 text-[var(--text-main)]">
-              <UserCheck className="w-5 h-5 text-emerald-400" />
+              <UserCheck className="w-5 h-5 shrink-0 text-[var(--accent-primary)]" />
               4. Your Statutory Rights as a Data Principal
             </h2>
             <p className="text-[var(--text-muted)]">
@@ -180,15 +180,15 @@ export default function PrivacyPage() {
           </section>
 
           {/* Section 5: Mandatory Grievance Officer Details */}
-          <section className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--accent-primary)] space-y-3">
+          <section className="bg-[var(--bg-surface)] p-4 sm:p-6 rounded-xl border border-[var(--accent-primary)] space-y-3">
             <h2 className="text-lg font-bold flex items-center gap-2 text-[var(--text-main)]">
-              <AlertCircle className="w-5 h-5 text-[var(--accent-primary)]" />
+              <AlertCircle className="w-5 h-5 shrink-0 text-[var(--accent-primary)]" />
               5. Designated Grievance Redressal Officer (DPDP Act, 2023 Mandatory Disclosure)
             </h2>
             <p className="text-[var(--text-muted)]">
               In accordance with Section 13 of India&apos;s Digital Personal Data Protection Act, 2023, the details of our designated Grievance Officer are published below:
             </p>
-            <div className="p-4 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] text-xs font-mono space-y-1.5">
+            <div className="p-4 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] text-xs font-mono space-y-1.5 break-all">
               <div><strong>Name of Officer:</strong> Sandesh Patel</div>
               <div><strong>Designation:</strong> Data Protection &amp; Grievance Redressal Officer</div>
               <div><strong>Entity:</strong> SHP Technology</div>
@@ -203,9 +203,9 @@ export default function PrivacyPage() {
           </section>
 
           {/* Section 6: Children's Data */}
-          <section className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--border-color)] space-y-3">
+          <section className="bg-[var(--bg-surface)] p-4 sm:p-6 rounded-xl border border-[var(--border-color)] space-y-3">
             <h2 className="text-lg font-bold flex items-center gap-2 text-[var(--text-main)]">
-              <Lock className="w-5 h-5 text-amber-400" />
+              <Lock className="w-5 h-5 shrink-0 text-[var(--accent-primary)]" />
               6. Protection of Children&apos;s Personal Data (Section 9, DPDP Act)
             </h2>
             <p className="text-[var(--text-muted)]">
@@ -215,14 +215,14 @@ export default function PrivacyPage() {
               <li>FileShare does not knowingly process, profile, or track children under 18 years of age.</li>
               <li>We do not undertake behavioral tracking or targeted advertising directed at children.</li>
               <li>We do not process personal data that is likely to cause any detrimental effect on the well-being of a child.</li>
-              <li>If a parent or legal guardian discovers that a child has uploaded personal data, they may contact <code className="font-mono text-xs">grievance@fileshare.shptechnology.online</code> for immediate expedited erasure.</li>
+              <li>If a parent or legal guardian discovers that a child has uploaded personal data, they may contact <code className="font-mono text-xs break-all">grievance@fileshare.shptechnology.online</code> for immediate expedited erasure.</li>
             </ul>
           </section>
 
           {/* Section 7: Third-Party Data Transfers & Cross-Border Hosting */}
-          <section className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--border-color)] space-y-3">
+          <section className="bg-[var(--bg-surface)] p-4 sm:p-6 rounded-xl border border-[var(--border-color)] space-y-3">
             <h2 className="text-lg font-bold flex items-center gap-2 text-[var(--text-main)]">
-              <Globe className="w-5 h-5 text-[var(--accent-primary)]" />
+              <Globe className="w-5 h-5 shrink-0 text-[var(--accent-primary)]" />
               7. Cross-Border Data Transfers &amp; Third-Party Services
             </h2>
             <p className="text-[var(--text-muted)]">
@@ -236,9 +236,9 @@ export default function PrivacyPage() {
           </section>
 
           {/* Section 8: Cookies Management CTA */}
-          <section className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--border-color)] space-y-3">
+          <section className="bg-[var(--bg-surface)] p-4 sm:p-6 rounded-xl border border-[var(--border-color)] space-y-3">
             <h2 className="text-lg font-bold flex items-center gap-2 text-[var(--text-main)]">
-              <Cookie className="w-5 h-5 text-[var(--accent-primary)]" />
+              <Cookie className="w-5 h-5 shrink-0 text-[var(--accent-primary)]" />
               8. Cookie Management
             </h2>
             <p className="text-[var(--text-muted)]">
@@ -258,17 +258,17 @@ export default function PrivacyPage() {
       <footer className="border-t border-[var(--border-color)] py-8 bg-[var(--header-bg)]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--text-muted)]">
           <p>© 2026 FileShare (SHP Technology). GDPR &amp; India DPDP Act 2023 Compliant.</p>
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center justify-center gap-3">
             <Link href="/" className="hover:text-[var(--text-main)] transition-colors">Home</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/privacy" className="hover:text-[var(--text-main)] transition-colors">Privacy</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/terms" className="hover:text-[var(--text-main)] transition-colors">Terms</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/cookies" className="hover:text-[var(--text-main)] transition-colors">Cookies</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/refund" className="hover:text-[var(--text-main)] transition-colors">Refund Policy</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/contact" className="hover:text-[var(--text-main)] transition-colors">Contact</Link>
           </div>
         </div>

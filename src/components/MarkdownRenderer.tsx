@@ -3,6 +3,7 @@ import React, { isValidElement, cloneElement, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
+import rehypeSanitize from "rehype-sanitize";
 import rehypeHighlight from "rehype-highlight";
 import rehypeSlug from "rehype-slug";
 import { Copy, Check } from "lucide-react";
@@ -18,7 +19,7 @@ interface MarkdownRendererProps {
  * - GitHub Flavored Markdown (tables, task lists, strikethrough, autolinks)
  * - Syntax-highlighted fenced code blocks with language badge & copy button
  * - Mermaid diagrams via ```mermaid fences
- * - Raw HTML passthrough (for embedded rich content)
+ * - Sanitized raw HTML (safe formatting only)
  * - Heading anchor IDs (`rehype-slug`)
  * - Bidirectional page links (`[[slug]]`)
  */
@@ -27,7 +28,7 @@ export function MarkdownRenderer({ content, onToggleTask }: MarkdownRendererProp
 
   if (!safeContent.trim()) {
     return (
-      <div className="h-full flex items-center justify-center text-xs font-mono text-[var(--text-subtle)] italic select-none">
+      <div className="h-full flex items-center justify-center text-xs font-mono text-[var(--text-muted)] italic select-none">
         Empty notes preview. Start typing in Write mode…
       </div>
     );
@@ -56,10 +57,13 @@ export function MarkdownRenderer({ content, onToggleTask }: MarkdownRendererProp
   const parsedContent = parseBidirectionalLinks(safeContent);
 
   return (
-    <div className="max-w-none text-sm leading-relaxed text-[var(--text-main)] select-text markdown-body">
+    <div className="max-w-full min-w-0 break-words [overflow-wrap:anywhere] text-sm sm:text-[15px] leading-relaxed text-[var(--text-main)] select-text markdown-body">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeRaw, rehypeHighlight, rehypeSlug]}
+        // Raw HTML is parsed for formatting, then sanitized before React
+        // renders it. This blocks javascript: URLs, event handlers, iframe,
+        // object/embed/form injection and stored XSS in shared workspaces.
+        rehypePlugins={[rehypeRaw, rehypeSanitize, rehypeHighlight, rehypeSlug]}
         components={{
           // ── Fenced code blocks container ──
           pre({ children }) {
@@ -81,7 +85,7 @@ export function MarkdownRenderer({ content, onToggleTask }: MarkdownRendererProp
             return (
               <div className="my-3 rounded-xl border border-[var(--border-color)] overflow-hidden bg-[var(--input-bg)] shadow-sm">
                 <div className="flex items-center justify-between px-3.5 py-1.5 bg-[var(--bg-surface)] border-b border-[var(--border-color)] select-none">
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-[var(--text-muted)] font-extrabold">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-[var(--text-muted)] font-extrabold">
                     {lang || "code"}
                   </span>
                   <CopyCodeButton code={rawCode} />
@@ -114,7 +118,7 @@ export function MarkdownRenderer({ content, onToggleTask }: MarkdownRendererProp
             // Inline code (not wrapped in a pre block)
             return (
               <code
-                className="px-1.5 py-0.5 rounded-md bg-[var(--input-bg)] border border-[var(--border-color)] font-mono text-[0.8125rem] text-[var(--accent-cyan)] font-semibold"
+                className="px-1.5 py-0.5 rounded-md bg-[var(--badge-bg)] border border-[var(--badge-border)] font-mono text-[0.8125rem] text-[var(--text-main)] font-semibold break-all [overflow-wrap:anywhere]"
                 {...props}
               >
                 {children}
@@ -143,14 +147,14 @@ export function MarkdownRenderer({ content, onToggleTask }: MarkdownRendererProp
           },
           th({ children, style }) {
             return (
-              <th style={style} className="px-3 py-2 text-left text-[11px] font-extrabold uppercase tracking-wider text-[var(--text-muted)] border-r border-[var(--border-color)] last:border-r-0">
+              <th style={style} className="px-3 py-2 text-left text-[11px] font-extrabold uppercase tracking-wider text-[var(--text-muted)] border-r border-[var(--border-color)] last:border-r-0 whitespace-nowrap [overflow-wrap:anywhere]">
                 {children}
               </th>
             );
           },
           td({ children, style }) {
             return (
-              <td style={style} className="px-3 py-2 border-r border-[var(--border-color)] last:border-r-0">
+              <td style={style} className="px-3 py-2 border-r border-[var(--border-color)] last:border-r-0 break-words [overflow-wrap:anywhere] max-w-[220px]">
                 {children}
               </td>
             );
@@ -159,7 +163,7 @@ export function MarkdownRenderer({ content, onToggleTask }: MarkdownRendererProp
           // ── Blockquotes ──
           blockquote({ children }) {
             return (
-              <blockquote className="my-3 pl-4 border-l-4 border-[var(--accent-indigo)] bg-[var(--badge-bg)] text-[var(--text-main)] italic rounded-r-xl py-2 pr-4">
+              <blockquote className="my-3 pl-4 border-l-4 border-[var(--accent-indigo)] bg-[var(--badge-bg)] text-[var(--text-main)] italic rounded-r-xl py-2 pr-4 break-words [overflow-wrap:anywhere]">
                 {children}
               </blockquote>
             );
@@ -172,7 +176,7 @@ export function MarkdownRenderer({ content, onToggleTask }: MarkdownRendererProp
                 href={href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[var(--accent-sky)] underline underline-offset-2 decoration-[var(--accent-sky)]/40 hover:decoration-[var(--accent-sky)] transition-colors font-medium"
+                className="text-[var(--accent-sky)] underline underline-offset-2 decoration-[var(--accent-sky)]/40 hover:decoration-[var(--accent-sky)] transition-colors font-medium break-all [overflow-wrap:anywhere]"
               >
                 {children}
               </a>
@@ -187,7 +191,7 @@ export function MarkdownRenderer({ content, onToggleTask }: MarkdownRendererProp
               <img
                 src={src}
                 alt={alt || ""}
-                className="my-3 rounded-xl max-w-full h-auto border border-[var(--border-color)] shadow-md"
+                className="my-3 rounded-xl max-w-full h-auto w-auto block border border-[var(--border-color)] shadow-md"
                 loading="lazy"
               />
             );
@@ -201,28 +205,28 @@ export function MarkdownRenderer({ content, onToggleTask }: MarkdownRendererProp
           // ── Headings ──
           h1({ children, id }) {
             return (
-              <h1 id={id} className="text-xl md:text-2xl font-extrabold tracking-tight text-[var(--text-main)] pb-1.5 border-b border-[var(--border-color)] mt-5 mb-2.5">
+              <h1 id={id} className="text-xl md:text-2xl font-extrabold tracking-tight text-[var(--text-main)] pb-1.5 border-b border-[var(--border-color)] mt-5 mb-2.5 break-words [overflow-wrap:anywhere]">
                 {children}
               </h1>
             );
           },
           h2({ children, id }) {
             return (
-              <h2 id={id} className="text-lg md:text-xl font-bold tracking-tight text-[var(--text-main)] pb-1 border-b border-[var(--border-color)]/60 mt-4 mb-2">
+              <h2 id={id} className="text-lg md:text-xl font-bold tracking-tight text-[var(--text-main)] pb-1 border-b border-[var(--border-color)]/60 mt-4 mb-2 break-words [overflow-wrap:anywhere]">
                 {children}
               </h2>
             );
           },
           h3({ children, id }) {
             return (
-              <h3 id={id} className="text-base md:text-lg font-bold text-[var(--accent-indigo)] mt-3.5 mb-1.5">
+              <h3 id={id} className="text-base md:text-lg font-bold text-[var(--accent-indigo)] mt-3.5 mb-1.5 break-words [overflow-wrap:anywhere]">
                 {children}
               </h3>
             );
           },
           h4({ children, id }) {
             return (
-              <h4 id={id} className="text-sm md:text-base font-bold text-[var(--text-main)] mt-3 mb-1">
+              <h4 id={id} className="text-sm md:text-base font-bold text-[var(--text-main)] mt-3 mb-1 break-words [overflow-wrap:anywhere]">
                 {children}
               </h4>
             );
@@ -238,9 +242,9 @@ export function MarkdownRenderer({ content, onToggleTask }: MarkdownRendererProp
           li({ children }) {
             const hasTask = hasTaskCheckbox(children);
             if (hasTask) {
-              return <li className="my-1 list-none -ml-5 flex items-start gap-1">{children}</li>;
+              return <li className="my-1 list-none ml-0 pl-0 flex items-start gap-2 min-w-0 min-h-[28px] break-words [overflow-wrap:anywhere] [&>p]:min-w-0 [&>p]:flex-1 [&>p]:break-words">{children}</li>;
             }
-            return <li className="my-0.5 pl-1">{children}</li>;
+            return <li className="my-0.5 pl-1 break-words [overflow-wrap:anywhere]">{children}</li>;
           },
 
           // ── Task checkbox rendering ──
@@ -259,7 +263,7 @@ export function MarkdownRenderer({ content, onToggleTask }: MarkdownRendererProp
                   }}
                   id={id}
                   aria-label="Toggle task checklist item"
-                  className={`rounded accent-[var(--accent-primary)] mr-2 mt-1 align-middle ${onToggleTask ? 'cursor-pointer' : ''}`}
+                  className={`rounded accent-[var(--accent-primary)] mr-2 mt-1 align-middle w-4 h-4 shrink-0 ${onToggleTask ? 'cursor-pointer' : ''}`}
                 />
               );
             }
@@ -271,7 +275,7 @@ export function MarkdownRenderer({ content, onToggleTask }: MarkdownRendererProp
             if (isValidElement(children) && (children.type === "img" || (children as { type?: unknown }).type === "div")) {
               return <>{children}</>;
             }
-            return <p className="my-2 leading-relaxed">{children}</p>;
+            return <p className="my-2 leading-relaxed break-words [overflow-wrap:anywhere]">{children}</p>;
           },
 
           // ── Strong / Bold ──
@@ -286,7 +290,7 @@ export function MarkdownRenderer({ content, onToggleTask }: MarkdownRendererProp
 
           // ── Deleted / Strikethrough ──
           del({ children }) {
-            return <del className="line-through text-[var(--text-subtle)]">{children}</del>;
+            return <del className="line-through text-[var(--text-muted)]">{children}</del>;
           },
         }}
       >
@@ -362,17 +366,17 @@ function CopyCodeButton({ code }: { code: string }) {
       type="button"
       onClick={handleCopy}
       aria-label={copied ? "Code copied to clipboard" : "Copy code to clipboard"}
-      className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors cursor-pointer px-2 py-0.5 rounded-md hover:bg-[var(--bg-main)]"
+      className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors cursor-pointer px-2 py-0.5 rounded-md hover:bg-[var(--bg-main)] min-h-[36px] min-w-[36px]"
       title={copied ? "Copied!" : "Copy code"}
     >
       {copied ? (
         <>
-          <Check className="w-3 h-3 text-[var(--accent-primary)]" aria-hidden="true" />
+          <Check className="w-3.5 h-3.5 text-[var(--accent-primary)]" aria-hidden="true" />
           <span className="text-[var(--accent-primary)]">Copied</span>
         </>
       ) : (
         <>
-          <Copy className="w-3 h-3" aria-hidden="true" />
+          <Copy className="w-3.5 h-3.5" aria-hidden="true" />
           <span>Copy</span>
         </>
       )}

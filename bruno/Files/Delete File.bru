@@ -5,7 +5,18 @@ meta {
 }
 
 delete {
-  url: {{baseUrl}}/api/pages/{{slug}}/files/FILE_ID_HERE
+  url: {{baseUrl}}/api/pages/{{slug}}/files/{{fileId}}
   body: none
   auth: none
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+docs {
+  DELETE /api/pages/:slug/files/:fileId — deletes one file scoped to the
+  workspace (fileId + slug), cleans B2/local objects, emits `files_updated`.
+  `{{fileId}}` is auto-filled by the Upload request script (or paste one from
+  List Files). Bearer token required when the page is password-protected.
 }

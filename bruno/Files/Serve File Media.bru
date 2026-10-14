@@ -5,7 +5,19 @@ meta {
 }
 
 get {
-  url: {{baseUrl}}/api/uploads/STORED_FILENAME_HERE
+  url: {{baseUrl}}/api/uploads/{{storedName}}?token={{token}}
   body: none
   auth: none
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+docs {
+  GET /api/uploads/:storedName — streams by `storedName` (NOT the original
+  filename; `{{storedName}}` is auto-filled by the Upload request script).
+  DB lookup → auth if the owning page is protected → local file, else B2
+  fallback. Supports `Range` requests for video/audio seeking.
+  Auth via Bearer header or `?token=`.
 }

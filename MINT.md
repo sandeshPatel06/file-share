@@ -34,15 +34,15 @@ FileShare creates **anonymous workspaces** at `/s/{slug}`. Anyone with the URL c
 1. Type in left textarea (write / split / preview modes).
 2. Local state updates immediately; `touchLocalEdit()` stamps time.
 3. Debounced `PATCH /api/pages/{slug}/content` persists + `pageEvents.emit(content_updated)`.
-4. Peers’ `EventSource` applies remote text **only if** they have not typed in the last ~1.5–2s.
+4. Peers’ `EventSource` applies remote text **only if** they have not typed in the last 2.5s (`lastLocalEditAt` + `touchLocalEdit`; `clientId` suppresses self-echo).
 5. Fallback: poll GET page every 12s if SSE dead.
 
 ### 2.3 Share / protect / handoff
 
 - **Copy link** / **QR** (`QRCodeModal`) for device handoff.
 - **Protect** → `PasswordModal` → password API (hash stored; never plaintext).
-- **Unlock** → verify API → JWT → `sessionStorage['token:'+slug]`.
-- Tab close ⇒ token gone ⇒ re-enter password.
+- **Unlock** → verify API → JWT → `sessionStorage['token:'+slug]`, plus `localStorage` when “Remember unlock on this device” is checked (default ON in `PasswordGate`).
+- Tab close ⇒ session token gone; remembered devices stay unlocked via `localStorage`.
 
 ### 2.4 Files
 
@@ -51,9 +51,9 @@ FileShare creates **anonymous workspaces** at `/s/{slug}`. Anyone with the URL c
 3. Server streams via busboy → disk → optional B2 → DB row → SSE `files_updated`.
 4. Preview modal for common media; download via `/api/uploads/{storedName}`.
 
-### 2.5 Export notes (not full vault ZIP yet)
+### 2.5 Export notes + vault ZIP
 
-From editor: Markdown / TXT / JSON / HTML / print. **Full notes+files ZIP** is a backlog item (`task.md`).
+From editor: Markdown / TXT / JSON / HTML / print / PNG, plus **Export All (ZIP)** via `exportAllAsZip` (`lib/exportZip.ts`). **Vault files ZIP** via “ZIP All” in `FilePanel` (`exportFilesOnlyAsZip`).
 
 ---
 
@@ -69,13 +69,13 @@ From editor: Markdown / TXT / JSON / HTML / print. **Full notes+files ZIP** is a
 | `/privacy` `/terms` `/cookies` `/refund` | Legal |
 | `/about` `/contact` | Company / support |
 | `/resources` `/resources/[slug]` | Editorial articles (`lib/articles.ts`) |
-| `/blog` | Blog index (if populated) |
+| `/blog` | Thin redirect → `/resources` (no index page) |
 | `/api/*` | See AGENTS.md API table |
 
 ### Important API behaviors
 
 - **GET page** while protected + no token → `content: ""` (metadata may still leak `isProtected`).
-- **Rename** updates `pages.slug` and `files.slug`; if target exists → `{ redirected: true }` without overwrite. **No HTTP redirect from old slug** (gap).
+- **Rename** updates `pages.slug` and `files.slug`; if target exists → `{ redirected: true }` without overwrite. Old slug 307-redirects via the `redirects` table (`s/[slug]/page.tsx`; `redirect()` must stay outside try/catch — catching `NEXT_REDIRECT` resurrects the old slug, fixed Oct 2026).
 - **SSE on protected space** accepts `Authorization` or `?token=`.
 
 ---
@@ -133,7 +133,7 @@ files
 
 ### `src/lib/validators.ts`
 
-- Slug, password, content max 500k, rename, MIME allowlist (images, pdf, text, zip, common office/code types — read file before expanding).
+- Slug, password, content max 500k, rename, MIME allowlist (images incl. bmp/ico, pdf, text, zip/rar/tar/gzip/7z, office docs, audio incl. flac, video incl. mkv/mov/avi — enforced server-side in `files/upload/route.ts` with 422 + staged-file cleanup; read file before expanding).
 
 ### `src/lib/rateLimiter.ts`
 
@@ -159,9 +159,10 @@ files
 
 - Full consent UI; can dominate mobile viewport (UX backlog).
 
-### `src/middleware.ts`
+### `src/proxy.ts` (Next 16 convention; `middleware.ts` removed)
 
 - Host rewrite only for legacy Render subdomain → canonical domain.
+- Matcher excludes `api/pages/*/files/upload` so 500MB busboy streams are never buffered in proxy memory; `proxyClientMaxBodySize: "520mb"` in `next.config.ts` covers the rest.
 
 ---
 
@@ -192,14 +193,16 @@ Defined in `src/app/globals.css`:
 
 - `--bg-main: #0d1117`
 - `--text-main: #e6edf3`
-- `--text-muted: #9da7b3`
-- Accent greens `#238636` / `#3fb950`
+- `--text-muted: #a2abb7`
+- `--text-subtle: #9da7b3`
+- Accent greens `#238636` / `#3fb950` (dark-mode body text remaps `accent-primary` → emerald; see `globals.css`)
 
 **Light**
 
 - `--bg-main: #f6f8fa`
 - `--text-main: #1f2328`
-- `--text-muted: #57606a` ← borderline for small text (see `task.md`)
+- `--text-muted: #38404a`
+- `--text-subtle: #424a53`
 
 Focus: `:focus-visible` outline on accent. `prefers-reduced-motion` disables micro-animations.
 
@@ -218,7 +221,7 @@ Browser
        → in-process pageEvents (SSE)
 ```
 
-`deploy.sh` + `render.yaml` + env list in README. CI runs typecheck, eslint, build on `main`.
+`deploy.sh` (timed stages, npm retry, node≥20 preflight, `.next`/`BUILD_ID` assert, `data/`+`uploads/` writability check) + `render.yaml` (`healthCheckPath: /api/health`) + env list in README. Prod build: `next build --turbopack`. CI on `main` runs typecheck + eslint (no production build — Render is the first full-build gate; last good deploy stays live on failure).
 
 ---
 
@@ -228,14 +231,11 @@ Aligned with `task.md`; listed here as **truth**, not wishes:
 
 1. **Collab:** LWW + debounce window ≠ OT/CRDT; collisions possible.
 2. **SSE scale:** single Node process EventEmitter.
-3. **Rename:** no permanent redirect from old slug.
-4. **Export:** notes formats yes; **all files ZIP** no.
-5. **Recent spaces:** no first-class local history UI.
-6. **Token lifetime UX:** sessionStorage only — mobile friction after background kill.
-7. **Cookie banner:** large first-paint intrusion on mobile.
-8. **Light muted contrast:** secondary text softer than ideal.
-9. **Prune job:** retention messaging without matching in-repo cron.
-10. **Multi-instance rate limit / SSE:** memory-local.
+3. **Export:** editor + vault ZIPs exist; no scheduled/automatic archive pipeline.
+4. **Token lifetime UX:** “remember device” persists in `localStorage` — shared-device risk if left checked.
+5. **Cookie banner:** large first-paint intrusion on mobile.
+6. **Prune job:** retention messaging without matching in-repo cron.
+7. **Multi-instance rate limit / SSE:** memory-local.
 
 ---
 
@@ -243,12 +243,9 @@ Aligned with `task.md`; listed here as **truth**, not wishes:
 
 ### Safe first tasks
 
-- Token/contrast CSS in `globals.css`
 - CookieConsent layout compact mode
-- Footer typography on `SharePage`
-- Touch target spacing on `SlugBar`
 - Export ZIP endpoint + FilePanel button
-- Recent slugs in `localStorage` on `LandingPage`
+- Mobile nav row on editorial headers (`hidden sm:flex` hides nav on phones)
 
 ### Risky tasks (design first)
 
@@ -279,7 +276,7 @@ Manual: two browsers same `/s/test-collab`, lock/unlock flow, upload > few MB wi
 | Files | `FilePanel.tsx`, `files/upload/route.ts`, `uploads/[filename]/route.ts`, `lib/b2.ts` |
 | DB | `lib/db.ts` only |
 | Slugs | `validators.ts`, `slugGenerator.ts`, `rename/route.ts`, `s/[slug]/page.tsx` |
-| SEO host | `lib/seo.ts`, `middleware.ts`, `layout.tsx` |
+| SEO host | `lib/seo.ts`, `proxy.ts`, `layout.tsx` |
 | Consent/ads | `CookieConsent.tsx`, `ads/*`, `layout.tsx` |
 | Theme | `globals.css`, `ThemeProvider.tsx`, `ThemeToggle.tsx` |
 

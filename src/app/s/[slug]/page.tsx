@@ -93,14 +93,19 @@ export default async function SlugPage({ params }: Props) {
   let page = (await db.prepare("SELECT slug, isProtected, content FROM pages WHERE slug = ?").get(slug)) as PageRow | undefined;
 
   if (!page) {
-    // Check if this slug was previously renamed to a new slug
+    // Check if this slug was previously renamed to a new slug.
+    // NOTE: redirect() works by throwing, so it must stay OUTSIDE the
+    // try/catch below — catching it would swallow the redirect, resurrect
+    // the old slug as a blank page, and return 200 instead of redirecting.
+    let redirectRow: { newSlug?: string } | undefined;
     try {
-      const redirectRow = (await db.prepare("SELECT newSlug FROM redirects WHERE oldSlug = ?").get(slug)) as { newSlug?: string } | undefined;
-      if (redirectRow?.newSlug) {
-        redirect(`/s/${redirectRow.newSlug}`);
-      }
+      redirectRow = (await db.prepare("SELECT newSlug FROM redirects WHERE oldSlug = ?").get(slug)) as { newSlug?: string } | undefined;
     } catch {
-      // In case redirects table not yet queried
+      // redirects table not yet provisioned — fall through to provisioning
+      redirectRow = undefined;
+    }
+    if (redirectRow?.newSlug) {
+      redirect(`/s/${redirectRow.newSlug}`);
     }
 
     try {

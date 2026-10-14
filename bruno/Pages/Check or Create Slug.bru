@@ -1,5 +1,5 @@
 meta {
-  name: Check or Create Slug Availability
+  name: Check Slug Availability
   type: http
   seq: 3
 }
@@ -8,4 +8,11 @@ get {
   url: {{baseUrl}}/api/pages/create?slug={{slug}}
   body: none
   auth: none
+}
+
+docs {
+  GET /api/pages/create?slug=xyz — slug availability `{available: true|false}`.
+  Used live by the rename-workspace dialog. To explicitly CREATE a page, use
+  POST /api/pages/create with `{"slug": "...", "password?": "..."}` (see
+  "Create Page" request). Slugs: 3-48 chars, lowercase alphanumerics + hyphens.
 }

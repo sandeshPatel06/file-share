@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export function middleware(request: NextRequest) {
+// Next 16 `proxy` convention (renamed from deprecated `middleware`).
+export function proxy(request: NextRequest) {
   const forwardedHost = request.headers.get("x-forwarded-host");
   const host = request.headers.get("host") || "";
   const currentDomain = forwardedHost || host;
@@ -25,6 +26,8 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico).*)",
+    // Vault uploads stream up to 500MB via busboy — keep the proxy from
+    // cloning/buffering those bodies in memory on small instances.
+    "/((?!_next/static|_next/image|favicon.ico|api/pages/.*/files/upload).*)",
   ],
 };

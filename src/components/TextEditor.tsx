@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/Button";
 import { exportAllAsZip } from "@/lib/exportZip";
 import { createPortal } from "react-dom";
 import { computePosition, flip, shift, offset } from "@floating-ui/dom";
+import { FloatingMenu } from "@/components/ui/FloatingMenu";
 import { getCaretCoordinates } from "@/lib/caret";
 
 interface TextEditorProps {
@@ -112,7 +113,12 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
 
   const isDesktop = useSyncExternalStore(subscribeDesktop, getIsDesktop, getServerIsDesktop);
   const [userViewMode, setUserViewMode] = useState<ViewMode | null>(null);
-  const viewMode = userViewMode ?? (isDesktop ? "split" : "write");
+  // Deep fix: never render split view on mobile viewports. A desktop user who
+  // picked split and then resizes/rotates to mobile would otherwise get two
+  // squeezed panes side by side. Fall back to write mode instead.
+  const viewMode = userViewMode
+    ? (userViewMode === "split" && !isDesktop ? "write" : userViewMode)
+    : (isDesktop ? "split" : "write");
   const setViewMode = (mode: ViewMode) => setUserViewMode(mode);
 
   const [displayContent, setDisplayContent] = useState(initialContent);
@@ -693,21 +699,21 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; max-width: 850px; margin: 40px auto; padding: 32px; color: #0f172a; background: #ffffff; line-height: 1.6; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border-radius: 16px; border: 1px solid #e2e8f0; }
     h1 { font-size: 24px; font-weight: 800; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; margin-top: 24px; color: #0f172a; }
     h2 { font-size: 20px; font-weight: 700; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; margin-top: 20px; color: #0f172a; }
-    h3 { font-size: 16px; font-weight: 700; margin-top: 16px; color: #6366f1; }
+    h3 { font-size: 16px; font-weight: 700; margin-top: 16px; color: #1a7f37; }
     table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
     th, td { border: 1px solid #cbd5e1; padding: 10px 14px; text-align: left; }
     th { background: #f8fafc; font-weight: 700; text-transform: uppercase; font-size: 12px; color: #475569; }
     tr:nth-child(even) { background: #f8fafc; }
-    blockquote { border-left: 4px solid #6366f1; background: #f1f5f9; margin: 16px 0; padding: 12px 16px; border-radius: 0 12px 12px 0; font-style: italic; color: #334155; }
+    blockquote { border-left: 4px solid #1a7f37; background: #f1f5f9; margin: 16px 0; padding: 12px 16px; border-radius: 0 12px 12px 0; font-style: italic; color: #334155; }
     pre { background: #0d1117; color: #e6edf3; padding: 16px; border-radius: 12px; overflow-x: auto; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 13px; line-height: 1.5; }
-    code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; background: rgba(99, 102, 241, 0.1); padding: 2px 6px; border-radius: 4px; color: #4338ca; font-weight: 600; font-size: 0.9em; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; background: rgba(26, 127, 55, 0.1); padding: 2px 6px; border-radius: 4px; color: #1a7f37; font-weight: 600; font-size: 0.9em; }
     pre code { background: transparent; padding: 0; color: inherit; }
     ul, ol { padding-left: 24px; margin: 12px 0; }
     li { margin: 4px 0; }
-    input[type="checkbox"] { margin-right: 8px; transform: scale(1.15); accent-color: #6366f1; }
+    input[type="checkbox"] { margin-right: 8px; transform: scale(1.15); accent-color: #1a7f37; }
     hr { border: 0; border-top: 2px solid #e2e8f0; margin: 24px 0; }
-    a { color: #0284c7; text-decoration: underline; }
-    strong { color: #4338ca; font-weight: 800; }
+    a { color: #1a7f37; text-decoration: underline; }
+    strong { color: #1a7f37; font-weight: 800; }
     img { max-width: 100%; height: auto; border-radius: 12px; border: 1px solid #cbd5e1; margin: 16px 0; }
   </style>
 </head>
@@ -865,13 +871,13 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
         ctx.stroke();
         y += 36;
       } else if (line.startsWith("### ")) {
-        drawText(line.replace("### ", ""), padding, y + 18, "bold 15px sans-serif", "#818cf8");
+        drawText(line.replace("### ", ""), padding, y + 18, "bold 15px sans-serif", "#3fb950");
         y += 30;
       } else if (line.startsWith("> ")) {
         // Blockquote
         ctx.fillStyle = "#161b22";
         ctx.fillRect(padding, y, contentWidth, 28);
-        ctx.fillStyle = "#6366f1";
+        ctx.fillStyle = "#238636";
         ctx.fillRect(padding, y, 4, 28);
         drawText(line.replace("> ", ""), padding + 14, y + 19, "italic 13px sans-serif", "#c9d1d9");
         y += 32;
@@ -890,7 +896,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
         y += 24;
       } else if (line.startsWith("- ")) {
         // Bullet list
-        ctx.fillStyle = "#6366f1";
+        ctx.fillStyle = "#238636";
         ctx.beginPath();
         ctx.arc(padding + 6, y + 10, 3, 0, Math.PI * 2);
         ctx.fill();
@@ -960,21 +966,21 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #0f172a; background: #ffffff; line-height: 1.6; padding: 0; margin: 0; }
     h1 { font-size: 24px; font-weight: 800; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; margin-top: 24px; color: #0f172a; }
     h2 { font-size: 20px; font-weight: 700; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; margin-top: 20px; color: #0f172a; }
-    h3 { font-size: 16px; font-weight: 700; margin-top: 16px; color: #6366f1; }
+    h3 { font-size: 16px; font-weight: 700; margin-top: 16px; color: #1a7f37; }
     table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; page-break-inside: avoid; }
     th, td { border: 1px solid #cbd5e1; padding: 10px 14px; text-align: left; }
     th { background: #f8fafc; font-weight: 700; text-transform: uppercase; font-size: 12px; color: #475569; }
     tr:nth-child(even) { background: #f8fafc; }
-    blockquote { border-left: 4px solid #6366f1; background: #f1f5f9; margin: 16px 0; padding: 12px 16px; border-radius: 0 12px 12px 0; font-style: italic; color: #334155; }
+    blockquote { border-left: 4px solid #1a7f37; background: #f1f5f9; margin: 16px 0; padding: 12px 16px; border-radius: 0 12px 12px 0; font-style: italic; color: #334155; }
     pre { background: #0d1117; color: #e6edf3; padding: 16px; border-radius: 12px; overflow-x: auto; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 13px; line-height: 1.5; page-break-inside: avoid; }
-    code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; background: rgba(99, 102, 241, 0.1); padding: 2px 6px; border-radius: 4px; color: #4338ca; font-weight: 600; font-size: 0.9em; }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; background: rgba(26, 127, 55, 0.1); padding: 2px 6px; border-radius: 4px; color: #1a7f37; font-weight: 600; font-size: 0.9em; }
     pre code { background: transparent; padding: 0; color: inherit; }
     ul, ol { padding-left: 24px; margin: 12px 0; }
     li { margin: 4px 0; }
-    input[type="checkbox"] { margin-right: 8px; transform: scale(1.15); accent-color: #6366f1; }
+    input[type="checkbox"] { margin-right: 8px; transform: scale(1.15); accent-color: #1a7f37; }
     hr { border: 0; border-top: 2px solid #e2e8f0; margin: 24px 0; }
-    a { color: #0284c7; text-decoration: underline; }
-    strong { color: #4338ca; font-weight: 800; }
+    a { color: #1a7f37; text-decoration: underline; }
+    strong { color: #1a7f37; font-weight: 800; }
     img { max-width: 100%; height: auto; border-radius: 12px; border: 1px solid #cbd5e1; margin: 16px 0; page-break-inside: avoid; }
   </style>
 </head>
@@ -1034,31 +1040,34 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
       />
 
       {/* Sleek IDE Top Toolbar (100% Width) */}
-      <div className="relative z-30 flex items-center justify-between px-2.5 py-1.5 border-b border-[var(--border-color)] bg-[var(--bg-surface)] shrink-0 gap-2 select-none min-h-[44px] w-full">
+       <div className="relative z-30 flex flex-col sm:flex-row items-stretch sm:items-center px-2.5 py-1.5 border-b border-[var(--border-color)] bg-[var(--bg-surface)] shrink-0 gap-1 sm:gap-2 select-none min-h-[44px] w-full min-w-0 max-w-full">
         {/* Left: Markdown Format Icons Toolbar */}
-        <div className="flex items-center gap-1.5 flex-nowrap shrink overflow-x-auto no-scrollbar py-0.5 min-w-0">
+        <div className="flex items-center gap-1.5 flex-nowrap flex-none w-full sm:flex-1 overflow-x-auto no-scrollbar py-0.5 min-w-0 max-w-full max-sm:[&_button]:min-h-[36px] max-sm:[&_button]:min-w-[36px]">
           <div className="flex items-center gap-0.5 bg-[var(--bg-card)] p-0.5 rounded-lg border border-[var(--border-color)]">
             <button
+              type="button"
               onClick={() => applyFormat("# ")}
               title="Heading 1 (#)"
               aria-label="Heading 1"
-              className="min-h-[36px] min-w-[36px] p-2 flex items-center justify-center rounded-md text-xs font-black text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              className="min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] p-2 flex items-center justify-center rounded-md text-xs font-black text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
               <Heading1 size={15} />
             </button>
             <button
+              type="button"
               onClick={() => applyFormat("## ")}
               title="Heading 2 (##)"
               aria-label="Heading 2"
-              className="min-h-[36px] min-w-[36px] p-2 flex items-center justify-center rounded-md text-xs font-black text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              className="min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] p-2 flex items-center justify-center rounded-md text-xs font-black text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
               <Heading2 size={15} />
             </button>
             <button
+              type="button"
               onClick={() => applyFormat("### ")}
               title="Heading 3 (###)"
               aria-label="Heading 3"
-              className="min-h-[36px] min-w-[36px] p-2 flex items-center justify-center rounded-md text-xs font-black text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              className="min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] p-2 flex items-center justify-center rounded-md text-xs font-black text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
               <Heading3 size={15} />
             </button>
@@ -1068,84 +1077,93 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
 
           <div className="flex items-center gap-0.5 bg-[var(--bg-card)] p-0.5 rounded-lg border border-[var(--border-color)]">
             <button
+              type="button"
               onClick={() => applyFormat("**", "**")}
               title="Bold (**text**)"
               aria-label="Bold"
-              className="min-h-[36px] min-w-[36px] p-2 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              className="min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] p-2 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
               <Bold size={15} />
             </button>
             <button
+              type="button"
               onClick={() => applyFormat("*", "*")}
               title="Italic (*text*)"
               aria-label="Italic"
-              className="min-h-[36px] min-w-[36px] p-2 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              className="min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] p-2 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
               <Italic size={15} />
             </button>
             <button
+              type="button"
               onClick={() => applyFormat("~~", "~~")}
               title="Strikethrough (~~text~~)"
               aria-label="Strikethrough"
-              className="min-h-[36px] min-w-[36px] p-2 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              className="min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] p-2 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
               <Strikethrough size={15} />
             </button>
           </div>
 
-          <div className="w-px h-5 bg-[var(--border-color)] mx-0.5 hidden sm:block" />
+          <div className="w-px h-5 bg-[var(--border-color)] mx-0.5" />
 
-          <div className="hidden sm:flex items-center gap-0.5 bg-[var(--bg-card)] p-0.5 rounded-lg border border-[var(--border-color)]">
+          <div className="flex items-center gap-0.5 bg-[var(--bg-card)] p-0.5 rounded-lg border border-[var(--border-color)]">
             <button
+              type="button"
               onClick={() => applyFormat("- ")}
               title="Unordered List (-)"
               aria-label="Unordered List"
-              className="min-h-[36px] min-w-[36px] p-2 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              className="min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] p-2 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
               <List size={15} />
             </button>
             <button
+              type="button"
               onClick={() => applyFormat("1. ")}
               title="Numbered List (1.)"
               aria-label="Numbered List"
-              className="min-h-[36px] min-w-[36px] p-2 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              className="min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] p-2 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
               <ListOrdered size={15} />
             </button>
             <button
+              type="button"
               onClick={() => applyFormat("- [ ] ")}
               title="Task Checkbox (- [ ])"
               aria-label="Task Checkbox"
-              className="min-h-[36px] min-w-[36px] p-2 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              className="min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] p-2 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
               <CheckSquare size={15} />
             </button>
           </div>
 
-          <div className="w-px h-5 bg-[var(--border-color)] mx-0.5 hidden md:block" />
+          <div className="w-px h-5 bg-[var(--border-color)] mx-0.5" />
 
-          <div className="hidden md:flex items-center gap-0.5 bg-[var(--bg-card)] p-0.5 rounded-lg border border-[var(--border-color)]">
+          <div className="flex items-center gap-0.5 bg-[var(--bg-card)] p-0.5 rounded-lg border border-[var(--border-color)]">
             <button
+              type="button"
               onClick={() => applyFormat("> ")}
               title="Blockquote (>)"
               aria-label="Blockquote"
-              className="min-h-[36px] min-w-[36px] p-2 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              className="min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] p-2 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
               <Quote size={15} />
             </button>
             <button
+              type="button"
               onClick={() => applyFormat("```\n", "\n```")}
               title="Code Block (```)"
               aria-label="Code Block"
-              className="min-h-[36px] min-w-[36px] p-2 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              className="min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] p-2 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
               <Code size={15} />
             </button>
             <button
+              type="button"
               onClick={() => applyFormat("| Header 1 | Header 2 |\n| :--- | :--- |\n| Cell 1 | Cell 2 |\n")}
               title="Insert Table"
               aria-label="Insert Table"
-              className="min-h-[36px] min-w-[36px] p-2 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+              className="min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] p-2 flex items-center justify-center rounded-md text-[var(--text-main)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
             >
               <Table size={15} />
             </button>
@@ -1153,11 +1171,13 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
         </div>
 
         {/* Right: AI Assistant, Templates, Export, Zen, & View Controls */}
-        <div className="flex items-center gap-1 sm:gap-1.5 flex-nowrap shrink-0 ml-auto">
+        <div className="flex items-center justify-end gap-1 sm:gap-1.5 flex-nowrap flex-none w-full sm:w-auto min-w-0 sm:shrink-0 ml-0 sm:ml-auto overflow-x-auto max-w-full no-scrollbar max-sm:[&_button]:min-h-[36px] max-sm:[&_button]:min-w-[36px]">
           {/* Starter Templates Button */}
           <button
+            type="button"
             onClick={() => setShowTemplateModal(true)}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 min-h-[36px] rounded-lg bg-[var(--badge-bg)] border border-[var(--border-color)] text-[var(--text-main)] hover:bg-[var(--border-color)] transition-all text-xs font-bold cursor-pointer"
+            aria-label="Open starter templates gallery"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 min-h-[44px] sm:min-h-[36px] rounded-lg bg-[var(--badge-bg)] border border-[var(--border-color)] text-[var(--text-main)] hover:bg-[var(--border-color)] transition-all text-xs font-bold cursor-pointer"
             title="Starter Templates Gallery"
           >
             <FileText size={14} className="text-[var(--accent-indigo)]" />
@@ -1166,8 +1186,10 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
 
           {/* AI Copilot Button */}
           <button
+            type="button"
             onClick={handleAICopilotFormat}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 min-h-[36px] rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-[var(--accent-indigo)] hover:bg-emerald-500/20 transition-all text-xs font-bold cursor-pointer shadow-sm"
+            aria-label="AI Copilot: auto-format document"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 min-h-[44px] sm:min-h-[36px] rounded-lg bg-[var(--badge-bg)] border border-[var(--badge-border)] text-[var(--accent-indigo)] hover:bg-[var(--accent-primary)]/15 transition-all text-xs font-bold cursor-pointer shadow-sm"
             title="AI Copilot: Auto-format document"
           >
             <Sparkles size={14} className="text-[var(--accent-indigo)] animate-pulse" />
@@ -1176,8 +1198,11 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
 
           {/* Outline / ToC Toggle */}
           <button
+            type="button"
             onClick={() => setShowOutline(prev => !prev)}
-            className={`min-h-[36px] min-w-[36px] p-2 flex items-center justify-center rounded-lg border transition-all cursor-pointer ${
+            aria-label="Toggle document outline"
+            aria-pressed={showOutline}
+            className={`min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] p-2 flex items-center justify-center rounded-lg border transition-all cursor-pointer ${
               showOutline 
                 ? "bg-[var(--accent-primary)] border-[var(--accent-primary)] text-white" 
                 : "bg-[var(--badge-bg)] border-[var(--border-color)] text-[var(--text-main)] hover:bg-[var(--border-color)]"
@@ -1189,9 +1214,11 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
 
           {/* Attach File Button */}
           <button
+            type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
-            className="min-h-[36px] min-w-[36px] p-2 flex items-center justify-center rounded-lg bg-[var(--badge-bg)] border border-[var(--border-color)] text-[var(--text-main)] hover:bg-[var(--border-color)] transition-all cursor-pointer"
+            aria-label="Attach file to notes"
+            className="min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] p-2 flex items-center justify-center rounded-lg bg-[var(--badge-bg)] border border-[var(--border-color)] text-[var(--text-main)] hover:bg-[var(--border-color)] transition-all cursor-pointer"
             title="Attach file to notes"
           >
             <Upload size={14} />
@@ -1200,76 +1227,89 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
           {/* Rich Export Menu Dropdown */}
           <div className="relative" ref={exportMenuRef}>
             <button
+              type="button"
               onClick={() => setShowExportMenu((v) => !v)}
-              className="px-2.5 sm:px-3 py-1.5 min-h-[36px] rounded-lg bg-[var(--badge-bg)] border border-[var(--border-color)] text-[var(--text-main)] hover:bg-[var(--border-color)] transition-all cursor-pointer flex items-center gap-1.5 text-xs font-extrabold shadow-sm"
+              aria-label="Export document options"
+              aria-expanded={showExportMenu}
+              className="px-2.5 sm:px-3 py-1.5 min-h-[44px] sm:min-h-[36px] rounded-lg bg-[var(--badge-bg)] border border-[var(--border-color)] text-[var(--text-main)] hover:bg-[var(--border-color)] transition-all cursor-pointer flex items-center gap-1.5 text-xs font-extrabold shadow-sm"
               title="Export Document Options"
             >
               <Download size={14} className="text-[var(--accent-indigo)]" />
-              <span>Export</span>
+              <span className="hidden min-[400px]:inline sm:inline">Export</span>
               <ChevronDown size={13} className={`transition-transform duration-200 ${showExportMenu ? "rotate-180" : ""}`} />
             </button>
-            {showExportMenu && (
-              <div className="absolute right-0 top-full mt-1.5 w-56 rounded-xl bg-[var(--modal-bg)] border border-[var(--border-color)] shadow-2xl p-1 z-[100] animate-slide-down text-xs font-bold">
+             {showExportMenu && (
+               <FloatingMenu open={showExportMenu} anchorRef={exportMenuRef} placement="bottom-end" className="w-56 max-w-[calc(100vw-1rem)] rounded-xl bg-[var(--modal-bg)] border border-[var(--border-color)] shadow-2xl p-1 animate-slide-down text-xs font-bold">
                 <button
+                  type="button"
                   onClick={handleExportAllZip}
-                  className="w-full text-left px-3 py-2 rounded-lg bg-[var(--badge-bg)] hover:bg-[var(--accent-primary)]/15 border border-[var(--badge-border)] flex items-center gap-2 text-[var(--accent-primary)] cursor-pointer font-extrabold mb-1 min-h-[36px]"
+                  className="w-full text-left px-3 py-2 rounded-lg bg-[var(--badge-bg)] hover:bg-[var(--accent-primary)]/15 border border-[var(--badge-border)] flex items-center gap-2 text-[var(--accent-primary)] cursor-pointer font-extrabold mb-1 min-h-[44px] sm:min-h-[36px]"
                 >
                   <Archive size={15} className="text-[var(--accent-primary)]" />
                   <span>Export All (ZIP Archive)</span>
                 </button>
                 <button
+                  type="button"
                   onClick={handleExportMarkdown}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer min-h-[34px]"
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer min-h-[44px] sm:min-h-[36px]"
                 >
                   <FileText size={15} className="text-[var(--accent-indigo)]" />
                   <span>Markdown (.md)</span>
                 </button>
                 <button
+                  type="button"
                   onClick={handleExportHTML}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer min-h-[34px]"
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer min-h-[44px] sm:min-h-[36px]"
                 >
                   <FileCode size={15} className="text-[var(--accent-sky)]" />
                   <span>HTML Document</span>
                 </button>
                 <button
+                  type="button"
                   onClick={handlePrintPDF}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer min-h-[34px]"
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer min-h-[44px] sm:min-h-[36px]"
                 >
-                  <Printer size={15} className="text-purple-400" />
+                  <Printer size={15} className="text-[var(--accent-indigo)]" />
                   <span>PDF Document</span>
                 </button>
                 <button
+                  type="button"
                   onClick={handleExportImage}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer min-h-[34px]"
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer min-h-[44px] sm:min-h-[36px]"
                 >
-                  <ImageIcon size={15} className="text-emerald-400" />
+                  <ImageIcon size={15} className="text-[var(--status-success-text)]" />
                   <span>Image (.png)</span>
                 </button>
                 <div className="my-1 border-t border-[var(--border-color)]" />
                 <button
+                  type="button"
                   onClick={handleExportText}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer min-h-[34px]"
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer min-h-[44px] sm:min-h-[36px]"
                 >
-                  <FileSpreadsheet size={15} className="text-amber-400" />
+                  <FileSpreadsheet size={15} className="text-[var(--text-muted)]" />
                   <span>Plain Text (.txt)</span>
                 </button>
                 <button
+                  type="button"
                   onClick={handleExportJSON}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer min-h-[34px]"
+                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 flex items-center gap-2 text-[var(--text-main)] cursor-pointer min-h-[44px] sm:min-h-[36px]"
                 >
-                  <FileJson size={15} className="text-rose-400" />
+                  <FileJson size={15} className="text-[var(--status-danger-text)]" />
                   <span>JSON Dataset (.json)</span>
                 </button>
-              </div>
+               </FloatingMenu>
             )}
           </div>
 
           {/* Zen Focus Mode Toggle */}
           <button
+            type="button"
             onClick={() => setZenMode(!zenMode)}
-            className={`min-h-[36px] min-w-[36px] p-2 flex items-center justify-center rounded-lg border transition-all cursor-pointer ${
+            aria-label={zenMode ? "Exit zen mode" : "Enter zen focus writing mode"}
+            aria-pressed={zenMode}
+            className={`min-h-[44px] min-w-[44px] sm:min-h-[36px] sm:min-w-[36px] p-2 flex items-center justify-center rounded-lg border transition-all cursor-pointer ${
               zenMode
-                ? "bg-[var(--accent-indigo)] text-white border-[var(--accent-indigo)] shadow-sm"
+                ? "bg-[var(--accent-indigo)] dark:text-[#0d1117] text-white border-[var(--accent-indigo)] shadow-sm"
                 : "bg-[var(--badge-bg)] text-[var(--text-main)] border-[var(--border-color)] hover:bg-[var(--border-color)]"
             }`}
             title={zenMode ? "Exit Zen Mode (Esc)" : "Zen Focus Writing Mode"}
@@ -1280,8 +1320,11 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
           {/* View Mode Toggle Segmented Control */}
           <div className="flex items-center p-0.5 rounded-lg bg-[var(--badge-bg)] border border-[var(--border-color)]">
             <button
+              type="button"
               onClick={() => setViewMode("write")}
-              className={`min-h-[32px] min-w-[32px] p-1.5 flex items-center justify-center rounded-md transition-colors cursor-pointer ${
+              aria-label="Write mode"
+              aria-pressed={viewMode === "write"}
+              className={`min-h-[44px] min-w-[44px] p-2 sm:min-h-[36px] sm:min-w-[36px] sm:p-1.5 flex items-center justify-center rounded-md transition-colors cursor-pointer ${
                 viewMode === "write" ? "bg-[var(--accent-primary)] text-white shadow-sm" : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
               }`}
               title="Write Mode"
@@ -1289,8 +1332,11 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
               <Layout size={14} />
             </button>
             <button
+              type="button"
               onClick={() => setViewMode("split")}
-              className={`min-h-[32px] min-w-[32px] p-1.5 flex items-center justify-center rounded-md transition-colors cursor-pointer hidden sm:flex ${
+              aria-label="Split view mode"
+              aria-pressed={viewMode === "split"}
+              className={`min-h-[44px] min-w-[44px] p-2 sm:min-h-[36px] sm:min-w-[36px] sm:p-1.5 flex items-center justify-center rounded-md transition-colors cursor-pointer hidden sm:flex ${
                 viewMode === "split" ? "bg-[var(--accent-primary)] text-white shadow-sm" : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
               }`}
               title="Split View"
@@ -1298,8 +1344,11 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
               <Columns size={14} />
             </button>
             <button
+              type="button"
               onClick={() => setViewMode("preview")}
-              className={`min-h-[32px] min-w-[32px] p-1.5 flex items-center justify-center rounded-md transition-colors cursor-pointer ${
+              aria-label="Preview mode"
+              aria-pressed={viewMode === "preview"}
+              className={`min-h-[44px] min-w-[44px] p-2 sm:min-h-[36px] sm:min-w-[36px] sm:p-1.5 flex items-center justify-center rounded-md transition-colors cursor-pointer ${
                 viewMode === "preview" ? "bg-[var(--accent-primary)] text-white shadow-sm" : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
               }`}
               title="Preview Mode"
@@ -1314,30 +1363,30 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
       {conflict && (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 px-3 py-2 bg-amber-500/10 border-b border-amber-500/30 text-xs shrink-0 select-none animate-slide-down">
           <div className="flex items-center gap-2">
-            <AlertTriangle size={15} className="text-amber-400 shrink-0" />
+            <AlertTriangle size={15} className="text-amber-500 dark:text-amber-400 shrink-0" />
             <span className="text-[var(--text-main)] font-semibold">
               Remote update arrived while you were editing.
             </span>
           </div>
-          <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-auto">
+          <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-auto flex-wrap justify-end max-w-full">
             <button
               type="button"
               onClick={handleTakeMine}
-              className="px-3 py-1.5 min-h-[32px] sm:min-h-[36px] rounded-lg bg-[var(--bg-surface)] hover:bg-[var(--border-color)]/60 border border-[var(--border-color)] text-[var(--text-main)] font-bold text-xs cursor-pointer shadow-sm transition-colors"
+              className="px-3 py-1.5 min-h-[44px] sm:min-h-[36px] rounded-lg bg-[var(--bg-surface)] hover:bg-[var(--border-color)]/60 border border-[var(--border-color)] text-[var(--text-main)] font-bold text-xs cursor-pointer shadow-sm transition-colors"
             >
               Keep Mine
             </button>
             <button
               type="button"
               onClick={handleTakeRemote}
-              className="px-3 py-1.5 min-h-[32px] sm:min-h-[36px] rounded-lg bg-amber-500 hover:bg-amber-600 text-black font-extrabold text-xs cursor-pointer shadow-sm transition-colors"
+              className="px-3 py-1.5 min-h-[44px] sm:min-h-[36px] rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-700 dark:text-amber-300 font-extrabold text-xs cursor-pointer shadow-sm transition-colors"
             >
               Accept Remote
             </button>
             <button
               type="button"
               onClick={handleMerge}
-              className="px-3 py-1.5 min-h-[32px] sm:min-h-[36px] rounded-lg bg-[var(--badge-bg)] hover:bg-[var(--border-color)]/60 border border-[var(--badge-border)] text-[var(--text-main)] font-bold text-xs cursor-pointer shadow-sm transition-colors"
+              className="px-3 py-1.5 min-h-[44px] sm:min-h-[36px] rounded-lg bg-[var(--badge-bg)] hover:bg-[var(--border-color)]/60 border border-[var(--badge-border)] text-[var(--text-main)] font-bold text-xs cursor-pointer shadow-sm transition-colors"
             >
               Append Below
             </button>
@@ -1348,22 +1397,22 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
       {/* Main Workspace Canvas (Full Width & Height, Zero Outer Padding) */}
       <div className="flex-1 min-h-0 flex overflow-hidden relative bg-[var(--bg-main)]">
         {loading ? (
-          <div className="w-full space-y-4 animate-pulse p-6">
+          <div className="w-full space-y-4 animate-pulse p-4 sm:p-6">
             {[85, 70, 92, 60, 78].map((w, i) => (
               <div key={i} className="skeleton h-5 rounded-lg" style={{ width: `${w}%` }} />
             ))}
           </div>
         ) : (
-          <div className="w-full h-full flex min-h-0 overflow-hidden">
+          <div className="w-full h-full flex min-h-0 max-w-full overflow-hidden">
             {/* Outline Sidebar Pane */}
             {showOutline && (
-              <div className="w-48 sm:w-64 h-full min-w-0 flex flex-col bg-[var(--bg-surface)] border-r border-[var(--border-color)] overflow-hidden shrink-0 animate-fade-in">
-                <div className="px-3 py-2.5 border-b border-[var(--border-color)] flex items-center justify-between">
+              <div className="absolute sm:static z-20 w-64 max-w-[80vw] h-full min-w-0 flex flex-col bg-[var(--bg-surface)] border-r border-[var(--border-color)] overflow-hidden shrink-0 animate-fade-in shadow-xl sm:shadow-none">
+                <div className="px-3 py-2.5 border-b border-[var(--border-color)] flex items-center justify-between shrink-0">
                   <span className="text-xs font-extrabold text-[var(--text-main)] uppercase tracking-wider">Outline</span>
                 </div>
-                <div className="flex-1 overflow-y-auto p-3 space-y-1">
+                <div className="flex-1 min-h-0 overflow-y-auto p-3 space-y-1">
                   {headings.length === 0 ? (
-                    <p className="text-xs text-[var(--text-subtle)] italic">No headings found in document.</p>
+                    <p className="text-xs text-[var(--text-muted)] italic">No headings found in document.</p>
                   ) : (
                     headings.map((h, i) => (
                       <a
@@ -1373,11 +1422,16 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
                           e.preventDefault();
                           const el = document.getElementById(h.id);
                           if (el) el.scrollIntoView({ behavior: 'smooth' });
+                          // On mobile the outline overlays the editor — dismiss
+                          // it after jumping so the user lands back in context.
+                          if (typeof window !== "undefined" && window.innerWidth < 640) {
+                            setShowOutline(false);
+                          }
                         }}
                         className={`block text-xs truncate hover:text-[var(--accent-indigo)] transition-colors cursor-pointer py-1 ${
                           h.level === 1 ? "font-bold text-[var(--text-main)] mt-2" :
                           h.level === 2 ? "font-medium text-[var(--text-muted)] ml-3" :
-                          "text-[var(--text-subtle)] ml-6"
+                          "text-[var(--text-muted)] ml-6"
                         }`}
                         title={h.text}
                       >
@@ -1391,7 +1445,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
 
             {/* Writer Pane */}
             {(viewMode === "write" || viewMode === "split") && (
-              <div className="flex-1 h-full min-w-0 flex flex-col bg-[var(--bg-card)] relative overflow-hidden border-r border-[var(--border-color)]">
+              <div className={`flex-1 h-full min-h-0 min-w-0 flex flex-col bg-[var(--bg-card)] relative overflow-hidden ${viewMode === "split" ? "border-r border-[var(--border-color)]" : ""}`}>
                 <div className="flex-1 flex min-h-0 relative overflow-hidden">
                   {/* Line Numbers Gutter */}
                   <div
@@ -1415,7 +1469,7 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
                     onScroll={handleScroll}
                     placeholder="Type or paste Markdown here... (Type '/' for commands)"
                     aria-label="Notes markdown content editor"
-                    className="w-full flex-1 resize-none bg-transparent text-[var(--text-main)] py-3 px-3 sm:px-4 outline-none font-mono text-sm leading-relaxed sm:leading-[1.625rem] placeholder-[var(--text-subtle)] overflow-y-auto selection:bg-[var(--accent-indigo)]/20 relative z-10"
+                    className="w-full flex-1 min-h-0 max-w-full resize-none bg-transparent text-[var(--text-main)] py-3 px-3 sm:px-4 outline-none font-mono text-base sm:text-sm leading-relaxed sm:leading-[1.625rem] placeholder-[var(--text-subtle)] overflow-y-auto overflow-x-hidden selection:bg-[var(--accent-indigo)]/20 relative z-10"
                     spellCheck="false"
                   />
 
@@ -1426,14 +1480,14 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
                         ref={slashMenuRef}
                         role="listbox"
                         aria-label="Slash commands suggestions"
-                        className="fixed w-64 bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl shadow-2xl overflow-hidden z-50 animate-scale-in"
+                        className="fixed w-64 max-w-[calc(100vw-1.5rem)] bg-[var(--bg-surface)] border border-[var(--border-color)] rounded-xl shadow-2xl overflow-hidden z-50 animate-scale-in"
                         style={{ top: "-9999px", left: "-9999px" }}
                       >
                         <div className="px-3 py-1.5 border-b border-[var(--border-color)] bg-[var(--bg-card)] flex items-center justify-between select-none">
-                          <span className="text-[10px] font-extrabold uppercase text-[var(--text-muted)] tracking-wider">
+                          <span className="text-[11px] font-extrabold uppercase text-[var(--text-muted)] tracking-wider">
                             Basic Blocks
                           </span>
-                          <span className="text-[9px] font-mono text-[var(--text-subtle)]">
+                          <span className="text-xs font-mono text-[var(--text-muted)]">
                             ↑↓ · ↵ to insert
                           </span>
                         </div>
@@ -1468,8 +1522,8 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
 
             {/* Formatted Markdown Live Preview Pane */}
             {(viewMode === "preview" || viewMode === "split") && (
-              <div className="flex-1 h-full min-w-0 flex flex-col bg-[var(--bg-card)] overflow-hidden">
-                <div ref={previewRef} className="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto max-w-none scroll-smooth">
+              <div className="flex-1 h-full min-h-0 min-w-0 flex flex-col bg-[var(--bg-card)] overflow-hidden">
+                <div ref={previewRef} className="flex-1 min-h-0 min-w-0 p-4 sm:p-6 md:p-8 overflow-y-auto overflow-x-hidden max-w-full lg:max-w-3xl lg:mx-auto scroll-smooth w-full">
                   <MarkdownRenderer content={displayContent} onToggleTask={handleToggleTask} />
                 </div>
               </div>
@@ -1479,8 +1533,8 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
       </div>
 
       {/* Bottom Status Bar (Markdown Viewer Style) */}
-      <div className="h-7 sm:h-7.5 px-3 bg-[var(--bg-surface)] border-t border-[var(--border-color)] text-xs text-[var(--text-muted)] flex items-center justify-between font-mono select-none shrink-0">
-        <div className="flex items-center gap-3">
+      <div className="h-7 min-h-7 px-2 sm:px-3 bg-[var(--bg-surface)] border-t border-[var(--border-color)] text-[11px] leading-none text-[var(--text-muted)] flex items-center justify-between gap-2 font-mono select-none shrink-0 overflow-hidden">
+        <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 overflow-hidden whitespace-nowrap">
           <span>⏱️ {readTime} Min Read</span>
           <span className="hidden sm:inline">·</span>
           <span className="hidden sm:inline">📝 {wordCount} Words</span>
@@ -1491,41 +1545,41 @@ export function TextEditor({ slug, initialContent, token }: TextEditorProps) {
           {totalTasks > 0 && (
             <>
               <span className="hidden md:inline">·</span>
-              <span className="hidden md:flex items-center gap-1.5" title={`${completedCount} of ${totalTasks} tasks completed`}>
+              <span className="hidden md:flex items-center gap-1" title={`${completedCount} of ${totalTasks} tasks completed`}>
                 <CheckSquare size={12} className={completedCount === totalTasks ? "text-[var(--status-success-text)]" : ""} />
-                <div className="w-16 h-1.5 bg-[var(--border-color)] rounded-full overflow-hidden flex">
+                <div className="w-12 h-1 bg-[var(--border-color)] rounded-full overflow-hidden flex">
                   <div 
                     className="h-full bg-[var(--status-success-text)] transition-all duration-300"
                     style={{ width: `${taskProgress}%` }}
                   />
                 </div>
-                <span className="text-[11px] font-bold">{taskProgress}%</span>
+                <span className="text-[10px] font-bold">{taskProgress}%</span>
               </span>
             </>
           )}
         </div>
 
-        <div ref={statusEl} data-status="idle" className="flex items-center gap-2.5">
+        <div ref={statusEl} data-status="idle" className="flex items-center gap-1.5 shrink-0 max-w-[45%]">
           {/* Active Collaborators Presence Badge */}
           <div
-            className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 font-bold"
+            className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-[var(--status-success-bg)] border border-[var(--status-success-border)] text-[10px] text-[var(--status-success-text)] font-bold"
             title={`${collaboratorCount} active browser session${collaboratorCount === 1 ? '' : 's'} connected to this workspace`}
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="w-1 h-1 rounded-full bg-[var(--status-success-text)] animate-pulse" />
             <span>{collaboratorCount} Live</span>
           </div>
 
-          <div className="[div[data-status='saving']_&]:flex hidden items-center gap-1.5 text-[var(--badge-text)] font-bold">
+          <div className="[div[data-status='saving']_&]:flex hidden items-center gap-1 text-[10px] text-[var(--badge-text)] font-bold">
             <Loader2 size={12} className="animate-spin text-[var(--accent-indigo)]" />
-            <span>Syncing…</span>
+            <span className="hidden sm:inline">Syncing…</span>
           </div>
-          <div className="[div[data-status='saved']_&]:flex hidden items-center gap-1.5 text-[var(--status-success-text)] font-bold">
+          <div className="[div[data-status='saved']_&]:flex hidden items-center gap-1 text-[10px] text-[var(--status-success-text)] font-bold">
             <CheckCircle2 size={12} />
-            <span>All changes saved</span>
+            <span className="hidden sm:inline">All changes saved</span>
           </div>
-          <div className="[div[data-status='idle']_&]:flex hidden items-center gap-1.5 text-[var(--text-subtle)]">
+          <div className="[div[data-status='idle']_&]:flex hidden items-center gap-1 text-[10px] text-[var(--text-muted)]">
             <Sparkles size={12} className="text-[var(--accent-indigo)]" />
-            <span>Auto-sync active</span>
+            <span className="hidden sm:inline">Auto-sync active</span>
           </div>
         </div>
       </div>
@@ -1572,10 +1626,10 @@ function formatMarkdownToHTML(md: string): string {
   });
 
   // Inline code: `code`
-  html = html.replace(/`([^`]+)`/g, '<code style="background: #f1f5f9; color: #4338ca; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 0.9em; font-weight: 600;">$1</code>');
+  html = html.replace(/`([^`]+)`/g, '<code style="background: #f1f5f9; color: #1a7f37; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 0.9em; font-weight: 600;">$1</code>');
 
   // Headings
-  html = html.replace(/^### (.*$)/gim, '<h3 style="font-size: 16px; font-weight: 700; color: #6366f1; margin-top: 18px; margin-bottom: 8px;">$1</h3>');
+  html = html.replace(/^### (.*$)/gim, '<h3 style="font-size: 16px; font-weight: 700; color: #1a7f37; margin-top: 18px; margin-bottom: 8px;">$1</h3>');
   html = html.replace(/^## (.*$)/gim, '<h2 style="font-size: 20px; font-weight: 700; color: #0f172a; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; margin-top: 22px; margin-bottom: 10px;">$1</h2>');
   html = html.replace(/^# (.*$)/gim, '<h1 style="font-size: 24px; font-weight: 800; color: #0f172a; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; margin-top: 24px; margin-bottom: 12px;">$1</h1>');
 
@@ -1618,14 +1672,14 @@ function formatMarkdownToHTML(md: string): string {
   html = resultLines.join("\n");
 
   // Blockquotes: > text
-  html = html.replace(/^>\s?(.*$)/gim, '<blockquote style="border-left: 4px solid #6366f1; background: #f1f5f9; margin: 12px 0; padding: 10px 14px; border-radius: 0 8px 8px 0; font-style: italic; color: #334155;">$1</blockquote>');
+  html = html.replace(/^>\s?(.*$)/gim, '<blockquote style="border-left: 4px solid #1a7f37; background: #f1f5f9; margin: 12px 0; padding: 10px 14px; border-radius: 0 8px 8px 0; font-style: italic; color: #334155;">$1</blockquote>');
 
   // Horizontal rules
   html = html.replace(/^---$/gim, '<hr style="border: 0; border-top: 2px solid #e2e8f0; margin: 20px 0;" />');
 
   // Task list checkboxes: - [x] task or - [ ] task
-  html = html.replace(/^-\s*\[x\]\s*(.*$)/gim, '<div style="margin: 4px 0;"><input type="checkbox" checked disabled style="margin-right: 8px; accent-color: #6366f1;" /> <span style="text-decoration: line-through; color: #64748b;">$1</span></div>');
-  html = html.replace(/^-\s*\[\s*\]\s*(.*$)/gim, '<div style="margin: 4px 0;"><input type="checkbox" disabled style="margin-right: 8px; accent-color: #6366f1;" /> <span>$1</span></div>');
+  html = html.replace(/^-\s*\[x\]\s*(.*$)/gim, '<div style="margin: 4px 0;"><input type="checkbox" checked disabled style="margin-right: 8px; accent-color: #1a7f37;" /> <span style="text-decoration: line-through; color: #64748b;">$1</span></div>');
+  html = html.replace(/^-\s*\[\s*\]\s*(.*$)/gim, '<div style="margin: 4px 0;"><input type="checkbox" disabled style="margin-right: 8px; accent-color: #1a7f37;" /> <span>$1</span></div>');
 
   // Unordered list items: - item
   html = html.replace(/^-\s+(.*$)/gim, '<li style="margin: 4px 0; list-style-type: disc;">$1</li>');
@@ -1634,7 +1688,7 @@ function formatMarkdownToHTML(md: string): string {
   html = html.replace(/^\d+\.\s+(.*$)/gim, '<li style="margin: 4px 0; list-style-type: decimal;">$1</li>');
 
   // Bold, Italic, Strikethrough
-  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong style="color: #4338ca; font-weight: 800;">$1</strong>');
+  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong style="color: #1a7f37; font-weight: 800;">$1</strong>');
   html = html.replace(/\*([^*]+)\*/g, '<em style="font-style: italic; font-weight: 600;">$1</em>');
   html = html.replace(/~~([^~]+)~~/g, '<del style="text-decoration: line-through; color: #94a3b8;">$1</del>');
 

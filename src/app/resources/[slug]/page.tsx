@@ -144,8 +144,19 @@ export default async function ArticlePage({ params }: Props) {
   const firstHalf = sections.slice(0, midPoint).join("\n\n---\n\n");
   const secondHalf = sections.slice(midPoint).join("\n\n---\n\n");
 
+  // Navigation-policy guard: only render the mid-article unit on substantial
+  // articles where the ad stays buffered by long editorial text on both sides.
+  // On thin pages the unit would sit too close to the "Try FileShare Free" CTA
+  // and the Related Resources navigation grid, risking a
+  // "mistaken for menu / navigation" flag. articleMid is intentionally empty
+  // (ads disabled) until review passes — isAdsEnabled() then collapses to null.
+  const showResourceAd =
+    article.wordCount >= 700 &&
+    firstHalf.trim().length >= 1500 &&
+    secondHalf.trim().length >= 1200;
+
   return (
-    <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col transition-colors duration-200">
+    <div className="min-h-dvh bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col transition-colors duration-200">
       {/* Conditionally load AdSense on this substantial publisher content page */}
       <AdSenseScript />
 
@@ -168,7 +179,7 @@ export default async function ArticlePage({ params }: Props) {
             </div>
             <span>FileShare</span>
           </Link>
-          <nav className="flex items-center gap-4 text-xs font-medium text-[var(--text-muted)]">
+          <nav className="hidden sm:flex items-center gap-4 text-xs font-medium text-[var(--text-muted)]">
             <Link href="/resources" className="hover:text-[var(--text-main)] transition-colors">Resources</Link>
             <Link href="/guide" className="hover:text-[var(--text-main)] transition-colors">Guide</Link>
             <Link href="/about" className="hover:text-[var(--text-main)] transition-colors">About</Link>
@@ -216,12 +227,12 @@ export default async function ArticlePage({ params }: Props) {
             {article.description}
           </p>
 
-          <div className="flex items-center justify-between text-xs text-[var(--text-subtle)] pt-4 border-t border-[var(--border-color)]">
-            <div className="flex items-center gap-2">
-              <User className="w-3.5 h-3.5 text-[var(--accent-primary)]" />
-              <span>By {article.author}</span>
+          <div className="flex items-center justify-between gap-2 text-xs text-[var(--text-subtle)] dark:text-[var(--text-muted)] pt-4 border-t border-[var(--border-color)]">
+            <div className="flex min-w-0 items-center gap-2">
+              <User className="w-3.5 h-3.5 shrink-0 text-[var(--accent-primary)]" />
+              <span className="min-w-0 truncate">By {article.author}</span>
             </div>
-            <div className="font-mono">
+            <div className="font-mono shrink-0">
               ~{article.wordCount} words
             </div>
           </div>
@@ -232,8 +243,12 @@ export default async function ArticlePage({ params }: Props) {
           <MarkdownRenderer content={firstHalf} />
         </article>
 
-        {/* Safe In-Content Ad Unit: Embedded mid-editorial flow after 2-3 full sections */}
-        <AdBanner slot={ADSENSE_SLOTS.resourceArticle} position="in-content" />
+        {/* Safe In-Content Ad Unit: Embedded mid-editorial flow after 2-3 full sections.
+            Rendered only on substantial articles so it never sits adjacent to
+            the CTA button or Related Resources navigation grid. */}
+        {showResourceAd && (
+          <AdBanner slot={ADSENSE_SLOTS.resourceArticle} position="in-content" />
+        )}
 
         {/* Article Body Part 2 */}
         {secondHalf.trim() && (
@@ -257,7 +272,7 @@ export default async function ArticlePage({ params }: Props) {
           </div>
           <Link
             href="/"
-            className="shrink-0 px-4 py-2 rounded-lg bg-[var(--accent-primary)] text-white text-xs font-semibold hover:opacity-90 transition-opacity"
+            className="w-full sm:w-auto shrink-0 px-4 py-2 rounded-lg bg-[var(--accent-primary)] text-white text-xs font-semibold hover:opacity-90 transition-opacity inline-flex items-center justify-center"
           >
             Try FileShare Free
           </Link>
@@ -266,7 +281,7 @@ export default async function ArticlePage({ params }: Props) {
         {/* Related Articles */}
         <div className="mt-12 pt-8 border-t border-[var(--border-color)]">
           <h2 className="text-xl font-bold mb-6 text-[var(--text-main)]">Related Resources & Guides</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {relatedArticles.map((rel) => (
               <Link
                 key={rel.slug}
@@ -274,17 +289,17 @@ export default async function ArticlePage({ params }: Props) {
                 className="p-4 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-color)] hover:border-[var(--border-glow)] transition-all flex flex-col justify-between group"
               >
                 <div>
-                  <span className="text-[10px] font-mono text-[var(--accent-primary)] block mb-1">
+                  <span className="text-xs font-mono text-[var(--accent-primary)] block mb-1">
                     {rel.category}
                   </span>
                   <h3 className="text-xs sm:text-sm font-bold text-[var(--text-main)] group-hover:text-[var(--accent-primary)] transition-colors line-clamp-2 mb-2">
                     {rel.title}
                   </h3>
-                  <p className="text-[11px] text-[var(--text-muted)] line-clamp-2 mb-3">
+                  <p className="text-xs text-[var(--text-muted)] line-clamp-2 mb-3">
                     {rel.description}
                   </p>
                 </div>
-                <div className="flex items-center justify-between text-[10px] text-[var(--text-subtle)] font-mono">
+                <div className="flex items-center justify-between text-xs text-[var(--text-subtle)] dark:text-[var(--text-muted)] font-mono">
                   <span>{rel.readTime}</span>
                   <ArrowRight className="w-3 h-3 text-[var(--accent-primary)] group-hover:translate-x-0.5 transition-transform" />
                 </div>
@@ -298,25 +313,25 @@ export default async function ArticlePage({ params }: Props) {
       <footer className="border-t border-[var(--border-color)] py-8 bg-[var(--header-bg)]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--text-muted)]">
           <p>© 2026 FileShare (SHP Technology). High-velocity collaborative workspaces &amp; secure file vaults.</p>
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center justify-center gap-3">
             <Link href="/" className="hover:text-[var(--text-main)] transition-colors">Home</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/about" className="hover:text-[var(--text-main)] transition-colors">About</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/guide" className="hover:text-[var(--text-main)] transition-colors">Guide</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/resources" className="hover:text-[var(--text-main)] transition-colors">Resources</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/contact" className="hover:text-[var(--text-main)] transition-colors">Contact</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/privacy" className="hover:text-[var(--text-main)] transition-colors">Privacy Policy</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/terms" className="hover:text-[var(--text-main)] transition-colors">Terms &amp; Conditions</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/cookies" className="hover:text-[var(--text-main)] transition-colors">Cookie Policy</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/refund" className="hover:text-[var(--text-main)] transition-colors">Refund Policy</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <CookieSettingsButton />
           </div>
         </div>

@@ -1,0 +1,22 @@
+meta {
+  name: Delete Workspace
+  type: http
+  seq: 9
+}
+
+delete {
+  url: {{baseUrl}}/api/pages/{{slug}}
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+docs {
+  DELETE /api/pages/:slug — permanently deletes the workspace and its file
+  RECORDS (DB rows cascade). 404 if missing. Bearer token required when the
+  page is password-protected. Irreversible. Note: orphaned objects in local
+  disk / B2 storage are not garbage-collected by this endpoint.
+}

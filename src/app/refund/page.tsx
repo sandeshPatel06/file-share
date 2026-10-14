@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 
 export default function RefundPolicyPage() {
   return (
-    <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col transition-colors duration-200">
+    <div className="min-h-dvh bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col transition-colors duration-200">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-[var(--header-bg)] border-b border-[var(--border-color)]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
@@ -32,7 +32,7 @@ export default function RefundPolicyPage() {
             </div>
             <span>FileShare</span>
           </Link>
-          <nav className="flex items-center gap-4 text-xs font-medium text-[var(--text-muted)]">
+          <nav className="hidden sm:flex items-center gap-4 text-xs font-medium text-[var(--text-muted)]">
             <Link href="/privacy" className="hover:text-[var(--text-main)] transition-colors">Privacy</Link>
             <Link href="/terms" className="hover:text-[var(--text-main)] transition-colors">Terms</Link>
             <Link href="/contact" className="hover:text-[var(--text-main)] transition-colors">Contact</Link>
@@ -54,7 +54,7 @@ export default function RefundPolicyPage() {
 
         <div className="mb-10 border-b border-[var(--border-color)] pb-8">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-mono bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-muted)] mb-3">
-            <RefreshCcw className="w-3.5 h-3.5 text-blue-400" />
+            <RefreshCcw className="w-3.5 h-3.5 text-[var(--accent-primary)]" />
             <span>Commercial Terms & Policies</span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">
@@ -70,9 +70,9 @@ export default function RefundPolicyPage() {
 
         <div className="space-y-8 text-sm leading-relaxed">
           {/* Section 1: Free Service Tier */}
-          <section className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--border-color)] space-y-3">
+          <section className="bg-[var(--bg-surface)] p-4 sm:p-6 rounded-xl border border-[var(--border-color)] space-y-3">
             <h2 className="text-lg font-bold text-[var(--text-main)] flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+              <CheckCircle2 className="w-5 h-5 shrink-0 text-[var(--status-success-text)]" />
               1. 100% Free Core Platform
             </h2>
             <p className="text-[var(--text-muted)]">
@@ -84,9 +84,9 @@ export default function RefundPolicyPage() {
           </section>
 
           {/* Section 2: Cancellation Terms */}
-          <section className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--border-color)] space-y-3">
+          <section className="bg-[var(--bg-surface)] p-4 sm:p-6 rounded-xl border border-[var(--border-color)] space-y-3">
             <h2 className="text-lg font-bold text-[var(--text-main)] flex items-center gap-2">
-              <RefreshCcw className="w-5 h-5 text-[var(--accent-primary)]" />
+              <RefreshCcw className="w-5 h-5 shrink-0 text-[var(--accent-primary)]" />
               2. Cancellation and Termination Policy
             </h2>
             <p className="text-[var(--text-muted)]">
@@ -101,9 +101,9 @@ export default function RefundPolicyPage() {
           </section>
 
           {/* Section 3: Voluntary Donations and Sponsorships */}
-          <section className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--border-color)] space-y-3">
+          <section className="bg-[var(--bg-surface)] p-4 sm:p-6 rounded-xl border border-[var(--border-color)] space-y-3">
             <h2 className="text-lg font-bold text-[var(--text-main)] flex items-center gap-2">
-              <CreditCard className="w-5 h-5 text-amber-400" />
+              <CreditCard className="w-5 h-5 shrink-0 text-[var(--accent-primary)]" />
               3. Voluntary Donations, Tips &amp; Sponsorships
             </h2>
             <p className="text-[var(--text-muted)]">
@@ -117,9 +117,9 @@ export default function RefundPolicyPage() {
           </section>
 
           {/* Section 4: Enterprise Licensing */}
-          <section className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--border-color)] space-y-3">
+          <section className="bg-[var(--bg-surface)] p-4 sm:p-6 rounded-xl border border-[var(--border-color)] space-y-3">
             <h2 className="text-lg font-bold text-[var(--text-main)] flex items-center gap-2">
-              <ShieldAlert className="w-5 h-5 text-purple-400" />
+              <ShieldAlert className="w-5 h-5 shrink-0 text-[var(--accent-primary)]" />
               4. Custom Commercial &amp; Enterprise Agreements
             </h2>
             <p className="text-[var(--text-muted)]">
@@ -131,15 +131,15 @@ export default function RefundPolicyPage() {
           </section>
 
           {/* Section 5: Contact */}
-          <section className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--border-color)] space-y-3">
+          <section className="bg-[var(--bg-surface)] p-4 sm:p-6 rounded-xl border border-[var(--border-color)] space-y-3">
             <h2 className="text-lg font-bold text-[var(--text-main)] flex items-center gap-2">
-              <Mail className="w-5 h-5 text-[var(--accent-primary)]" />
+              <Mail className="w-5 h-5 shrink-0 text-[var(--accent-primary)]" />
               5. Billing Inquiries &amp; Dispute Resolution
             </h2>
             <p className="text-[var(--text-muted)]">
               For any payment inquiries, erroneous transaction claims, or billing clarifications, please contact our billing administration:
             </p>
-            <div className="p-4 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] text-xs font-mono space-y-1">
+            <div className="p-4 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] text-xs font-mono space-y-1 break-all">
               <div>Entity: SHP Technology (FileShare)</div>
               <div>Billing Email: billing@fileshare.shptechnology.online</div>
               <div>Support Email: support@fileshare.shptechnology.online</div>
@@ -154,17 +154,17 @@ export default function RefundPolicyPage() {
       <footer className="border-t border-[var(--border-color)] py-8 bg-[var(--header-bg)]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--text-muted)]">
           <p>© 2026 FileShare (SHP Technology). All rights reserved.</p>
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center justify-center gap-3">
             <Link href="/" className="hover:text-[var(--text-main)] transition-colors">Home</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/privacy" className="hover:text-[var(--text-main)] transition-colors">Privacy</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/terms" className="hover:text-[var(--text-main)] transition-colors">Terms</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/cookies" className="hover:text-[var(--text-main)] transition-colors">Cookies</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/refund" className="hover:text-[var(--text-main)] transition-colors">Refund Policy</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/contact" className="hover:text-[var(--text-main)] transition-colors">Contact</Link>
           </div>
         </div>

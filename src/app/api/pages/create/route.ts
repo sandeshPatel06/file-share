@@ -6,7 +6,9 @@ import { rateLimit } from "@/lib/rateLimiter";
 
 // POST /api/pages/create
 export async function POST(req: NextRequest) {
-  const limited = await rateLimit(req, "general");
+  // "sensitive" budget: this route may bcrypt-hash (cost 12) — the loose
+  // general limiter would allow CPU exhaustion at 300 req/60s.
+  const limited = await rateLimit(req, "sensitive");
   if (limited) return limited;
 
   let body: unknown;
@@ -34,9 +36,9 @@ export async function POST(req: NextRequest) {
     `).run(slug, "", password ? 1 : 0, passwordHash);
 
     return NextResponse.json({ slug }, { status: 201 });
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Failed to create space";
-    return NextResponse.json({ error: message }, { status: 500 });
+  } catch {
+    // Generic message: raw DB error text would leak schema/connection internals.
+    return NextResponse.json({ error: "Failed to create space" }, { status: 500 });
   }
 }
 

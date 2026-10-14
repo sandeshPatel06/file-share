@@ -40,19 +40,23 @@ export const setPasswordSchema = z.object({
     .nullable(),
 });
 
-/** MIME types allowed for upload */
+/** MIME types allowed for upload — must stay in sync with the client-side
+ * category filters (FilePanel matchCategory) and the formats advertised in
+ * the guide (ZIP, TAR, PDF, images, MP4/MP3, TXT, JSON, CSV, code). */
 export const ALLOWED_MIME_TYPES = new Set([
   "image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml",
+  "image/bmp", "image/x-icon", "image/vnd.microsoft.icon",
   "application/pdf",
   "text/plain", "text/csv", "text/markdown",
   "application/json",
   "application/zip", "application/x-zip-compressed",
-  "application/x-rar-compressed",
+  "application/x-rar-compressed", "application/x-tar",
+  "application/gzip", "application/x-7z-compressed",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-  "audio/mpeg", "audio/wav", "audio/ogg",
-  "video/mp4", "video/webm",
+  "audio/mpeg", "audio/wav", "audio/x-wav", "audio/ogg", "audio/flac", "audio/x-flac", "audio/mp4",
+  "video/mp4", "video/webm", "video/quicktime", "video/x-msvideo", "video/x-matroska",
 ]);
 
 export const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500 MB

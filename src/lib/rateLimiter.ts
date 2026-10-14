@@ -13,20 +13,46 @@ const generalLimiter = new RateLimiterMemory({
   duration: 60,
 });
 
+// Sensitive limiter — 30 req per 60s per IP for CPU-heavy routes
+// (bcrypt cost-12 hashing on create-with-password / password-set).
+const sensitiveLimiter = new RateLimiterMemory({
+  points:   30,
+  duration: 60,
+});
+
+// Uploads are expensive even when they fail: cap connection attempts before
+// busboy starts consuming a potentially 500 MB request body.
+const uploadLimiter = new RateLimiterMemory({
+  points: 12,
+  duration: 600,
+});
+
 function getIp(req: NextRequest): string {
+  // Never trust the leftmost X-Forwarded-For entry — it is client-controlled
+  // and trivially rotated to defeat per-IP budgets. The proxy appends the
+  // real client IP at the RIGHT, so take the last entry. Empty strings fall
+  // through (||, not ??) to the next source instead of sharing one bucket.
+  const forwarded = req.headers.get("x-forwarded-for");
+  const fromXff = forwarded?.split(",").map((s) => s.trim()).filter(Boolean).pop();
   return (
-    req.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
-    req.headers.get("x-real-ip") ??
+    fromXff ||
+    req.headers.get("x-real-ip")?.trim() ||
     "unknown"
   );
 }
 
 export async function rateLimit(
   req: NextRequest,
-  type: "verify" | "general" = "general"
+  type: "verify" | "general" | "sensitive" | "upload" = "general"
 ): Promise<NextResponse | null> {
   const ip      = getIp(req);
-  const limiter = type === "verify" ? verifyLimiter : generalLimiter;
+  const limiter = type === "verify"
+    ? verifyLimiter
+    : type === "sensitive"
+      ? sensitiveLimiter
+      : type === "upload"
+        ? uploadLimiter
+        : generalLimiter;
 
   try {
     await limiter.consume(ip);

@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 
 export default function CookiePolicyPage() {
   return (
-    <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col transition-colors duration-200">
+    <div className="min-h-dvh bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col transition-colors duration-200">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-[var(--header-bg)] border-b border-[var(--border-color)]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
@@ -33,7 +33,7 @@ export default function CookiePolicyPage() {
             </div>
             <span>FileShare</span>
           </Link>
-          <nav className="flex items-center gap-4 text-xs font-medium text-[var(--text-muted)]">
+          <nav className="hidden sm:flex items-center gap-4 text-xs font-medium text-[var(--text-muted)]">
             <Link href="/privacy" className="hover:text-[var(--text-main)] transition-colors">Privacy Policy</Link>
             <Link href="/terms" className="hover:text-[var(--text-main)] transition-colors">Terms</Link>
             <Link href="/contact" className="hover:text-[var(--text-main)] transition-colors">Contact</Link>
@@ -55,7 +55,7 @@ export default function CookiePolicyPage() {
 
         <div className="mb-10 border-b border-[var(--border-color)] pb-8">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-mono bg-[var(--bg-surface)] border border-[var(--border-color)] text-[var(--text-muted)] mb-3">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+            <ShieldCheck className="w-3.5 h-3.5 text-[var(--status-success-text)]" />
             <span>Compliance & Transparency</span>
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mb-3">
@@ -71,9 +71,9 @@ export default function CookiePolicyPage() {
 
         <div className="space-y-8 text-sm leading-relaxed">
           {/* Section 1: What are cookies */}
-          <section className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--border-color)] space-y-3">
+          <section className="bg-[var(--bg-surface)] p-4 sm:p-6 rounded-xl border border-[var(--border-color)] space-y-3">
             <h2 className="text-lg font-bold text-[var(--text-main)] flex items-center gap-2">
-              <Cookie className="w-5 h-5 text-[var(--accent-primary)]" />
+              <Cookie className="w-5 h-5 shrink-0 text-[var(--accent-primary)]" />
               1. What Are Cookies and Local Storage?
             </h2>
             <p className="text-[var(--text-muted)]">
@@ -85,7 +85,7 @@ export default function CookiePolicyPage() {
           </section>
 
           {/* Section 2: Manage Preferences CTA */}
-          <section className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--accent-primary)]/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <section className="bg-[var(--bg-surface)] p-4 sm:p-6 rounded-xl border border-[var(--accent-primary)]/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <h3 className="font-bold text-base text-[var(--text-main)] mb-1">
                 Manage Your Cookie Consent Preferences
@@ -94,25 +94,25 @@ export default function CookiePolicyPage() {
                 You can inspect or adjust your analytics and advertising cookie choices at any time.
               </p>
             </div>
-            <div className="px-4 py-2 rounded-lg bg-[var(--accent-primary)] text-white text-xs font-semibold hover:bg-[var(--accent-primary-hover)] transition-colors inline-flex items-center gap-2">
+            <div className="w-full sm:w-auto px-4 py-2 rounded-lg bg-[var(--accent-primary)] text-white text-xs font-semibold hover:bg-[var(--accent-primary-hover)] transition-colors inline-flex items-center justify-center gap-2">
               <Settings className="w-3.5 h-3.5" />
               <CookieSettingsButton />
             </div>
           </section>
 
           {/* Section 3: Cookie Inventory Table */}
-          <section className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--border-color)] space-y-4">
+          <section className="bg-[var(--bg-surface)] p-4 sm:p-6 rounded-xl border border-[var(--border-color)] space-y-4">
             <h2 className="text-lg font-bold text-[var(--text-main)] flex items-center gap-2">
-              <Lock className="w-5 h-5 text-[var(--accent-primary)]" />
+              <Lock className="w-5 h-5 shrink-0 text-[var(--accent-primary)]" />
               2. Detailed Inventory of Cookies & Storage Mechanisms
             </h2>
             <p className="text-xs sm:text-sm text-[var(--text-muted)]">
               The table below outlines every cookie and browser storage item used across FileShare:
             </p>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border border-[var(--border-color)] rounded-xl overflow-hidden">
-                <thead className="bg-[var(--bg-main)] font-mono text-[var(--text-subtle)] border-b border-[var(--border-color)]">
+            <div className="overflow-x-auto max-w-full">
+              <table className="w-full min-w-[640px] text-left text-xs border border-[var(--border-color)] rounded-xl overflow-hidden">
+                <thead className="bg-[var(--bg-main)] font-mono text-[var(--text-subtle)] dark:text-[var(--text-muted)] border-b border-[var(--border-color)]">
                   <tr>
                     <th className="p-3">Item / Key Name</th>
                     <th className="p-3">Type & Provider</th>
@@ -125,35 +125,35 @@ export default function CookiePolicyPage() {
                   <tr>
                     <td className="p-3 font-mono font-bold text-[var(--text-main)]">fileshare_cookie_consent</td>
                     <td className="p-3">localStorage (First-party)</td>
-                    <td className="p-3 font-semibold text-emerald-400">Strictly Necessary</td>
+                    <td className="p-3 font-semibold text-[var(--status-success-text)]">Strictly Necessary</td>
                     <td className="p-3">Persistent (1 year)</td>
                     <td className="p-3">Stores your explicit cookie consent and preference choices (GDPR & DPDP Act compliance).</td>
                   </tr>
                   <tr>
                     <td className="p-3 font-mono font-bold text-[var(--text-main)]">token:[slug]</td>
                     <td className="p-3">sessionStorage (First-party)</td>
-                    <td className="p-3 font-semibold text-emerald-400">Strictly Necessary</td>
+                    <td className="p-3 font-semibold text-[var(--status-success-text)]">Strictly Necessary</td>
                     <td className="p-3">Browser Session only</td>
                     <td className="p-3">Stores temporary JWT authorization token to unlock password-protected workspaces. Destroyed on tab close.</td>
                   </tr>
                   <tr>
                     <td className="p-3 font-mono font-bold text-[var(--text-main)]">theme</td>
                     <td className="p-3">localStorage (First-party)</td>
-                    <td className="p-3 font-semibold text-blue-400">Functional</td>
+                    <td className="p-3 font-semibold text-[var(--accent-sky)]">Functional</td>
                     <td className="p-3">Persistent</td>
                     <td className="p-3">Remembers your dark or light theme interface preference.</td>
                   </tr>
                   <tr>
                     <td className="p-3 font-mono font-bold text-[var(--text-main)]">_ga, _ga_*</td>
                     <td className="p-3">HTTP Cookie (Google LLC)</td>
-                    <td className="p-3 font-semibold text-purple-400">Analytics (Consent Required)</td>
+                    <td className="p-3 font-semibold text-[var(--accent-primary)]">Analytics (Consent Required)</td>
                     <td className="p-3">2 years / 24 hours</td>
                     <td className="p-3">Distinguishes unique users and tracks anonymized aggregate site usage via Google Analytics 4.</td>
                   </tr>
                   <tr>
                     <td className="p-3 font-mono font-bold text-[var(--text-main)]">__gads, __gpi</td>
                     <td className="p-3">HTTP Cookie (Google LLC)</td>
-                    <td className="p-3 font-semibold text-amber-400">Advertising (Consent Required)</td>
+                    <td className="p-3 font-semibold text-[var(--accent-primary)]">Advertising (Consent Required)</td>
                     <td className="p-3">13 months</td>
                     <td className="p-3">Google AdSense frequency capping and non-intrusive ad reporting on public editorial pages.</td>
                   </tr>
@@ -163,9 +163,9 @@ export default function CookiePolicyPage() {
           </section>
 
           {/* Section 4: Consent Mode */}
-          <section className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--border-color)] space-y-3">
+          <section className="bg-[var(--bg-surface)] p-4 sm:p-6 rounded-xl border border-[var(--border-color)] space-y-3">
             <h2 className="text-lg font-bold text-[var(--text-main)] flex items-center gap-2">
-              <Eye className="w-5 h-5 text-[var(--accent-primary)]" />
+              <Eye className="w-5 h-5 shrink-0 text-[var(--accent-primary)]" />
               3. Google Consent Mode v2 & Default Denied State
             </h2>
             <p className="text-[var(--text-muted)]">
@@ -177,9 +177,9 @@ export default function CookiePolicyPage() {
           </section>
 
           {/* Section 5: Browser Controls */}
-          <section className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--border-color)] space-y-3">
+          <section className="bg-[var(--bg-surface)] p-4 sm:p-6 rounded-xl border border-[var(--border-color)] space-y-3">
             <h2 className="text-lg font-bold text-[var(--text-main)] flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-[var(--accent-primary)]" />
+              <CheckCircle2 className="w-5 h-5 shrink-0 text-[var(--accent-primary)]" />
               4. How to Manage and Disable Cookies in Your Browser
             </h2>
             <p className="text-[var(--text-muted)]">
@@ -197,12 +197,12 @@ export default function CookiePolicyPage() {
           </section>
 
           {/* Section 6: Contact */}
-          <section className="bg-[var(--bg-surface)] p-6 rounded-xl border border-[var(--border-color)] space-y-2">
+          <section className="bg-[var(--bg-surface)] p-4 sm:p-6 rounded-xl border border-[var(--border-color)] space-y-2">
             <h2 className="text-lg font-bold text-[var(--text-main)]">5. Inquiries & Data Privacy Officer</h2>
             <p className="text-[var(--text-muted)]">
               If you have any questions about this Cookie Policy or our data storage practices, please reach out to our Grievance &amp; Data Protection Officer:
             </p>
-            <div className="p-4 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] text-xs font-mono space-y-1">
+            <div className="p-4 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] text-xs font-mono space-y-1 break-all">
               <div>Entity: SHP Technology</div>
               <div>Grievance Officer: Sandesh Patel</div>
               <div>Email: grievance@fileshare.shptechnology.online / support@fileshare.shptechnology.online</div>
@@ -216,17 +216,17 @@ export default function CookiePolicyPage() {
       <footer className="border-t border-[var(--border-color)] py-8 bg-[var(--header-bg)]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--text-muted)]">
           <p>© 2026 FileShare (SHP Technology). Engineered for speed, privacy, and accessibility.</p>
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center justify-center gap-3">
             <Link href="/" className="hover:text-[var(--text-main)] transition-colors">Home</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/privacy" className="hover:text-[var(--text-main)] transition-colors">Privacy</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/terms" className="hover:text-[var(--text-main)] transition-colors">Terms</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/cookies" className="hover:text-[var(--text-main)] transition-colors">Cookies</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/refund" className="hover:text-[var(--text-main)] transition-colors">Refund Policy</Link>
-            <span>•</span>
+            <span className="hidden sm:inline">•</span>
             <Link href="/contact" className="hover:text-[var(--text-main)] transition-colors">Contact</Link>
           </div>
         </div>
