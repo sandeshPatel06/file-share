@@ -118,7 +118,7 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
             </h1>
 
             <p className="max-w-2xl mx-auto text-sm sm:text-base text-[var(--text-muted)] mb-8 leading-relaxed">
-               Create an instant workspace to collaborate on live Markdown notes, render Mermaid diagrams, and share files up to 500MB in real time. No registration, email verification, or account required.
+               Create an instant workspace to collaborate on live Markdown notes, share text through a live URL, render Mermaid diagrams, and share files up to 500MB in real time. No registration, email verification, or account required.
             </p>
 
             {/* Workspace Launcher Action Form */}
