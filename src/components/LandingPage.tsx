@@ -110,15 +110,15 @@ export function LandingPage({ defaultSlug }: LandingPageProps) {
               <span>•</span>
               <span className="text-[var(--accent-primary)] flex items-center gap-1"><Zap className="w-3.5 h-3.5" /> Real-Time SSE Sync</span>
               <span>•</span>
-              <span className="text-[var(--accent-sky)] flex items-center gap-1"><Shield className="w-3.5 h-3.5" /> 500MB Encrypted Vault</span>
+               <span className="text-[var(--accent-sky)] flex items-center gap-1"><Shield className="w-3.5 h-3.5" /> 500MB Secure File Vault</span>
             </div>
 
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-[var(--text-main)] mb-6 leading-tight">
-              Instant Online Notepad &amp; Secure 500MB File Vault
+               Free Online Notepad Without Login &amp; Real-Time File Sharing
             </h1>
 
             <p className="max-w-2xl mx-auto text-sm sm:text-base text-[var(--text-muted)] mb-8 leading-relaxed">
-              Create instant, anonymous workspaces to collaborate on live Markdown notes, render Mermaid diagrams, and share files up to 500MB in real-time. Zero registration, no email verification, and instant QR code handoff between devices.
+               Create an instant workspace to collaborate on live Markdown notes, render Mermaid diagrams, and share files up to 500MB in real time. No registration, email verification, or account required.
             </p>
 
             {/* Workspace Launcher Action Form */}

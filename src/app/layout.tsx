@@ -22,10 +22,10 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl),
   title: {
-    default: "FileShare — Instant Real-Time Notes & Secure File Sharing Vault",
+    default: "Free Online Notepad Without Login & File Sharing | FileShare",
     template: "%s | FileShare",
   },
-  description: "FileShare is a free, instant real-time collaborative notepad and secure 500MB file vault. Create anonymous workspaces without registration, edit live Markdown notes with AI formatting, render Mermaid diagrams, and share files across devices via custom URLs or QR codes.",
+  description: "Free online notepad without login for real-time Markdown collaboration and secure file sharing up to 500MB. Create a workspace instantly with no registration.",
   keywords: [
     "online notepad",
     "online notepad without login",
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     "developer scratchpad with markdown",
     "instant code sharing tool",
     "password protected notes sharing",
-    "encrypted temporary file vault",
+    "secure temporary file vault",
     "ephemeral workspace",
     "private shared notepad with password",
     "zero registration file transfer",
@@ -81,8 +81,8 @@ export const metadata: Metadata = {
   },
   manifest: "/manifest.json",
   openGraph: {
-    title: "FileShare — Instant Real-Time Notes & Secure File Sharing Vault",
-    description: "Share notes & large files instantly with live real-time synchronization. Zero registration required.",
+    title: "Free Online Notepad Without Login & File Sharing | FileShare",
+    description: "Collaborate on Markdown notes in real time and share files up to 500MB without registration.",
     url: appUrl,
     siteName: "FileShare",
     locale: "en_US",
@@ -98,8 +98,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "FileShare — Instant Real-Time Notes & Secure File Sharing Vault",
-    description: "Share notes & files instantly in real-time. No sign-up required.",
+    title: "Free Online Notepad Without Login & File Sharing | FileShare",
+    description: "Real-time Markdown notes and secure 500MB file sharing with no sign-up required.",
     images: [`${appUrl}/logo.png`],
   },
   robots: {
