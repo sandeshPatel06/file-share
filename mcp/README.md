@@ -32,7 +32,7 @@ MCP client (Claude / Cursor / …)
         │  stdio or Streamable HTTP
         ▼
 FileShare MCP server (proposed)
-        │  in-memory slug → JWT map
+        │  per-connection slug → JWT map
         │  HTTP + Bearer header (per request)
         ▼
 Next.js API  (/api/pages/*, /api/uploads/*)
@@ -48,25 +48,27 @@ Rules the implementation must obey (from `AGENTS.md`):
 - Rate limits are enforced server-side; the MCP server must surface `429` + `Retry-After` to the client instead of retrying blindly.
 - Protected pages: obtain a JWT via `POST /api/pages/[slug]/verify` and send it as `Authorization: Bearer <token>`; tokens are slug-scoped and expire after **24 h**.
 
-## 3. Session model (slug → token map)
+## 3. Session model (per-connection slug → token map)
 
-Tools take **no `token` argument** and **no raw JWT**. The server owns a
-single **in-memory** `Map<slug, token>`:
+Tools take **no `token` argument** and **no raw JWT**. The server keeps one
+**in-memory** `Map<slug, token>` **per MCP session** — each client connection
+gets its own map:
 
 1. `fs_verify_password({ slug, password })` → server calls the API, stores the
-   returned JWT under `slug`, and reports success to the client. The JWT
-   itself is not returned to the model.
-2. Every other tool looks up `map.get(slug)` and attaches
-   `Authorization: Bearer <token>` on the outgoing request.
+   returned JWT under `slug` in the calling connection's map, and reports
+   success to the client. The JWT itself is not returned to the model.
+2. Every other tool looks up the calling connection's `map.get(slug)` and
+   attaches `Authorization: Bearer <token>` on the outgoing request.
 3. Entries are dropped on: 401 from the API, token-expiry horizon (24 h),
-   explicit logout, or process exit. **No persistence** — restarting the
-   server clears all sessions.
+   connection close, or process exit. **No persistence** — restarting the
+   server clears all sessions. stdio has exactly one connection, so
+   single-user behavior is unchanged.
 4. Tokens are **slug-scoped**: a token minted for `alpha` is never presented
    against `beta`; the API rejects mismatched payloads and the server must
    delete the stale entry on 401.
 
-This map is the only session store. Do not build a cross-slug or multi-user
-session layer on top of it.
+The per-connection map **is** the isolation boundary: never share one
+process-global `slug → token` map across clients.
 
 ## 4. Document map
 
@@ -86,6 +88,10 @@ FILESHARE_API_URL=https://fileshare.shptechnology.online
 
 # Optional: only needed if the server talks to a local/dev instance
 # FILESHARE_API_URL=http://localhost:3000
+
+# Optional: upload/download guards (see tools.md fs_upload_file / fs_download_file)
+# FILESHARE_UPLOAD_ROOTS=/path/to/uploads,/other/allowed/root
+# FILESHARE_INLINE_MAX_BYTES=10485760
 
 # Never commit real values
 # JWT_SECRET / B2_* / DATABASE_URL belong to the app, not the MCP server
@@ -114,16 +120,18 @@ Register the server in any MCP host (Claude Code / Claude Desktop style):
 }
 ```
 
-See [`config.example.json`](./config.example.json) for the full annotated sample.
+Local dev only needs `FILESHARE_API_URL=http://localhost:3000`.
+
+See [`config.example.json`](./config.example.json) for the minimal sample.
 
 ## 7. Security model for the MCP surface
 
 | Concern | Rule |
 |---------|------|
-| Auth | Per-slug JWT only (HS256, 24 h), held server-side in the session map (§3). No global admin token exists. |
+| Auth | Per-slug JWT only (HS256, 24 h), held server-side in the calling MCP session's map (§3) — tokens are scoped to **(MCP session, slug)**, never process-global. No global admin token exists. |
 | Passwords | Passwords enter the model's context when passed as tool arguments — that is inherent to the protocol. Where the host supports **MCP elicitation**, prefer prompting the user out-of-band instead of a tool argument. Either way the server must never persist a password or write it to logs. |
 | Slug scope | A token minted for slug `alpha` must not be presented against `beta`; the API rejects mismatched payloads and the server drops the entry. |
-| Uploads | The server streams file bytes from a local path or URL (see `fs_upload_file`); never buffers 500 MB in the MCP process. |
+| Uploads | The server streams file bytes from a local path or URL (see `fs_upload_file`); never buffers 500 MB in the MCP process. Paths must resolve inside the `FILESHARE_UPLOAD_ROOTS` allowed roots; URLs are `http(s)` only with loopback/private/link-local ranges (incl. `169.254.169.254`) blocked and re-checked on every redirect hop; every upload needs explicit host-user confirmation first. |
 | Content | Max **500 000** chars per update (`updateContentSchema`). Reject earlier with a clear tool error. |
 | Not E2E encrypted | Server-side content is readable. Do not claim zero-knowledge in tool descriptions or UI copy. |
 | Rate limits | Mirror API classes: verify **5/60 s/IP**, sensitive **30/60 s/IP**, uploads **12/10 min/IP**, general **300/60 s/IP**. |
@@ -150,16 +158,19 @@ See [`config.example.json`](./config.example.json) for the full annotated sample
 
 **`Retry-After` quirk:** `rateLimiter.ts` hardcodes `Retry-After: 60` for
 every 429, including the upload limiter whose window is 600 s. Propagate the
-header value as-is; do not assume it reflects the true window.
+header value as-is; do not assume it reflects the true window. When surfacing
+a 429 for an **upload**, also tell the client the real **600 s** window in
+addition to the API's `Retry-After: 60`.
 
 ## 10. Verification checklist (when implementing)
 
 - [ ] Every tool maps 1:1 to an existing API route in `AGENTS.md` §3 — no parallel stack
-- [ ] Tools take no token argument; JWTs live only in the in-memory session map
+- [ ] Tools take no token argument; JWTs live only in the per-connection in-memory session map
 - [ ] Zod limits above are enforced client-side in the tool **and** respected from API errors
 - [ ] Protected-page flows obtain JWT via `verify`, scope it to one slug, never persist passwords
 - [ ] `429` responses are surfaced with `Retry-After`, not auto-retried in a loop
 - [ ] Uploads stream from a path/URL; memory use stays flat for 500 MB files
+- [ ] Upload path/URL guards enforced: `FILESHARE_UPLOAD_ROOTS` check after symlink resolution, SSRF blocked (loopback/private/link-local incl. `169.254.169.254`, re-checked per redirect), explicit user confirmation before every upload
 - [ ] SSE bridge (if built) handles the 10 s ping and reconnects on stream close (app fallback poll: 12 s)
 - [ ] No secrets in tool args, logs, resource bodies, or example configs
 - [ ] Package name is published/reserved before any copy-paste config ships

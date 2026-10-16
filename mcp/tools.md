@@ -5,8 +5,8 @@ optional** (`fs_subscribe_page`). Every tool maps 1:1 to an existing REST
 route (source of truth: [`AGENTS.md` §3](../AGENTS.md)). The server is a thin
 adapter — no direct DB access, no parallel validation stack.
 
-**Session model:** tools take **no `token` argument**. The server holds an
-in-memory `slug → JWT` map filled by `fs_verify_password` (see
+**Session model:** tools take **no `token` argument**. Each MCP connection
+holds its own in-memory `slug → JWT` map filled by `fs_verify_password` (see
 [`README.md` §3](./README.md)). Every request to the API attaches
 `Authorization: Bearer <map.get(slug)>` server-side.
 
@@ -14,7 +14,7 @@ Conventions used below:
 
 | Column | Meaning |
 |--------|---------|
-| Auth | `none` = open; `session` = server attaches Bearer from the in-memory map when the page is protected |
+| Auth | `none` = open; `session` = server attaches Bearer from the calling connection's in-memory map when the page is protected |
 | RL | Rate-limit class from `src/lib/rateLimiter.ts` (per IP, in-memory) |
 | Errors | Canonical HTTP status the tool should surface as an MCP error |
 
@@ -40,6 +40,8 @@ Create a workspace (or report that the slug is taken).
 
 - **Output:** `201 { slug }` on create · `200 { slug, exists: true }` if the
   slug is already taken (not an error)
+- **Note:** creating with a password stores **no token** — the next protected
+  call for that slug needs `fs_verify_password` first.
 - **Errors:** `422` Zod validation · `500` storage failure
 
 ### `fs_check_slug`
@@ -49,7 +51,14 @@ Slug availability (used before create/rename).
 - **API:** `GET /api/pages/create?slug=…`
 - **Auth:** none · **RL:** general (300 / 60 s)
 - **Input:** `{ "slug": "string" }`
-- **Output:** `{ "available": boolean }`
+- **Output:** `{ "available": boolean, "error"?: string }` — `error` carries
+  the validation message when the slug was rejected
+
+**Fail-open semantics:** an invalid slug → API returns `200` with
+`available: false` + the `error` message. A database error → API returns
+`available: true` (fail-open: prefer letting creation proceed over blocking
+on a transient outage). Therefore treat `available: true` as a **hint only** —
+`fs_create_page` returning `exists` is the authority.
 
 ### `fs_get_page`
 
@@ -87,17 +96,20 @@ Replace the Markdown notes for a page and emit `content_updated` to SSE peers.
 ### `fs_rename_page`
 
 Rename a slug. Writes a `redirects` row; old slug 307-redirects via
-`s/[slug]/page.tsx`. No SSE emit; no fresh token is minted — delete the
-session entry for the old slug and re-verify against the new one.
+`s/[slug]/page.tsx`. No SSE emit; no fresh token is minted — on real success
+the server deletes the old slug's session entry; re-verify against the new
+slug.
 
 - **API:** `PATCH /api/pages/[slug]/rename`
 - **Auth:** `session`
 - **RL:** general
 - **Input:** `{ "slug": "string", "newSlug": "string (slugSchema)" }`
-- **Output:** `{ newSlug }` on success · `{ newSlug, redirected: true }` if the
-  target slug already exists (the API does not overwrite; it reports the
-  redirect state — treat as a soft failure, not a 409)
-- **Errors:** `404` missing · `401` · `422`
+- **Output:** success = the response **without** `redirected` (`{ newSlug }`);
+  on real success the server also deletes the old slug's session entry (re-verify
+  against the new slug). Any response containing `redirected: true` is an
+  **ERROR**: "target slug exists, nothing renamed" — not a soft success.
+- **Errors:** `404` missing · `401` · `422` · `redirected: true` (target slug
+  exists; nothing renamed — surface as an MCP error)
 
 ### `fs_delete_page`
 
@@ -124,14 +136,16 @@ protected. Hashing is bcryptjs cost 12 on the API side.
 - **RL:** sensitive (30 / 60 s) — bcrypt-heavy
 - **Input:** `{ "slug": "string", "password": "string (6–128) | null" }`
   - non-null → protect · `null` → clear
-- **Output:** updated meta (`isProtected` flag)
+- **Output:** updated meta (`isProtected` flag). Clearing a password (`null`)
+  also drops that slug's session entry; setting one means subsequent protected
+  calls for that slug require a fresh `fs_verify_password` first.
 - **Errors:** `404` · `401` · `422`
 
 ### `fs_verify_password`
 
-Exchange a password for a 24 h JWT and **store it in the server session
-map**. The JWT is not returned to the model. Uniform `401` on any failure
-(no existence oracle).
+Exchange a password for a 24 h JWT and **store it in the calling connection's
+session map**. The JWT is not returned to the model. Uniform `401` on any
+failure (no existence oracle).
 
 > Passwords enter the model's context when passed as tool arguments — that is
 > inherent to the protocol. Where the host supports **MCP elicitation**,
@@ -185,8 +199,21 @@ source (path basename / HTTP headers / `stat`) — the model does not fill
 // Exactly one of path | url must be present.
 ```
 
+**Upload guards:**
+
+- **Both sources:** no upload starts without explicit host-user confirmation
+  of the slug and source (MCP elicitation or equivalent). Unconfirmed uploads
+  are rejected with `403`.
+- **`path`:** the server resolves the real path (after symlink resolution)
+  and rejects anything outside the allowed roots listed in
+  `FILESHARE_UPLOAD_ROOTS` (colon- or comma-separated) → `403`.
+- **`url`:** `http(s)` only. The server resolves DNS and blocks loopback,
+  private, and link-local ranges — **including `169.254.169.254`** (cloud
+  metadata) — and re-checks the address on every redirect hop. The byte
+  stream is aborted at 500 MB even when `Content-Length` is missing.
+
 - **Output:** uploaded file metadata (fileId, names, size, mimetype, uploadedAt); emits `files_updated`
-- **Errors:** `400` neither/both of path/url · `413` / `422` too large or MIME not allowed · `401` · `429` upload budget
+- **Errors:** `400` neither/both of path/url · `403` rejected path/url or unconfirmed upload · `413` / `422` too large or MIME not allowed · `401` · `429` upload budget (surface the real 600 s window alongside the API's `Retry-After: 60` — see README §9)
 
 **Allowed MIME types** (`ALLOWED_MIME_TYPES` in `src/lib/validators.ts`):
 
@@ -217,21 +244,33 @@ Delete one file scoped by `fileId` + `slug`; cleans B2/local storage and emits
 
 ### `fs_download_file`
 
-Fetch a stored file and return its bytes to the host. Supports Range on the
-API side; local disk first, B2 fallback.
+Fetch a stored file from the vault (local disk first, B2 fallback — both
+handled API-side).
 
 There is **no short-lived signed URL** in the product — the only URL-based
 auth is `?token=` with a 24 h JWT, which would put a long-lived credential in
-a URL (and contradict [`resources.md` §4](./resources.md)). Therefore: the
-MCP server streams bytes through itself using the in-session token as a
-Bearer header. Never place a JWT in a query string.
+a URL (and contradict [`resources.md` §4](./resources.md)). Therefore the MCP
+server fetches using the in-session token as a Bearer header. Never place a
+JWT in a query string.
+
+Two delivery modes:
+
+- **`savePath` present:** the server streams bytes to disk inside the allowed
+  roots (same `FILESHARE_UPLOAD_ROOTS` rules as `fs_upload_file`) and returns
+  only metadata: `{ path, size, mimetype }`. Required above the inline cap.
+- **`savePath` absent:** return bytes inline, only up to
+  `FILESHARE_INLINE_MAX_BYTES` (default **10 MB**). Above the cap, error and
+  tell the client to pass `savePath`.
+
+MCP results carry whole bodies — do not promise Range or byte-level streaming
+to the caller (Range remains an API-side detail only).
 
 - **API:** `GET /api/uploads/[filename]`
 - **Auth:** `session`
 - **RL:** general
-- **Input:** `{ "slug": "string", "fileId": "string" }` — server resolves `fileId` → `storedName` via the files listing
-- **Output:** binary content + content-type (hosts that cannot render binaries should surface the file meta resource instead of inlining bytes)
-- **Errors:** `404` · `401`
+- **Input:** `{ "slug": "string", "fileId": "string", "savePath": "string (optional — must resolve inside an allowed root)" }` — server resolves `fileId` → `storedName` via the files listing
+- **Output:** with `savePath`: `{ path, size, mimetype }` · without: inline bytes + content-type, capped at `FILESHARE_INLINE_MAX_BYTES` (hosts that cannot render binaries should surface the file meta resource instead of inlining bytes)
+- **Errors:** `404` · `401` · `403` savePath outside allowed roots · inline body over `FILESHARE_INLINE_MAX_BYTES` (use `savePath`)
 
 ---
 
@@ -278,15 +317,18 @@ there is no `fileshare://health` resource.
    or reimplement bcrypt/JWT in the MCP process.
 2. **Validate early, trust the API.** Mirror Zod limits in tool input schemas
    for fast feedback, but treat API `422` as the final word.
-3. **In-memory sessions only.** The `slug → token` map (README §3) is the
-   sole session store — per-process, per-slug, never persisted. Do not build
-   a cross-slug or multi-user session layer.
+3. **Per-connection session maps.** Each MCP connection owns its own
+   `slug → token` map (README §3) — the sole session store, in-memory, never
+   persisted, torn down when the connection disconnects (and on 401, expiry,
+   or process exit). Never share one process-global map across clients.
 4. **Secrets hygiene.** Passwords are ephemeral tool arguments — never write
    them to logs or resource caches. Prefer MCP elicitation where the host
    supports it. JWTs never leave the server process.
 5. **Surface rate limits.** On `429`, propagate the API's `Retry-After`
    header as-is (the API hardcodes `60` for every limiter, including the
-   600 s upload window — see README §9); never auto-retry in a tight loop.
+   600 s upload window — see README §9); when the 429 is on an **upload**,
+   also tell the client the real 600 s window in addition to the header;
+   never auto-retry in a tight loop.
 6. **Streaming uploads.** Open the source path/URL and forward the body as a
    stream; memory must stay flat at the 500 MB ceiling.
 7. **Error mapping:** API status → MCP error code; keep the API's `error`

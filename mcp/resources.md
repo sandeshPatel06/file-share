@@ -5,9 +5,9 @@ clients read access to workspace state via stable `fileshare://` URIs.
 Mutations go through the tools in [`tools.md`](./tools.md) — resources are
 read-only unless the host explicitly supports resource templates for writes.
 
-**Session model:** resources authenticate via the server's in-memory
-`slug → JWT` map (see [`README.md` §3](./README.md)). URIs never carry
-tokens.
+**Session model:** resources authenticate via the calling connection's
+in-memory `slug → JWT` map (see [`README.md` §3](./README.md)). URIs never
+carry tokens.
 
 ---
 
@@ -43,12 +43,13 @@ Workspace document — meta plus full Markdown content.
 |--------|----------|
 | Backing API | `GET /api/pages/[slug]` |
 | MIME | `application/json` — body is `{ meta: { slug, isProtected, createdAt, updatedAt }, content: string }` |
-| Auth | Session (in-memory map); without a valid token the API returns the locked view `{ slug, content: "", isProtected: true }` — surface that as the resource body, not an error |
+| Auth | Session (per-connection map); without a valid token the API returns the locked view `{ slug, content: "", isProtected: true }` — map it to the declared resource shape `{ meta: { slug, isProtected: true }, content: "" }`, not an error |
 | Caching | Revalidate on `content_updated` or ≥ 12 s poll (matches app fallback) |
 
 **Locked-page behavior:** if the page is protected and no session token is
-available, return the locked view rather than an error, mirroring the REST GET
-so MCP and HTTP clients see the same shape.
+available, return `{ meta: { slug, isProtected: true }, content: "" }` rather
+than an error — the resource always matches the declared `{ meta, content }`
+shape, even though the raw API locked view is flat.
 
 ### `fileshare://page/<slug>/meta`
 
@@ -93,8 +94,8 @@ Binary download of a stored file.
 | Backing API | resolve `fileId` → `storedName` via the files listing, then `GET /api/uploads/[filename]` |
 | MIME | the file's stored `mimetype` |
 | Auth | Session; the server sends the JWT as a Bearer header — never as `?token=` in a URL |
-| Streaming | Stream through the MCP process; support Range passthrough; local disk first, B2 fallback is handled API-side |
-| Size | Up to 500 MB — hosts should prefer the `/meta` resource plus a download tool invocation over inlining bytes into model context |
+| Delivery | Whole body in a single resource read — no Range or byte-streaming promises (MCP returns whole bodies). Only inline up to `FILESHARE_INLINE_MAX_BYTES` (default 10 MB); above the cap the host must fetch via `fs_download_file` with `savePath` instead of reading this resource |
+| Size | Up to 500 MB (`MAX_FILE_SIZE`); local disk first, B2 fallback is handled API-side (Range, if any, is an API detail only and is not exposed over MCP) |
 
 ### `fileshare://events/<slug>`
 
@@ -120,7 +121,7 @@ For hosts that support template discovery, advertise:
 | Page meta | `fileshare://page/{slug}/meta` | Meta only |
 | Vault listing | `fileshare://page/{slug}/files` | File list JSON |
 | File meta | `fileshare://file/{slug}/{fileId}/meta` | One file record |
-| File content | `fileshare://file/{slug}/{fileId}/content` | Download stream |
+| File content | `fileshare://file/{slug}/{fileId}/content` | File bytes (inline up to `FILESHARE_INLINE_MAX_BYTES`, else use `fs_download_file` + `savePath`) |
 | Events | `fileshare://events/{slug}` | Live SSE bridge |
 
 `{slug}` validates against `slugSchema`; `{fileId}` is a UUID resolved
@@ -131,12 +132,13 @@ server-side.
 ## 4. Auth & token handling for resources
 
 1. Resources do **not** accept a `token` parameter. The server attaches the
-   JWT from its in-memory `slug → token` map (minted by `fs_verify_password`,
-   24 h, payload `{ slug }`) as an `Authorization: Bearer` header when
-   calling the API.
+   JWT from the calling MCP session's in-memory `slug → token` map (minted by
+   `fs_verify_password`, 24 h, payload `{ slug }`) as an
+   `Authorization: Bearer` header when calling the API. Tokens are scoped to
+   **(MCP session, slug)** — never process-global.
 2. Tokens are **slug-scoped**: a token for `alpha` must be rejected for
    `beta` resources (`payload.slug` must match the URI slug); the server
-   drops the map entry on any API 401.
+   drops the calling session's map entry on any API 401.
 3. Never cache a resource body for a protected page beyond the token's
    lifetime; drop cached content when the entry is evicted or expires.
 4. Never put tokens in the URI path or query string — URIs must stay
@@ -150,7 +152,7 @@ server-side.
 |----------|------|---------|
 | page | `application/json` (`{ meta, content }`) | 500 000 chars (`updateContentSchema`) |
 | meta / files | `application/json` | small (listing sizes) |
-| file content | stored `mimetype` (allowlist) | 500 MB (`MAX_FILE_SIZE`) |
+| file content | stored `mimetype` (allowlist) | inline ≤ `FILESHARE_INLINE_MAX_BYTES` (default 10 MB); up to 500 MB (`MAX_FILE_SIZE`) via `fs_download_file` + `savePath` |
 
 ---
 
@@ -173,8 +175,11 @@ matching `usePageContent` / `useFileList`.
 
 - Resources are a read projection of the same REST routes tools call — do not
   add a second query path into `src/lib/db.ts`.
-- Binary resources must stream; never buffer a full 500 MB body in the MCP
-  process just to return it as a resource.
+- Binary resources are whole-body or nothing: inline only up to
+  `FILESHARE_INLINE_MAX_BYTES` (default 10 MB); for anything larger route the
+  host to `fs_download_file` with `savePath` (bytes go to disk inside the
+  allowed roots, metadata comes back). Never buffer a full 500 MB body in the
+  MCP process just to return it as a resource.
 - When a host cannot render binaries, return the `/meta` resource plus a
   download tool invocation instead of inlining bytes.
 - Respect rate-limit classes even for reads: general **300 / 60 s / IP**.
