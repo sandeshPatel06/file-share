@@ -1,0 +1,26 @@
+{
+  "//": "Sample MCP client configuration for the FileShare MCP server.",
+  "//notes": [
+    "The server is documentation-only today; command/args are placeholders for a future implementation.",
+    "Never commit real secrets. FILESHARE_API_URL is the only required env var for the MCP server itself.",
+    "FILESHARE_PAGE_TOKEN is optional and must be a slug-scoped HS256 JWT (24h) from POST /api/pages/[slug]/verify."
+  ],
+  "mcpServers": {
+    "fileshare": {
+      "command": "npx",
+      "args": ["-y", "@fileshare/mcp-server"],
+      "env": {
+        "FILESHARE_API_URL": "https://fileshare.shptechnology.online",
+        "FILESHARE_PAGE_TOKEN": ""
+      }
+    },
+    "fileshare-local": {
+      "comment": "Point at a local dev instance (npm run dev on :3000).",
+      "command": "npx",
+      "args": ["-y", "@fileshare/mcp-server"],
+      "env": {
+        "FILESHARE_API_URL": "http://localhost:3000"
+      }
+    }
+  }
+}
