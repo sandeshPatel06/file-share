@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "fileshare": {
+      "command": "npx",
+      "args": ["-y", "<your-server-package>"],
+      "env": {
+        "FILESHARE_API_URL": "https://fileshare.shptechnology.online"
+      }
+    }
+  }
+}
