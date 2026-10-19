@@ -247,7 +247,7 @@ export default async function ArticlePage({ params }: Props) {
             Rendered only on substantial articles so it never sits adjacent to
             the CTA button or Related Resources navigation grid. */}
         {showResourceAd && (
-          <AdBanner slot={ADSENSE_SLOTS.resourceArticle} position="in-content" />
+          <AdBanner slot={ADSENSE_SLOTS.resourceArticle} />
         )}
 
         {/* Article Body Part 2 */}

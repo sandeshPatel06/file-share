@@ -177,7 +177,7 @@ export default function AboutPage() {
           </section>
 
           {/* Safe In-Content Ad Unit: Placed after 3 extensive sections, safely buffered before monetization and CTAs */}
-          <AdBanner slot={ADSENSE_SLOTS.about} position="in-content" className="max-w-3xl mx-auto" />
+          <AdBanner slot={ADSENSE_SLOTS.about} className="max-w-3xl mx-auto" />
 
           {/* Section: Ethical Monetization & Ad Transparency */}
           <section className="space-y-4">

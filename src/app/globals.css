@@ -591,6 +591,21 @@ html[data-font-tier="lite"] {
   padding-top: 1rem;
 }
 
+/* AdSense unit surface — diagonal hatch makes the ad container visually
+   categorically distinct from every solid-surface nav / CTA / content card
+   on the site (AdSense Site Behavior: Navigation compliance). Theme-aware
+   via CSS variables only. */
+.ad-surface {
+  background-color: var(--bg-surface);
+  background-image: repeating-linear-gradient(
+    135deg,
+    transparent 0,
+    transparent 14px,
+    color-mix(in srgb, var(--border-color) 22%, transparent) 14px,
+    color-mix(in srgb, var(--border-color) 22%, transparent) 16px
+  );
+}
+
 /* ── Print Styles for Clean Document PDF Export ── */
 @media print {
   header,
