@@ -13,7 +13,6 @@ interface AdBannerProps {
   slot: string;
   format?: "auto" | "rectangle" | "horizontal";
   responsive?: boolean;
-  position?: "in-content" | "bottom";
   className?: string;
 }
 
@@ -22,12 +21,15 @@ interface AdBannerProps {
  *
  * Compliance & Policy Safeguards (AdSense Site Behavior: Navigation):
  * - Clear, unambiguous "Advertisement" badge adhering to Google Publisher Policies.
- * - Distinct visual separation with dashed border, muted tinted background, and generous padding.
+ * - Diagonal-hatched surface (.ad-surface in globals.css) + dashed border make the
+ *   unit visually categorically distinct from every solid-surface nav menu, CTA box,
+ *   related-article card, and download button on the site, so it can never be mistaken
+ *   for site navigation or a download link.
  * - Never rendered inside workspace editor, file vault, download/export menus, sticky
  *   headers, TOC navigation, CTA button groups, or related-article grids. Callers must
  *   keep at least one full editorial section (~300px+) between the unit and any
  *   navigation menu, CTA, or download link.
- * - Enforces compact vertical separation (my-8 sm:my-12) from navigation menus, TOCs,
+ * - Enforces vertical separation (my-8 sm:my-12) from navigation menus, TOCs,
  *   CTAs, and download links so ads cannot be mistaken for site navigation.
  * - Never sticky, floating, or overlapping content; static in-content flow only.
  * - Auto-collapses completely when an ad fails to fill or if slot is invalid (data-ad-status="unfilled" or timeout).
@@ -37,7 +39,6 @@ export function AdBanner({
   slot,
   format = "auto",
   responsive = true,
-  position = "in-content",
   className = "",
 }: AdBannerProps) {
   const adRef = useRef<HTMLModElement | null>(null);
@@ -98,23 +99,14 @@ export function AdBanner({
     return null;
   }
 
-  // Compact vertical clearance away from navigation, TOCs, CTAs, and download links.
-  // my-8 = 32px top + 32px bottom; sm:my-12 = 48px each side.
-  // Callers additionally buffer with a full editorial section so the visual
-  // gap to the nearest menu / button stays clear without faltu scroll.
-  const positionClasses =
-    position === "bottom"
-      ? "my-8 sm:my-12"
-      : "my-8 sm:my-12";
-
   return (
     <aside
       aria-label="Advertisement"
       role="complementary"
       data-nosnippet="true"
-      className={`w-full max-w-3xl mx-auto clear-both select-none transition-all duration-200 ${positionClasses} ${className}`}
+      className={`w-full max-w-3xl mx-auto clear-both select-none transition-all duration-200 my-8 sm:my-12 ${className}`}
     >
-      <div className="w-full mx-auto p-4 sm:p-6 rounded-2xl bg-[var(--bg-surface)] border-2 border-dashed border-[var(--border-color)] text-center relative overflow-hidden">
+      <div className="ad-surface w-full mx-auto p-4 sm:p-6 rounded-2xl border-2 border-dashed border-[var(--border-color)] text-center relative overflow-hidden">
         {/* Unambiguous advertisement badge */}
         <div
           className="flex items-center justify-center gap-3 mb-3 select-none"

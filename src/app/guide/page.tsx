@@ -247,7 +247,7 @@ export default function GuidePage() {
         </section>
 
         {/* Safe In-Content Ad Unit 1: Placed after 3 complete editorial sections */}
-        <AdBanner slot={ADSENSE_SLOTS.guideSection1} position="in-content" className="max-w-3xl mx-auto" />
+        <AdBanner slot={ADSENSE_SLOTS.guideSection1} className="max-w-3xl mx-auto" />
 
         {/* SECTION 4 */}
         <section id="section-4" className="my-10 space-y-4 pt-6 border-t border-[var(--border-color)]">
@@ -396,7 +396,7 @@ sequenceDiagram
         </section>
 
         {/* Safe In-Content Ad Unit 2: Placed deep in editorial reading flow */}
-        <AdBanner slot={ADSENSE_SLOTS.guideSection2} position="in-content" className="max-w-3xl mx-auto" />
+        <AdBanner slot={ADSENSE_SLOTS.guideSection2} className="max-w-3xl mx-auto" />
 
         {/* SECTION 8 */}
         <section id="section-8" className="my-10 space-y-4 pt-6 border-t border-[var(--border-color)]">
